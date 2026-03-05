@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version)",
+      "Bash(npm --version)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir --no-eslint --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir --no-eslint --import-alias \"@/*\" --yes --force)",
+      "Bash(npx create-next-app@latest hatad_tmp --typescript --tailwind --app --src-dir --no-eslint --import-alias \"@/*\" --yes)",
+      "Bash(npm install framer-motion @radix-ui/react-dialog lucide-react clsx tailwind-merge)",
+      "Bash(cp -r /c/Users/WELCOME/hatad_tmp/node_modules /c/Users/WELCOME/hatad_web/)",
+      "Bash(cp /c/Users/WELCOME/hatad_tmp/package.json /c/Users/WELCOME/hatad_web/)",
+      "Bash(cp /c/Users/WELCOME/hatad_tmp/package-lock.json /c/Users/WELCOME/hatad_web/)",
+      "Bash(cp /c/Users/WELCOME/hatad_tmp/next.config.ts /c/Users/WELCOME/hatad_web/)",
+      "Bash(cp /c/Users/WELCOME/hatad_tmp/tsconfig.json /c/Users/WELCOME/hatad_web/)",
+      "Bash(cp /c/Users/WELCOME/hatad_tmp/postcss.config.mjs /c/Users/WELCOME/hatad_web/)",
+      "Bash(cp /c/Users/WELCOME/hatad_tmp/next-env.d.ts /c/Users/WELCOME/hatad_web/)",
+      "Bash(cp -r /c/Users/WELCOME/hatad_tmp/src/* /c/Users/WELCOME/hatad_web/src/)",
+      "Bash(cp -r /c/Users/WELCOME/hatad_tmp/public/* /c/Users/WELCOME/hatad_web/public/)",
+      "Bash(npm run build)"
+    ]
+  }
+}
