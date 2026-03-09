@@ -1,23 +1,24 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { supabase } from '@/lib/supabase'
 
-interface ContactForm {
-  name: string
-  company: string
-  phone: string
-  email: string
-  district: string
-  village: string
-  surveyNo: string
-  documents: string
-  urgency: string
-}
-
-const REQUIRED_FIELDS: (keyof ContactForm)[] = ['name', 'phone', 'district', 'village']
+const REQUIRED_FIELDS = ['name', 'phone', 'district', 'village'] as const
 
 export async function POST(request: Request) {
   try {
-    const body: ContactForm = await request.json()
+    const formData = await request.formData()
+
+    const body = {
+      name: formData.get('name') as string || '',
+      company: formData.get('company') as string || '',
+      phone: formData.get('phone') as string || '',
+      email: formData.get('email') as string || '',
+      district: formData.get('district') as string || '',
+      village: formData.get('village') as string || '',
+      surveyNo: formData.get('surveyNo') as string || '',
+      documents: formData.get('documents') as string || '',
+      urgency: formData.get('urgency') as string || 'standard',
+    }
 
     // Validate required fields
     for (const field of REQUIRED_FIELDS) {
@@ -27,6 +28,49 @@ export async function POST(request: Request) {
           { status: 400 },
         )
       }
+    }
+
+    // Collect uploaded files
+    const files = formData.getAll('files') as File[]
+
+    // Upload files to Supabase Storage
+    const fileUrls: string[] = []
+    const attachments: { filename: string; content: Buffer; contentType: string }[] = []
+    const leadId = crypto.randomUUID()
+
+    for (const file of files) {
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const filePath = `${leadId}/${file.name}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, buffer, { contentType: file.type, upsert: false })
+
+      if (!uploadError) {
+        fileUrls.push(filePath)
+      }
+
+      attachments.push({ filename: file.name, content: buffer, contentType: file.type })
+    }
+
+    // Save lead to Supabase
+    const { error: dbError } = await supabase.from('leads').insert({
+      id: leadId,
+      name: body.name,
+      phone: body.phone,
+      email: body.email || null,
+      company: body.company || null,
+      district: body.district,
+      village: body.village,
+      survey_no: body.surveyNo || null,
+      documents_note: body.documents || null,
+      urgency: body.urgency,
+      status: 'new',
+      file_urls: fileUrls.length > 0 ? fileUrls : null,
+    })
+
+    if (dbError) {
+      console.error('Supabase insert error:', dbError)
     }
 
     const transporter = nodemailer.createTransport({
@@ -68,6 +112,13 @@ export async function POST(request: Request) {
         <p style="color: #0C1525; background: #F4F7FC; padding: 12px; border-radius: 4px;">${body.documents}</p>
         ` : ''}
 
+        ${attachments.length > 0 ? `
+        <h3 style="color: #3D5278; margin-top: 24px;">Uploaded Files (${attachments.length})</h3>
+        <ul style="color: #0C1525; background: #F4F7FC; padding: 12px 12px 12px 28px; border-radius: 4px; margin: 0;">
+          ${attachments.map((a) => `<li style="padding: 2px 0;">${a.filename}</li>`).join('')}
+        </ul>
+        ` : ''}
+
         <hr style="margin-top: 32px; border: none; border-top: 1px solid #CBD5E8;" />
         <p style="color: #7A8FAD; font-size: 12px;">
           Submitted via hatad.in &middot; ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
@@ -81,6 +132,7 @@ export async function POST(request: Request) {
       subject: `${urgencyLabel} Land Clearance Request — ${body.name} · ${body.district}`,
       html: htmlBody,
       replyTo: body.email || undefined,
+      attachments,
     })
 
     return NextResponse.json({ success: true })

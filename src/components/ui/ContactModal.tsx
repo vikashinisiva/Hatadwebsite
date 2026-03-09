@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
+import { X, Upload, FileText, Trash2 } from 'lucide-react'
 import Stepper, { Step } from './Stepper'
 
 interface ContactModalProps {
@@ -15,6 +15,9 @@ export function ContactModal({ trigger }: ContactModalProps) {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [files, setFiles] = useState<File[]>([])
+  const [dragging, setDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     name: '',
     company: '',
@@ -31,14 +34,44 @@ export function ContactModal({ trigger }: ContactModalProps) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB per file
+  const MAX_FILES = 5
+  const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+
+  const addFiles = useCallback((incoming: FileList | File[]) => {
+    const valid = Array.from(incoming).filter((f) => {
+      if (!ACCEPTED_TYPES.includes(f.type)) return false
+      if (f.size > MAX_FILE_SIZE) return false
+      return true
+    })
+    setFiles((prev) => {
+      const names = new Set(prev.map((p) => p.name))
+      const unique = valid.filter((f) => !names.has(f.name))
+      return [...prev, ...unique].slice(0, MAX_FILES)
+    })
+  }, [])
+
+  const removeFile = useCallback((name: string) => {
+    setFiles((prev) => prev.filter((f) => f.name !== name))
+  }, [])
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragging(false)
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files)
+  }
+
   async function handleComplete() {
     setSubmitting(true)
     setError('')
     try {
+      const fd = new FormData()
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v))
+      files.forEach((f) => fd.append('files', f))
+
       const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: fd,
       })
       if (!res.ok) {
         const data = await res.json()
@@ -58,6 +91,7 @@ export function ContactModal({ trigger }: ContactModalProps) {
       setTimeout(() => {
         setSubmitted(false)
         setError('')
+        setFiles([])
       }, 300)
     }
   }
@@ -262,6 +296,57 @@ export function ContactModal({ trigger }: ContactModalProps) {
                             className={`${inputClass} resize-none`}
                           />
                         </div>
+                        {/* Upload area */}
+                        <div>
+                          <label className="block text-xs text-text-secondary tracking-wide mb-1.5">
+                            Upload Documents <span className="text-text-muted">(PDF, JPG, PNG — max 10 MB each)</span>
+                          </label>
+                          <div
+                            onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                            onDragLeave={() => setDragging(false)}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`border-2 border-dashed rounded-sm px-4 py-5 text-center cursor-pointer transition-colors ${
+                              dragging
+                                ? 'border-accent-blue bg-accent-blue/5'
+                                : 'border-border hover:border-accent-blue/50'
+                            }`}
+                          >
+                            <Upload size={20} className="mx-auto text-text-muted mb-1.5" />
+                            <p className="text-xs text-text-secondary">
+                              Drag & drop files here, or <span className="text-accent-blue font-medium">browse</span>
+                            </p>
+                            <p className="text-[10px] text-text-muted mt-1">Up to {MAX_FILES} files</p>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png,.webp"
+                              multiple
+                              className="hidden"
+                              onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = '' }}
+                            />
+                          </div>
+
+                          {files.length > 0 && (
+                            <ul className="mt-2 space-y-1.5">
+                              {files.map((f) => (
+                                <li key={f.name} className="flex items-center gap-2 bg-surface-raised border border-border rounded-sm px-3 py-1.5 text-xs">
+                                  <FileText size={14} className="text-accent-blue shrink-0" />
+                                  <span className="truncate text-text-primary flex-1">{f.name}</span>
+                                  <span className="text-text-muted shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); removeFile(f.name) }}
+                                    className="text-text-muted hover:text-red-500 transition-colors cursor-pointer"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+
                         <div>
                           <label className="block text-xs text-text-secondary tracking-wide mb-1.5">
                             Urgency

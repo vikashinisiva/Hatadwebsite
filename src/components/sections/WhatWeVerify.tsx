@@ -4,12 +4,20 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainerFast, fadeInUp } from '@/lib/animations'
+import {
+  Link2,
+  Scale,
+  Landmark,
+  MapPinned,
+  GitCompareArrows,
+  ShieldCheck,
+} from 'lucide-react'
 
-const CHECKS = [
-  { label: 'Title & Ownership Chain', coverage: 92, delay: 0.3 },
-  { label: 'Liabilities & Hidden Charges', coverage: 88, delay: 0.45 },
-  { label: 'Government Records', coverage: 85, delay: 0.6 },
-  { label: 'Regulatory & Zone Status', coverage: 90, delay: 0.75 },
+const LAYERS = [
+  { icon: Link2, title: 'Title & Ownership Chain' },
+  { icon: Scale, title: 'Liabilities & Hidden Charges' },
+  { icon: Landmark, title: 'Government Records' },
+  { icon: MapPinned, title: 'Regulatory & Zone Status' },
 ]
 
 export function WhatWeVerify() {
@@ -25,151 +33,152 @@ export function WhatWeVerify() {
           animate={isInView ? 'visible' : 'hidden'}
         >
           {/* Header */}
-          <div className="grid lg:grid-cols-2 gap-8 mb-16">
-            <div>
-              <motion.div variants={fadeInUp} className="mb-6">
-                <SectionLabel>What We Verify</SectionLabel>
-              </motion.div>
-              <motion.h2
-                variants={fadeInUp}
-                className="font-display text-4xl sm:text-5xl font-bold text-text-primary leading-[1.1]"
-              >
-                Five Layers.{' '}
-                <span className="text-text-secondary font-light">Zero Blind Spots.</span>
-              </motion.h2>
-            </div>
+          <div className="mb-16">
+            <motion.div variants={fadeInUp} className="mb-6">
+              <SectionLabel>What We Verify</SectionLabel>
+            </motion.div>
+            <motion.h2
+              variants={fadeInUp}
+              className="font-display text-4xl sm:text-5xl font-bold text-text-primary leading-[1.1]"
+            >
+              Five Layers.{' '}
+              <span className="text-text-secondary font-light">Zero Blind Spots.</span>
+            </motion.h2>
           </div>
 
-          {/* Mock verification dashboard */}
-          <motion.div
-            variants={fadeInUp}
+          {/* Verification scan rows */}
+          <div
             className="rounded-lg border border-border/60 bg-white overflow-hidden"
             style={{ boxShadow: '0 4px 32px rgba(12,21,37,0.06)' }}
           >
-            {/* Dashboard header */}
-            <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-border/60 bg-surface-raised/50">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-accent-blue animate-pulse" />
-                <span className="text-xs font-medium tracking-[0.15em] uppercase text-text-muted">
-                  Verification Report
-                </span>
-              </div>
-              <motion.span
-                className="text-[10px] font-mono tracking-wider text-accent-blue"
-                initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ delay: 1.2 }}
-              >
-                4 / 4 COMPLETE
-              </motion.span>
-            </div>
-
-            {/* Verification rows */}
-            <div className="divide-y divide-border/40">
-              {CHECKS.map((check, i) => (
+            {LAYERS.map((layer, i) => {
+              const Icon = layer.icon
+              const delay = 0.3 + i * 0.35
+              return (
                 <div
-                  key={check.label}
-                  className="grid grid-cols-[1fr_auto] sm:grid-cols-[200px_1fr_60px] items-center gap-4 sm:gap-6 px-6 sm:px-8 py-5"
+                  key={layer.title}
+                  className="relative border-b border-border/40 last:border-b-0"
                 >
-                  {/* Label */}
-                  <div className="flex items-center gap-3">
-                    <motion.div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ background: '#1B4FD8' }}
-                      initial={{ scale: 0 }}
-                      animate={isInView ? { scale: 1 } : { scale: 0 }}
-                      transition={{ duration: 0.3, delay: check.delay + 0.4 }}
-                    />
-                    <span className="text-sm font-medium text-text-primary">{check.label}</span>
-                  </div>
-
-                  {/* Bar — hidden on small, visible on sm+ */}
-                  <div className="hidden sm:block">
-                    <div className="h-2 rounded-full bg-surface-raised overflow-hidden">
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ background: 'linear-gradient(90deg, #1B4FD8 0%, #3B6FE8 100%)' }}
-                        initial={{ width: 0 }}
-                        animate={isInView ? { width: `${check.coverage}%` } : { width: 0 }}
-                        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: check.delay }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Percentage */}
-                  <motion.span
-                    className="text-sm font-semibold text-accent-blue text-right font-mono"
-                    initial={{ opacity: 0 }}
-                    animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                    transition={{ delay: check.delay + 0.6 }}
-                  >
-                    {check.coverage}%
-                  </motion.span>
-                </div>
-              ))}
-            </div>
-
-            {/* Contradiction row — featured */}
-            <div
-              className="border-t-2 border-accent-blue/20 px-6 sm:px-8 py-5"
-              style={{ background: 'rgba(27,79,216,0.03)' }}
-            >
-              <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[200px_1fr_auto] items-center gap-4 sm:gap-6">
-                <div className="flex items-center gap-3">
+                  {/* Scan line background */}
                   <motion.div
-                    className="w-3 h-3 rounded-full border-2 border-accent-blue flex-shrink-0"
-                    initial={{ scale: 0 }}
-                    animate={isInView ? { scale: 1 } : { scale: 0 }}
-                    transition={{ duration: 0.3, delay: 1.0 }}
+                    className="absolute inset-0 bg-accent-blue/[0.04]"
+                    initial={{ scaleX: 0 }}
+                    animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay }}
+                    style={{ transformOrigin: 'left' }}
                   />
-                  <span className="text-sm font-semibold text-text-primary">Cross-Document Contradictions</span>
-                </div>
 
-                {/* Full bar on sm+ */}
-                <div className="hidden sm:block">
-                  <div className="h-2 rounded-full bg-surface-raised overflow-hidden">
+                  <div className="relative flex items-center gap-4 sm:gap-5 px-6 sm:px-8 py-5 sm:py-6">
+                    {/* Icon */}
                     <motion.div
-                      className="h-full rounded-full"
-                      style={{ background: 'linear-gradient(90deg, #1B4FD8 0%, #3B6FE8 100%)' }}
-                      initial={{ width: 0 }}
-                      animate={isInView ? { width: '100%' } : { width: 0 }}
-                      transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.9 }}
-                    />
+                      className="w-10 h-10 rounded-lg bg-accent-blue/8 flex items-center justify-center text-accent-blue flex-shrink-0"
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.6 }}
+                      transition={{ duration: 0.4, delay: delay + 0.15 }}
+                    >
+                      <Icon size={20} strokeWidth={1.7} />
+                    </motion.div>
+
+                    {/* Layer title */}
+                    <motion.span
+                      className="text-[15px] sm:text-base font-semibold text-text-primary flex-1"
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -8 }}
+                      transition={{ duration: 0.4, delay: delay + 0.2 }}
+                    >
+                      {layer.title}
+                    </motion.span>
+
+                    {/* Verified badge */}
+                    <motion.div
+                      className="flex items-center gap-2"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.3, delay: delay + 0.45 }}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-[11px] font-semibold tracking-[0.12em] uppercase text-emerald-600 hidden sm:block">
+                        Verified
+                      </span>
+                    </motion.div>
                   </div>
                 </div>
+              )
+            })}
 
-                <div className="flex items-center gap-3 justify-end">
+            {/* Layer 5 — featured */}
+            <div className="relative border-t-2 border-accent-blue/20">
+              <motion.div
+                className="absolute inset-0 bg-accent-blue/[0.05]"
+                initial={{ scaleX: 0 }}
+                animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 1.7 }}
+                style={{ transformOrigin: 'left' }}
+              />
+
+              <div className="relative flex items-center gap-4 sm:gap-5 px-6 sm:px-8 py-6 sm:py-7">
+                <motion.div
+                  className="w-10 h-10 rounded-lg bg-accent-blue/12 flex items-center justify-center text-accent-blue flex-shrink-0"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.6 }}
+                  transition={{ duration: 0.4, delay: 1.85 }}
+                >
+                  <GitCompareArrows size={20} strokeWidth={1.7} />
+                </motion.div>
+
+                <div className="flex-1 min-w-0">
                   <motion.span
-                    className="text-sm font-bold text-accent-blue font-mono"
-                    initial={{ opacity: 0 }}
-                    animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                    transition={{ delay: 1.3 }}
+                    className="text-[15px] sm:text-base font-bold text-text-primary block"
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -8 }}
+                    transition={{ duration: 0.4, delay: 1.9 }}
                   >
-                    100%
+                    Cross-Document Contradictions
                   </motion.span>
                   <motion.span
-                    className="text-[10px] font-medium tracking-[0.12em] uppercase text-accent-blue bg-accent-blue/10 border border-accent-blue/20 px-2.5 py-1 rounded-sm whitespace-nowrap"
+                    className="text-xs text-text-muted mt-0.5 block"
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                    transition={{ delay: 1.4 }}
+                    transition={{ delay: 2.0 }}
                   >
-                    Unique to HataD
+                    Catches what single-document checks miss.
                   </motion.span>
                 </div>
+
+                <motion.div
+                  className="flex items-center gap-2 flex-shrink-0"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3, delay: 2.15 }}
+                >
+                  <div className="w-5 h-5 rounded-full bg-accent-blue flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-[10px] font-semibold tracking-[0.1em] uppercase text-accent-blue bg-accent-blue/10 border border-accent-blue/20 px-2 py-0.5 rounded-sm hidden sm:block">
+                    Only HataD
+                  </span>
+                </motion.div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Bottom note */}
+          {/* Shield trust block */}
           <motion.div
-            variants={fadeInUp}
-            className="mt-8 flex items-center gap-6"
+            initial={{ opacity: 0, y: 16 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+            transition={{ duration: 0.5, delay: 2.4 }}
+            className="mt-10 flex flex-col items-center gap-3"
           >
-            <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
-            <p className="text-sm text-text-muted tracking-wide whitespace-nowrap">
+            <ShieldCheck size={28} className="text-emerald-500" strokeWidth={1.6} />
+            <p className="text-sm text-text-muted tracking-wide text-center">
               No one else runs all five. We do.
             </p>
-            <div className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
           </motion.div>
         </motion.div>
       </div>
