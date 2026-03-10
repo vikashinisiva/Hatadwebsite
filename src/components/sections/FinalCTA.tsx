@@ -102,8 +102,6 @@ export function FinalCTA() {
               </a>
               <a
                 href="mailto:hatad@hypseaero.in"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors"
               >
                 <Mail size={16} /> Email
