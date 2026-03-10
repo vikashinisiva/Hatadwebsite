@@ -8,6 +8,7 @@ interface StepperProps {
   initialStep?: number
   onStepChange?: (step: number) => void
   onFinalStepCompleted?: () => void
+  onBeforeNext?: (currentStep: number) => boolean
   backButtonText?: string
   nextButtonText?: string
   disableStepIndicators?: boolean
@@ -19,6 +20,7 @@ export default function Stepper({
   initialStep = 1,
   onStepChange = () => {},
   onFinalStepCompleted = () => {},
+  onBeforeNext,
   backButtonText = 'Back',
   nextButtonText = 'Continue',
   disableStepIndicators = false,
@@ -49,12 +51,14 @@ export default function Stepper({
 
   const handleNext = () => {
     if (!isLastStep) {
+      if (onBeforeNext && !onBeforeNext(currentStep)) return
       setDirection(1)
       updateStep(currentStep + 1)
     }
   }
 
   const handleComplete = () => {
+    if (onBeforeNext && !onBeforeNext(currentStep)) return
     setDirection(1)
     updateStep(totalSteps + 1)
   }

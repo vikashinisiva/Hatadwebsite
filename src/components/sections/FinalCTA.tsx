@@ -5,6 +5,7 @@ import { motion, useInView } from 'framer-motion'
 import { ContactModal } from '@/components/ui/ContactModal'
 import { Button } from '@/components/ui/Button'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
+import { Phone, MessageCircle, Mail } from 'lucide-react'
 
 export function FinalCTA() {
   const ref = useRef<HTMLDivElement>(null)
@@ -77,25 +78,37 @@ export function FinalCTA() {
                 </Button>
               }
             />
-            <ContactModal
-              trigger={
-                <Button variant="ghost" size="lg">
-                  Contact the Team
-                </Button>
-              }
-            />
           </motion.div>
 
-          {/* Contact details */}
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-8 text-sm text-text-secondary"
-          >
-            <a href="tel:+918122642341" className="hover:text-accent-blue transition-colors">+91 81226 42341</a>
-            <span className="text-border hidden sm:inline">|</span>
-            <a href="tel:+917418301656" className="hover:text-accent-blue transition-colors">+91 74183 01656</a>
-            <span className="text-border hidden sm:inline">|</span>
-            <a href="mailto:hatad@hypseaero.in" className="hover:text-accent-blue transition-colors">hatad@hypseaero.in</a>
+          {/* Just want to talk? */}
+          <motion.div variants={fadeInUp} className="mt-10">
+            <p className="text-center text-sm text-text-muted mb-4">
+              Just want to talk? Reach us directly.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="https://wa.me/918122642341"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+              >
+                <MessageCircle size={16} /> WhatsApp
+              </a>
+              <a
+                href="tel:+918122642341"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors"
+              >
+                <Phone size={16} /> Call Us
+              </a>
+              <a
+                href="mailto:hatad@hypseaero.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors"
+              >
+                <Mail size={16} /> Email
+              </a>
+            </div>
           </motion.div>
         </motion.div>
       </div>

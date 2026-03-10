@@ -15,12 +15,14 @@ export function ContactModal({ trigger }: ContactModalProps) {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [stepError, setStepError] = useState('')
   const [files, setFiles] = useState<File[]>([])
   const [dragging, setDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     name: '',
     company: '',
+    countryCode: '+91',
     phone: '',
     email: '',
     district: '',
@@ -32,6 +34,7 @@ export function ContactModal({ trigger }: ContactModalProps) {
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    if (stepError) setStepError('')
   }
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB per file
@@ -59,6 +62,19 @@ export function ContactModal({ trigger }: ContactModalProps) {
     e.preventDefault()
     setDragging(false)
     if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files)
+  }
+
+  function validateStep(step: number): boolean {
+    if (step === 1) {
+      if (!form.name.trim()) { setStepError('Name is required'); return false }
+      if (!form.phone.trim()) { setStepError('Phone number is required'); return false }
+    }
+    if (step === 2) {
+      if (!form.district.trim()) { setStepError('District is required'); return false }
+      if (!form.village.trim()) { setStepError('Village / Area is required'); return false }
+    }
+    setStepError('')
+    return true
   }
 
   async function handleComplete() {
@@ -91,6 +107,7 @@ export function ContactModal({ trigger }: ContactModalProps) {
       setTimeout(() => {
         setSubmitted(false)
         setError('')
+        setStepError('')
         setFiles([])
       }, 300)
     }
@@ -114,7 +131,7 @@ export function ContactModal({ trigger }: ContactModalProps) {
                 className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
               />
             </Dialog.Overlay>
-            <Dialog.Content asChild>
+            <Dialog.Content asChild onOpenAutoFocus={(e) => e.preventDefault()}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -138,13 +155,29 @@ export function ContactModal({ trigger }: ContactModalProps) {
                   </Dialog.Close>
                 </div>
 
-                {error && (
+                {(error || stepError) && (
                   <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5 rounded-sm mb-4">
-                    {error}
+                    {error || stepError}
                   </div>
                 )}
 
-                {submitted ? (
+                {submitting ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="py-14 flex flex-col items-center gap-5"
+                  >
+                    <div className="w-40 h-[3px] rounded-full bg-surface-raised overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-gradient-to-r from-accent-blue/40 via-accent-blue to-accent-blue/40"
+                        animate={{ x: ['-100%', '100%'] }}
+                        transition={{ duration: 1.4, repeat: Infinity, ease: [0.45, 0, 0.55, 1] }}
+                        style={{ width: '60%' }}
+                      />
+                    </div>
+                    <p className="text-sm text-text-muted tracking-wide">Submitting your request…</p>
+                  </motion.div>
+                ) : submitted ? (
                   <div className="text-center py-8">
                     <div className="w-12 h-12 rounded-full bg-accent-blue/20 flex items-center justify-center mx-auto mb-4">
                       <svg className="w-6 h-6 text-accent-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -160,6 +193,7 @@ export function ContactModal({ trigger }: ContactModalProps) {
                   <Stepper
                     initialStep={1}
                     onFinalStepCompleted={handleComplete}
+                    onBeforeNext={validateStep}
                     backButtonText="Previous"
                     nextButtonText="Next"
                     stepLabels={['Details', 'Property', 'Documents']}
@@ -187,14 +221,37 @@ export function ContactModal({ trigger }: ContactModalProps) {
                           <label className="block text-xs text-text-secondary tracking-wide mb-1.5">
                             Phone Number <span className="text-red-500">*</span>
                           </label>
-                          <input
-                            type="tel"
-                            name="phone"
-                            placeholder="+91"
-                            value={form.phone}
-                            onChange={handleChange}
-                            className={inputClass}
-                          />
+                          <div className="flex gap-2">
+                            <select
+                              name="countryCode"
+                              value={form.countryCode}
+                              onChange={handleChange}
+                              className="bg-surface-raised border border-border text-text-primary text-sm px-2 py-2.5 rounded-sm focus:outline-none focus:border-accent-blue transition-colors w-[100px] flex-shrink-0"
+                            >
+                              <option value="+91">🇮🇳 +91</option>
+                              <option value="+1">🇺🇸 +1</option>
+                              <option value="+44">🇬🇧 +44</option>
+                              <option value="+971">🇦🇪 +971</option>
+                              <option value="+65">🇸🇬 +65</option>
+                              <option value="+60">🇲🇾 +60</option>
+                              <option value="+61">🇦🇺 +61</option>
+                              <option value="+49">🇩🇪 +49</option>
+                              <option value="+33">🇫🇷 +33</option>
+                              <option value="+81">🇯🇵 +81</option>
+                              <option value="+86">🇨🇳 +86</option>
+                              <option value="+966">🇸🇦 +966</option>
+                              <option value="+974">🇶🇦 +974</option>
+                              <option value="+94">🇱🇰 +94</option>
+                            </select>
+                            <input
+                              type="tel"
+                              name="phone"
+                              placeholder="Phone number"
+                              value={form.phone}
+                              onChange={handleChange}
+                              className="bg-surface-raised border border-border text-text-primary placeholder:text-text-muted text-sm px-3 py-2.5 rounded-sm focus:outline-none focus:border-accent-blue transition-colors flex-1 min-w-0"
+                            />
+                          </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>

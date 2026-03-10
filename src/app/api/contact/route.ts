@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const body = {
       name: formData.get('name') as string || '',
       company: formData.get('company') as string || '',
-      phone: formData.get('phone') as string || '',
+      phone: `${formData.get('countryCode') || '+91'} ${formData.get('phone') || ''}`.trim(),
       email: formData.get('email') as string || '',
       district: formData.get('district') as string || '',
       village: formData.get('village') as string || '',

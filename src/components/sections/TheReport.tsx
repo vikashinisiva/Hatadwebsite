@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { CheckCircle2 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { CheckCircle2, Phone, MessageCircle, Mail } from 'lucide-react'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { ContactModal } from '@/components/ui/ContactModal'
 import { Button } from '@/components/ui/Button'
@@ -13,6 +13,7 @@ import { staggerContainer, fadeInUp, slideInRight } from '@/lib/animations'
 export function TheReport() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const [showContact, setShowContact] = useState(false)
 
   return (
     <section id="report" className="relative py-32 px-6 md:px-12 lg:px-20 xl:px-28 2xl:px-40 overflow-hidden">
@@ -53,14 +54,50 @@ export function TheReport() {
                   </Button>
                 }
               />
-              <ContactModal
-                trigger={
-                  <Button variant="ghost" size="md">
-                    Talk to the Team
-                  </Button>
-                }
-              />
+              <button
+                onClick={() => setShowContact((v) => !v)}
+                className="px-5 py-2.5 rounded-sm border border-border bg-transparent text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors cursor-pointer"
+              >
+                Talk to the Team
+              </button>
             </motion.div>
+
+            <AnimatePresence>
+              {showContact && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex flex-wrap gap-3 mt-5">
+                    <a
+                      href="https://wa.me/918122642341"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                    >
+                      <MessageCircle size={15} /> WhatsApp
+                    </a>
+                    <a
+                      href="tel:+918122642341"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors"
+                    >
+                      <Phone size={15} /> Call Us
+                    </a>
+                    <a
+                      href="mailto:hatad@hypseaero.in"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors"
+                    >
+                      <Mail size={15} /> Email
+                    </a>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Right — Mock Report UI styled like real HataD report */}
