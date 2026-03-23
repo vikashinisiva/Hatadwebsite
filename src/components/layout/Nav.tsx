@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { NAV_LINKS, SITE_NAME, SITE_TAGLINE } from '@/lib/constants'
-import { ContactModal } from '@/components/ui/ContactModal'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
@@ -64,13 +63,11 @@ export function Nav() {
 
           {/* Right CTA — desktop */}
           <div className="hidden md:flex items-center gap-3">
-            <ContactModal
-              trigger={
-                <Button variant="primary" size="sm">
-                  Get Your Report
-                </Button>
-              }
-            />
+            <a href="/clearance">
+              <Button variant="primary" size="sm">
+                Get Your Report
+              </Button>
+            </a>
           </div>
 
           {/* Mobile hamburger */}
@@ -113,13 +110,11 @@ export function Nav() {
                 </button>
               ))}
               <div className="pt-6">
-                <ContactModal
-                  trigger={
-                    <Button variant="primary" size="lg" className="w-full">
-                      Get Your Land Clearance Report
-                    </Button>
-                  }
-                />
+                <a href="/clearance">
+                  <Button variant="primary" size="lg" className="w-full">
+                    Get Your Land Clearance Report
+                  </Button>
+                </a>
               </div>
             </nav>
           </motion.div>

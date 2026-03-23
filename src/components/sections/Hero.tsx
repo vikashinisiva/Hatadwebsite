@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { ContactModal } from '@/components/ui/ContactModal'
 import { Button } from '@/components/ui/Button'
 import PixelCard from '@/components/ui/PixelCard'
 import { fadeInUp, staggerContainer } from '@/lib/animations'
@@ -57,13 +56,11 @@ export function Hero() {
 
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 items-center justify-center mb-10">
               <PixelCard variant="navy" gap={6} speed={50} className="!rounded-lg">
-                <ContactModal
-                  trigger={
-                    <Button variant="primary" size="lg">
-                      Get Your Land Clearance Report
-                    </Button>
-                  }
-                />
+                <a href="/clearance">
+                  <Button variant="primary" size="lg">
+                    Get Your Land Clearance Report
+                  </Button>
+                </a>
               </PixelCard>
               <Button
                 variant="ghost"

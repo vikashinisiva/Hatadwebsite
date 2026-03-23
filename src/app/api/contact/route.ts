@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 const REQUIRED_FIELDS = ['name', 'phone', 'district', 'village'] as const
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       const buffer = Buffer.from(await file.arrayBuffer())
       const filePath = `${leadId}/${file.name}`
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabaseAdmin.storage
         .from('documents')
         .upload(filePath, buffer, { contentType: file.type, upsert: false })
 
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     // Save lead to Supabase
-    const { error: dbError } = await supabase.from('leads').insert({
+    const { error: dbError } = await supabaseAdmin.from('leads').insert({
       id: leadId,
       name: body.name,
       phone: body.phone,

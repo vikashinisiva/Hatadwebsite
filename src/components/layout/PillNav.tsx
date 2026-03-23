@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import gsap from 'gsap'
 import { NAV_LINKS, SITE_NAME, SITE_TAGLINE } from '@/lib/constants'
-import { ContactModal } from '@/components/ui/ContactModal'
 import { Button } from '@/components/ui/Button'
 
 export function PillNav() {
@@ -134,13 +133,11 @@ export function PillNav() {
 
           {/* CTA */}
           <div className="pill-nav-cta">
-            <ContactModal
-              trigger={
-                <Button variant="primary" size="sm">
-                  Get Your Report
-                </Button>
-              }
-            />
+            <a href="/clearance">
+              <Button variant="primary" size="sm">
+                Get Your Report
+              </Button>
+            </a>
           </div>
 
           {/* Mobile hamburger */}
@@ -185,13 +182,11 @@ export function PillNav() {
                 </button>
               ))}
               <div style={{ paddingTop: '1.5rem' }}>
-                <ContactModal
-                  trigger={
-                    <Button variant="primary" size="lg" className="w-full">
-                      Get Your Land Clearance Report
-                    </Button>
-                  }
-                />
+                <a href="/clearance">
+                  <Button variant="primary" size="lg" className="w-full">
+                    Get Your Land Clearance Report
+                  </Button>
+                </a>
               </div>
             </nav>
           </motion.div>

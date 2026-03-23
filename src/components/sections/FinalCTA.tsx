@@ -2,7 +2,6 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { ContactModal } from '@/components/ui/ContactModal'
 import { Button } from '@/components/ui/Button'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import { Phone, MessageCircle, Mail } from 'lucide-react'
@@ -71,13 +70,11 @@ export function FinalCTA() {
             variants={fadeInUp}
             className="flex flex-wrap gap-4 justify-center"
           >
-            <ContactModal
-              trigger={
-                <Button variant="primary" size="lg">
-                  Start Your Land Clearance
-                </Button>
-              }
-            />
+            <a href="/clearance">
+              <Button variant="primary" size="lg">
+                Start Your Land Clearance
+              </Button>
+            </a>
           </motion.div>
 
           {/* Just want to talk? */}

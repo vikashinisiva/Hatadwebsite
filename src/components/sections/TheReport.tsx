@@ -4,7 +4,6 @@ import { useRef, useState } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, Phone, MessageCircle, Mail } from 'lucide-react'
 import { SectionLabel } from '@/components/ui/SectionLabel'
-import { ContactModal } from '@/components/ui/ContactModal'
 import { Button } from '@/components/ui/Button'
 import { TiltedCard } from '@/components/ui/TiltedCard'
 import { REPORT_ITEMS } from '@/lib/constants'
@@ -47,13 +46,11 @@ export function TheReport() {
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-4">
-              <ContactModal
-                trigger={
-                  <Button variant="primary" size="md">
-                    Request Your Report
-                  </Button>
-                }
-              />
+              <a href="/clearance">
+                <Button variant="primary" size="md">
+                  Request Your Report
+                </Button>
+              </a>
               <button
                 onClick={() => setShowContact((v) => !v)}
                 className="px-5 py-2.5 rounded-sm border border-border bg-transparent text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors cursor-pointer"
