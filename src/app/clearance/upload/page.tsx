@@ -1,24 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { submitRequest, ClearanceFormData } from '@/lib/submitRequest'
 import { cn } from '@/lib/utils'
-import { ExternalLink, Shield, Clock, FileCheck, ArrowRight, CheckCircle, Download } from 'lucide-react'
+import { Upload, FileText, Trash2, ArrowRight } from 'lucide-react'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
 
-interface PastRequest {
-  id: string
-  status: string
-  created_at: string
-  property_details: Record<string, string> | null
-  report_url: string | null
-}
+const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+const MAX_FILES = 10
 
-// All 38 Tamil Nadu districts — canonical spelling for lookup accuracy
 const TN_DISTRICTS = [
   'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore',
   'Dharmapuri', 'Dindigul', 'Erode', 'Kallakurichi', 'Kancheepuram',
@@ -30,48 +25,22 @@ const TN_DISTRICTS = [
   'Vellore', 'Villupuram', 'Virudhunagar',
 ]
 
-const PROCESS_STEPS = [
-  { icon: FileCheck, label: 'Submit', desc: 'Enter your property details' },
-  { icon: Shield, label: 'Verify', desc: 'We cross-reference every record' },
-  { icon: CheckCircle, label: 'Report', desc: 'Receive your clearance report' },
-]
-
-function formatDateIST(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  })
-}
-
-export default function ClearancePage() {
+export default function UploadPage() {
   const router = useRouter()
   const [session, setSession] = useState<Session | null>(null)
   const [sessionLoading, setSessionLoading] = useState(true)
-  const [pastRequests, setPastRequests] = useState<PastRequest[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [authStep, setAuthStep] = useState<'idle' | 'otp'>('idle')
   const [otpValue, setOtpValue] = useState('')
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [resendCooldown, setResendCooldown] = useState(0)
-  const [downloading, setDownloading] = useState<string | null>(null)
 
-  const [form, setForm] = useState({
-    surveyNo: '',
-    district: '',
-    taluk: '',
-    village: '',
-    applicantName: '',
-    phone: '',
-    email: '',
-  })
+  const [files, setFiles] = useState<File[]>([])
+  const [dragging, setDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [form, setForm] = useState({ surveyNo: '', district: '', email: '', phone: '' })
 
-  // Resend cooldown countdown
   useEffect(() => {
     if (resendCooldown <= 0) return
     const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000)
@@ -89,69 +58,55 @@ export default function ClearancePage() {
       supabase.auth.getSession().then(({ data: { session: s } }) => {
         setSession(s)
         setSessionLoading(false)
-        if (s) fetchPastRequests(s.user.id)
       })
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
-      if (s) fetchPastRequests(s.user.id)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  async function fetchPastRequests(userId: string) {
-    const { data } = await supabase
-      .from('clearance_requests')
-      .select('id, status, created_at, property_details, report_url')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-    if (data) setPastRequests(data)
-  }
+  const addFiles = useCallback((incoming: FileList | File[]) => {
+    const valid = Array.from(incoming).filter(
+      (f) => ACCEPTED_TYPES.includes(f.type) && f.size <= MAX_FILE_SIZE,
+    )
+    setFiles((prev) => {
+      const names = new Set(prev.map((p) => p.name))
+      const unique = valid.filter((f) => !names.has(f.name))
+      return [...prev, ...unique].slice(0, MAX_FILES)
+    })
+  }, [])
 
-  async function handleDownload(req: PastRequest) {
-    if (!req.report_url) return
-    setDownloading(req.id)
-    try {
-      const s = (await supabase.auth.getSession()).data.session
-      if (!s) return
-      const res = await fetch('/api/clearance/download', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${s.access_token}`,
-        },
-        body: JSON.stringify({ requestId: req.id }),
-      })
-      const json = await res.json()
-      if (json.url) window.open(json.url, '_blank')
-    } catch {
-      // ignore
-    } finally {
-      setDownloading(null)
-    }
+  const removeFile = useCallback((name: string) => {
+    setFiles((prev) => prev.filter((f) => f.name !== name))
+  }, [])
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragging(false)
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files)
   }
 
   function buildFormData(): ClearanceFormData {
     return {
-      tab: 'property',
-      files: [],
-      address: '',
+      tab: 'upload',
+      files,
+      address: form.surveyNo,
       district: form.district,
-      taluk: form.taluk,
-      village: form.village,
-      surveyNo: form.surveyNo,
-      applicantName: form.applicantName,
+      taluk: '',
+      village: '',
+      surveyNo: '',
+      applicantName: '',
       email: form.email,
       phone: form.phone,
     }
   }
 
   function validate(): boolean {
-    if (!form.surveyNo.trim()) { setError('Survey / Patta number is required'); return false }
+    if (files.length === 0) { setError('Please upload at least one document'); return false }
     if (!form.district.trim()) { setError('District is required'); return false }
-    if (!form.phone.trim()) { setError('Phone number is required'); return false }
     if (!form.email.trim()) { setError('Email is required'); return false }
     setError('')
     return true
@@ -218,10 +173,6 @@ export default function ClearancePage() {
   const selectClass =
     'w-full bg-white border border-[#CBD5E8] text-[#0C1525] text-sm px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B4FD8]/15 focus:border-[#1B4FD8] transition-all appearance-none cursor-pointer'
 
-  const setField = useCallback((key: string, value: string) => {
-    setForm((p) => ({ ...p, [key]: value }))
-  }, [])
-
   function DistrictSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     return (
       <div className="relative">
@@ -266,7 +217,6 @@ export default function ClearancePage() {
               backgroundImage: 'linear-gradient(#0C1525 1px, transparent 1px), linear-gradient(90deg, #0C1525 1px, transparent 1px)',
               backgroundSize: '40px 40px',
             }} />
-
             <motion.div
               initial={{ scale: 0.88, opacity: 0, y: 16 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -282,12 +232,7 @@ export default function ClearancePage() {
                       transition={{ delay: 0.3, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       className="w-10 h-10 rounded-full bg-[#1B4FD8] flex items-center justify-center shadow-lg shadow-[#1B4FD8]/30"
                     >
-                      <motion.svg
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ delay: 0.55, duration: 0.4, ease: 'easeOut' }}
-                        width="20" height="20" viewBox="0 0 20 20" fill="none"
-                      >
+                      <motion.svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <motion.path
                           d="M5 10.5l3.5 3.5 6.5-7"
                           stroke="white"
@@ -303,24 +248,17 @@ export default function ClearancePage() {
                   </div>
                 </div>
               </div>
-
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.4 }}
               >
-                <p className="text-[#1B4FD8] text-xs font-medium tracking-[0.2em] uppercase mb-2">
-                  Request Confirmed
-                </p>
-                <h2 className="font-display text-[#0C1525] text-2xl font-bold tracking-tight mb-2">
-                  Your report is in queue
-                </h2>
+                <p className="text-[#1B4FD8] text-xs font-medium tracking-[0.2em] uppercase mb-2">Request Confirmed</p>
+                <h2 className="font-display text-[#0C1525] text-2xl font-bold tracking-tight mb-2">Your report is in queue</h2>
                 <p className="text-[#7A8FAD] text-sm leading-relaxed">
-                  We&apos;re cross-referencing official records.<br />
-                  Delivery in 2–3 hours.
+                  We&apos;re cross-referencing official records.<br />Delivery in 2–3 hours.
                 </p>
               </motion.div>
-
               <motion.div
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -332,13 +270,7 @@ export default function ClearancePage() {
                   {submittedId.slice(0, 8).toUpperCase()}
                 </span>
               </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="mt-8 w-48"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="mt-8 w-48">
                 <div className="h-[3px] rounded-full bg-[#EBF0F8] overflow-hidden">
                   <motion.div
                     initial={{ width: '0%' }}
@@ -347,150 +279,36 @@ export default function ClearancePage() {
                     className="h-full rounded-full bg-[#1B4FD8]"
                   />
                 </div>
-                <p className="text-[10px] text-[#CBD5E8] mt-2 text-center tracking-wide">
-                  Opening your tracking page…
-                </p>
+                <p className="text-[10px] text-[#CBD5E8] mt-2 text-center tracking-wide">Opening your tracking page…</p>
               </motion.div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <ClearanceNav />
+      <ClearanceNav backHref="/clearance" backLabel="Back to clearance" />
 
-      {/* Hero Header */}
+      {/* Header */}
       <div className="relative overflow-hidden border-b border-[#E8EDF5]">
         <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F4F7FC]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-[#1B4FD8]/5 rounded-full blur-[120px] -translate-y-1/3 translate-x-1/4 pointer-events-none" />
-
-        <div className="relative px-6 md:px-12 lg:px-20 xl:px-28 pt-16 pb-20 text-center">
+        <div className="relative px-6 md:px-12 lg:px-20 xl:px-28 pt-14 pb-16 text-center">
           <p className="text-[#1B4FD8] text-xs font-medium tracking-[0.25em] uppercase mb-4">
-            Land Clearance Intelligence
+            Upload Your Documents
           </p>
           <h1 className="font-display text-[#0C1525] text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-            Request Your Clearance Report
+            Submit Documents for Analysis
           </h1>
           <p className="text-[#7A8FAD] text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-            Tell us your property details.
-            We&apos;ll retrieve the documents, cross-reference every record, and deliver your clearance report.
+            Already have your EC, Patta, FMB, or Sale Deed? Upload them directly
+            and we&apos;ll cross-reference every record.
           </p>
-
-          {/* Process Steps */}
-          <div className="mt-10 flex items-center justify-center gap-3 sm:gap-4">
-            {PROCESS_STEPS.map((step, i) => (
-              <div key={step.label} className="flex items-center gap-3 sm:gap-4">
-                <div className="flex flex-col items-center gap-2">
-                  <div className={cn(
-                    'w-11 h-11 rounded-full flex items-center justify-center transition-all',
-                    i === 0
-                      ? 'bg-[#1B4FD8] text-white shadow-md shadow-[#1B4FD8]/25'
-                      : 'bg-white border border-[#E8EDF5] text-[#B8C5DA]',
-                  )}>
-                    <step.icon size={18} />
-                  </div>
-                  <div className="text-center">
-                    <p className={cn(
-                      'text-xs font-semibold tracking-wide',
-                      i === 0 ? 'text-[#1B4FD8]' : 'text-[#B8C5DA]',
-                    )}>
-                      {step.label}
-                    </p>
-                    <p className="text-[10px] text-[#CBD5E8] mt-0.5 hidden sm:block max-w-[120px]">
-                      {step.desc}
-                    </p>
-                  </div>
-                </div>
-                {i < PROCESS_STEPS.length - 1 && (
-                  <ArrowRight size={14} className="text-[#CBD5E8] mt-[-20px] sm:mt-[-28px]" />
-                )}
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 -mt-6 pb-16 relative z-10">
-        {/* Past requests */}
-        {pastRequests.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-xs font-semibold text-[#3D5278] tracking-wider uppercase mb-3 px-1">
-              Your Requests
-            </h2>
-            <div className="space-y-2">
-              {pastRequests.map((req) => {
-                const district = req.property_details?.district
-                const surveyNo = req.property_details?.surveyNo || req.property_details?.address
-                const isReady = req.status === 'ready'
-
-                return (
-                  <div
-                    key={req.id}
-                    className={cn(
-                      'bg-white border rounded-xl px-5 py-3.5 transition-all',
-                      isReady ? 'border-emerald-200/80' : 'border-[#CBD5E8]',
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-xs font-mono text-[#7A8FAD] shrink-0">
-                          {req.id.slice(0, 8).toUpperCase()}
-                        </span>
-                        {(district || surveyNo) && (
-                          <span className="text-xs text-[#3D5278] truncate">
-                            {[surveyNo, district].filter(Boolean).join(' · ')}
-                          </span>
-                        )}
-                        <span
-                          className={cn(
-                            'text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full shrink-0',
-                            isReady
-                              ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200'
-                              : 'bg-amber-50 text-amber-600 ring-1 ring-amber-200',
-                          )}
-                        >
-                          {isReady ? 'Ready' : 'Pending'}
-                        </span>
-                      </div>
-                      <span className="text-xs text-[#7A8FAD] shrink-0 ml-3 hidden sm:block">
-                        {formatDateIST(req.created_at)}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-2.5">
-                      {isReady && req.report_url && (
-                        <button
-                          onClick={() => handleDownload(req)}
-                          disabled={downloading === req.id}
-                          className={cn(
-                            'inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer',
-                            'bg-emerald-600 text-white hover:bg-emerald-700',
-                            downloading === req.id && 'opacity-60 cursor-not-allowed',
-                          )}
-                        >
-                          <Download size={12} />
-                          {downloading === req.id ? 'Preparing...' : 'Download Report'}
-                        </button>
-                      )}
-                      <a
-                        href={`/clearance/track/${req.id}`}
-                        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium text-[#7A8FAD] hover:text-[#1B4FD8] transition-colors bg-[#F4F7FC] hover:bg-[#EBF0F8]"
-                      >
-                        <ExternalLink size={11} />
-                        {isReady ? 'View details' : 'Track progress'}
-                      </a>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Form Card */}
         <div className="bg-white rounded-2xl border border-[#CBD5E8]/60 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.03)] overflow-hidden">
           <div className="p-6 sm:p-8">
-            {/* Error */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
@@ -499,100 +317,115 @@ export default function ClearancePage() {
             )}
 
             <div className="space-y-5">
-              {/* Survey / Patta Number — full width, prominent */}
+              {/* Drop zone */}
               <div>
                 <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                  Survey / Patta Number <span className="text-red-500">*</span>
+                  Documents <span className="text-red-500">*</span>
+                  <span className="font-normal text-[#7A8FAD] ml-1.5">EC · Patta · FMB · Sale Deed · A-Register</span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 89/3"
-                  value={form.surveyNo}
-                  onChange={(e) => setField('surveyNo', e.target.value)}
-                  className={cn(inputClass, 'text-base py-3.5')}
-                  autoFocus
-                />
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    'border-2 border-dashed rounded-xl px-4 py-10 text-center cursor-pointer transition-all',
+                    dragging
+                      ? 'border-[#1B4FD8] bg-[#1B4FD8]/5 scale-[1.01]'
+                      : 'border-[#CBD5E8] hover:border-[#1B4FD8]/40 hover:bg-[#F8FAFD]',
+                  )}
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#EBF0F8] flex items-center justify-center mx-auto mb-3">
+                    <Upload size={20} className="text-[#1B4FD8]" />
+                  </div>
+                  <p className="text-sm text-[#3D5278]">
+                    Drag & drop files here, or <span className="text-[#1B4FD8] font-semibold">browse</span>
+                  </p>
+                  <p className="text-[11px] text-[#7A8FAD] mt-1.5">PDF, JPG, PNG · Max 10 MB per file · Up to 10 files</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = '' }}
+                  />
+                </div>
+
+                {files.length > 0 && (
+                  <ul className="mt-3 space-y-2">
+                    {files.map((f) => (
+                      <li key={f.name} className="flex items-center gap-3 bg-[#F8FAFD] border border-[#EBF0F8] rounded-lg px-4 py-2.5 text-xs">
+                        <div className="w-7 h-7 rounded-md bg-[#1B4FD8]/10 flex items-center justify-center shrink-0">
+                          <FileText size={13} className="text-[#1B4FD8]" />
+                        </div>
+                        <span className="truncate text-[#0C1525] flex-1 font-medium">{f.name}</span>
+                        <span className="text-[#7A8FAD] shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); removeFile(f.name) }}
+                          className="text-[#7A8FAD] hover:text-red-500 transition-colors cursor-pointer p-1"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              {/* District — full width */}
-              <div>
-                <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                  District <span className="text-red-500">*</span>
-                </label>
-                <DistrictSelect
-                  value={form.district}
-                  onChange={(v) => setField('district', v)}
-                />
-              </div>
-
-              {/* Taluk + Village — one row */}
+              {/* Survey No + District */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Taluk
+                    Survey / Patta Number
+                    <span className="font-normal text-[#7A8FAD] ml-1.5">e.g. 89/3</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Tambaram"
-                    value={form.taluk}
-                    onChange={(e) => setField('taluk', e.target.value)}
+                    placeholder="Survey or Patta number"
+                    value={form.surveyNo}
+                    onChange={(e) => setForm((p) => ({ ...p, surveyNo: e.target.value }))}
                     className={inputClass}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Village
+                    District <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Village name"
-                    value={form.village}
-                    onChange={(e) => setField('village', e.target.value)}
-                    className={inputClass}
+                  <DistrictSelect
+                    value={form.district}
+                    onChange={(v) => setForm((p) => ({ ...p, district: v }))}
                   />
                 </div>
               </div>
 
-              {/* Applicant Name + Phone — one row */}
+              {/* Email + Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Applicant Name
+                    Email Address <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text"
-                    placeholder="Your full name"
-                    value={form.applicantName}
-                    onChange={(e) => setField('applicantName', e.target.value)}
+                    type="email"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
                     className={inputClass}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Phone Number <span className="text-red-500">*</span>
+                    Phone Number
                   </label>
                   <input
                     type="tel"
                     placeholder="+91 98765 43210"
                     value={form.phone}
-                    onChange={(e) => setField('phone', e.target.value)}
+                    onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                     className={inputClass}
                   />
                 </div>
-              </div>
-
-              {/* Email — full width */}
-              <div>
-                <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={form.email}
-                  onChange={(e) => setField('email', e.target.value)}
-                  className={inputClass}
-                />
               </div>
             </div>
 
@@ -679,18 +512,18 @@ export default function ClearancePage() {
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Request Clearance Report
+                      Submit Documents
                       <ArrowRight size={16} />
                     </span>
                   )}
                 </button>
                 <p className="mt-3 text-center text-[11px] text-[#7A8FAD]">
-                  ₹3,599 per report (GST inclusive) · Delivered in 2–3 hours · Document retrieval included
+                  ₹1,500 per report · Delivered in 2–3 hours
                 </p>
                 <p className="mt-2 text-center text-[11px] text-[#7A8FAD]">
-                  Have your documents already?{' '}
-                  <a href="/clearance/upload" className="text-[#1B4FD8] hover:text-[#1636D0] transition-colors">
-                    Upload them instead &rarr;
+                  Don&apos;t have documents?{' '}
+                  <a href="/clearance" className="text-[#1B4FD8] hover:text-[#1636D0] transition-colors">
+                    Request by property details instead &rarr;
                   </a>
                 </p>
                 <p className="mt-2 text-center text-[10px] text-[#B8C5DA]">
@@ -701,71 +534,6 @@ export default function ClearancePage() {
                 </p>
               </>
             )}
-          </div>
-        </div>
-
-        {/* Trust Signals */}
-        <div className="mt-8 flex flex-wrap justify-center gap-6 text-[11px] text-[#7A8FAD]">
-          <span className="flex items-center gap-1.5">
-            <Clock size={13} className="text-[#1B4FD8]" />
-            Delivered in 2–3 hours
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Shield size={13} className="text-[#1B4FD8]" />
-            End-to-end encrypted
-          </span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle size={13} className="text-[#1B4FD8]" />
-            EC · Patta · FMB · Title chain · Mutation · Litigation · A-Register
-          </span>
-        </div>
-
-        {/* FAQ */}
-        <div className="mt-12">
-          <h2 className="text-center text-xs font-semibold text-[#3D5278] tracking-wider uppercase mb-6">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-3">
-            {[
-              {
-                q: 'What documents will you retrieve?',
-                a: 'We retrieve the Encumbrance Certificate (EC) from TNREGINET, Patta and A-Register from the Revenue Department, FMB from the Taluk Office, Sale Deed and title chain from the Sub-Registrar, mutation records, and litigation status from the District Court. All records are cross-referenced in your report.',
-              },
-              {
-                q: 'How long does the report take?',
-                a: 'Most reports are delivered within 2–3 hours of submission. If your report takes longer due to complex records or high volume, we\u2019ll notify you by email with an updated timeline.',
-              },
-              {
-                q: 'Is my data secure?',
-                a: 'Yes. Your data is stored on encrypted cloud infrastructure with row-level access controls \u2014 only you can access your requests and reports. Download links expire after 7 days, and uploaded documents are permanently deleted after your report is delivered.',
-              },
-              {
-                q: 'What if I need a refund?',
-                a: 'Once a request is submitted, document retrieval begins immediately, so refunds are not available. If we\u2019re unable to retrieve sufficient records, a full refund is issued automatically. If we process the wrong property due to our error, we\u2019ll reprocess at no charge within 24 hours.',
-              },
-              {
-                q: 'Can I use this report for a bank loan or legal transaction?',
-                a: 'The report is a comprehensive clearance check, but it does not constitute legal advice or title insurance. We recommend sharing it with your advocate or bank for transactions above \u20B950 lakh or involving disputed titles.',
-              },
-            ].map((item) => (
-              <details
-                key={item.q}
-                className="group bg-white border border-[#CBD5E8]/60 rounded-xl overflow-hidden"
-              >
-                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer text-sm font-medium text-[#0C1525] hover:text-[#1B4FD8] transition-colors list-none">
-                  {item.q}
-                  <svg
-                    className="w-4 h-4 text-[#CBD5E8] group-open:rotate-180 transition-transform shrink-0 ml-3"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="px-5 pb-4 text-xs text-[#3D5278] leading-relaxed border-t border-[#EBF0F8] pt-3">
-                  {item.a}
-                </div>
-              </details>
-            ))}
           </div>
         </div>
       </div>

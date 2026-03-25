@@ -11,6 +11,7 @@ export interface ClearanceFormData {
   surveyNo: string
   applicantName: string
   email: string
+  phone?: string
 }
 
 export async function submitRequest(
@@ -42,11 +43,15 @@ export async function submitRequest(
   if (formData.village) propertyDetails.village = formData.village
   if (formData.surveyNo) propertyDetails.surveyNo = formData.surveyNo
   if (formData.applicantName) propertyDetails.applicantName = formData.applicantName
+  if (formData.phone) propertyDetails.phone = formData.phone
 
-  // Insert row via API route (uses service role)
+  // Insert row via API route (uses service role) — server also sends notification email
   const insertRes = await fetch('/api/clearance', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
     body: JSON.stringify({
       id: requestId,
       userId,
@@ -60,22 +65,6 @@ export async function submitRequest(
   if (!insertRes.ok) {
     const data = await insertRes.json()
     throw new Error(data.error || 'Failed to submit request')
-  }
-
-  // Send notification email
-  const notifyRes = await fetch('/api/clearance/notify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'submitted',
-      id: requestId,
-      notifyEmail: formData.email,
-      deadline,
-    }),
-  })
-
-  if (!notifyRes.ok) {
-    console.error('Notification email failed, but request was submitted')
   }
 
   return requestId

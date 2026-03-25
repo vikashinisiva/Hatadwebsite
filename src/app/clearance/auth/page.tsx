@@ -41,10 +41,17 @@ function AuthPageInner() {
 
   // Check if already authenticated
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        handlePostAuth(session)
+    // Validate session against the server (not just localStorage)
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      if (error || !user) {
+        supabase.auth.signOut()
+        return
       }
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          handlePostAuth(session)
+        }
+      })
     })
   }, [])
 
@@ -71,6 +78,7 @@ function AuthPageInner() {
           surveyNo: parsed.surveyNo || '',
           applicantName: parsed.applicantName || '',
           email: parsed.email || '',
+          phone: parsed.phone || '',
         }
 
         const requestId = await submitRequest(session, formData)
@@ -137,7 +145,7 @@ function AuthPageInner() {
   }
 
   const inputClass =
-    'w-full bg-surface-raised border border-border text-text-primary placeholder:text-text-muted text-sm px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#C9A84C] transition-colors text-center'
+    'w-full bg-surface-raised border border-border text-text-primary placeholder:text-text-muted text-sm px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#1B4FD8] focus:ring-2 focus:ring-[#1B4FD8]/15 transition-colors text-center'
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -148,10 +156,13 @@ function AuthPageInner() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-xl font-semibold text-text-primary">
-              Sign in to HataD
+              {step === 1 ? 'Sign in to HataD' : 'Check your email'}
             </h1>
             <p className="text-sm text-text-muted mt-1">
-              Verify your identity to continue
+              {step === 1
+                ? "We'll send a one-time code to your email"
+                : <>Code sent to <span className="font-medium text-text-primary">{email}</span></>
+              }
             </p>
           </div>
 
@@ -183,7 +194,7 @@ function AuthPageInner() {
                 disabled={loading}
                 className={cn(
                   'w-full py-3 rounded-sm text-sm font-semibold tracking-wide transition-all cursor-pointer',
-                  'bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238]',
+                  'bg-[#1B4FD8] text-white hover:bg-[#1636D0]',
                   loading && 'opacity-60 cursor-not-allowed',
                 )}
               >
@@ -201,10 +212,6 @@ function AuthPageInner() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <p className="text-sm text-text-secondary text-center">
-                We sent a code to{' '}
-                <span className="font-medium text-text-primary">{email}</span>
-              </p>
               <div>
                 <label className="block text-xs text-text-secondary tracking-wide mb-1.5">
                   Verification Code
@@ -230,7 +237,7 @@ function AuthPageInner() {
                 disabled={loading}
                 className={cn(
                   'w-full py-3 rounded-sm text-sm font-semibold tracking-wide transition-all cursor-pointer',
-                  'bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238]',
+                  'bg-[#1B4FD8] text-white hover:bg-[#1636D0]',
                   loading && 'opacity-60 cursor-not-allowed',
                 )}
               >

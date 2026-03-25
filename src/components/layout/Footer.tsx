@@ -31,17 +31,27 @@ export function Footer() {
             <a href="mailto:hypseaero@gmail.com" className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-accent-blue transition-colors">
               <Mail size={13} strokeWidth={1.5} /> hypseaero@gmail.com
             </a>
-            <a href="mailto:hatad@hypseaero.in" className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-accent-blue transition-colors">
-              <Mail size={13} strokeWidth={1.5} /> hatad@hypseaero.in
+            <a href="mailto:info@hypseaero.in" className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-accent-blue transition-colors">
+              <Mail size={13} strokeWidth={1.5} /> info@hypseaero.in
             </a>
           </div>
         </div>
       </div>
 
       <div className="h-px bg-border mb-6" />
-      <p className="text-xs text-text-muted text-center">
-        © {new Date().getFullYear()} Hypse Aero Pvt Ltd. All rights reserved.
-      </p>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p className="text-xs text-text-muted">
+          © {new Date().getFullYear()} Hypse Aero Pvt Ltd. All rights reserved.
+        </p>
+        <div className="flex items-center gap-4">
+          <a href="/terms" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
+            Terms &amp; Conditions
+          </a>
+          <a href="/privacy" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
+            Privacy Policy
+          </a>
+        </div>
+      </div>
     </footer>
   )
 }

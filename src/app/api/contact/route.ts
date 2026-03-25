@@ -121,7 +121,7 @@ export async function POST(request: Request) {
 
         <hr style="margin-top: 32px; border: none; border-top: 1px solid #CBD5E8;" />
         <p style="color: #7A8FAD; font-size: 12px;">
-          Submitted via hatad.in &middot; ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+          Submitted via hypseaero.in &middot; ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
         </p>
       </div>
     `

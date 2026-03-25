@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { LogOut, Mail, Clock, ExternalLink } from 'lucide-react'
+import { LogOut, Mail, Clock, ExternalLink, Download } from 'lucide-react'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { User } from '@supabase/supabase-js'
 
@@ -12,6 +12,8 @@ interface PastRequest {
   id: string
   status: string
   created_at: string
+  property_details: Record<string, string> | null
+  report_url: string | null
 }
 
 function formatDateIST(dateStr: string): string {
@@ -32,6 +34,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null)
   const [requests, setRequests] = useState<PastRequest[]>([])
   const [signingOut, setSigningOut] = useState(false)
+  const [downloading, setDownloading] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -48,10 +51,33 @@ export default function ProfilePage() {
   async function fetchRequests(userId: string) {
     const { data } = await supabase
       .from('clearance_requests')
-      .select('id, status, created_at')
+      .select('id, status, created_at, property_details, report_url')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
     if (data) setRequests(data)
+  }
+
+  async function handleDownload(req: PastRequest) {
+    if (!req.report_url) return
+    setDownloading(req.id)
+    try {
+      const session = (await supabase.auth.getSession()).data.session
+      if (!session) return
+      const res = await fetch('/api/clearance/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ requestId: req.id }),
+      })
+      const json = await res.json()
+      if (json.url) window.open(json.url, '_blank')
+    } catch {
+      // ignore
+    } finally {
+      setDownloading(null)
+    }
   }
 
   async function handleSignOut() {
@@ -116,33 +142,69 @@ export default function ProfilePage() {
               Your Requests
             </h2>
             <div className="space-y-2">
-              {requests.map((req) => (
-                <a
-                  key={req.id}
-                  href={`/clearance/track/${req.id}`}
-                  className="flex items-center justify-between bg-surface border border-border rounded-sm px-4 py-3 hover:border-[#C9A84C]/50 transition-colors group"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-text-muted">
-                      {req.id.slice(0, 8).toUpperCase()}
-                    </span>
-                    <span
-                      className={cn(
-                        'text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-sm',
-                        req.status === 'ready'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-amber-100 text-amber-700',
+              {requests.map((req) => {
+                const district = req.property_details?.district
+                const surveyNo = req.property_details?.surveyNo || req.property_details?.address
+                const isReady = req.status === 'ready'
+
+                return (
+                  <div
+                    key={req.id}
+                    className={cn(
+                      'bg-surface border border-border rounded-sm px-4 py-3 transition-colors',
+                      isReady && 'border-emerald-200/60',
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-xs font-mono text-text-muted shrink-0">
+                          {req.id.slice(0, 8).toUpperCase()}
+                        </span>
+                        {(district || surveyNo) && (
+                          <span className="text-xs text-text-secondary truncate">
+                            {[surveyNo, district].filter(Boolean).join(' · ')}
+                          </span>
+                        )}
+                        <span
+                          className={cn(
+                            'text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-sm shrink-0',
+                            isReady
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-amber-100 text-amber-700',
+                          )}
+                        >
+                          {isReady ? 'Ready' : 'Pending'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-text-muted shrink-0 ml-3">{formatDateIST(req.created_at)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-2.5">
+                      {isReady && req.report_url && (
+                        <button
+                          onClick={() => handleDownload(req)}
+                          disabled={downloading === req.id}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm font-semibold transition-colors cursor-pointer',
+                            'bg-emerald-600 text-white hover:bg-emerald-700',
+                            downloading === req.id && 'opacity-60 cursor-not-allowed',
+                          )}
+                        >
+                          <Download size={12} />
+                          {downloading === req.id ? 'Preparing...' : 'Download Report'}
+                        </button>
                       )}
-                    >
-                      {req.status === 'ready' ? 'Ready' : 'Pending'}
-                    </span>
+                      <a
+                        href={`/clearance/track/${req.id}`}
+                        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm font-medium text-text-muted hover:text-text-secondary transition-colors bg-surface-raised hover:bg-gray-100"
+                      >
+                        <ExternalLink size={11} />
+                        {isReady ? 'View details' : 'Track progress'}
+                      </a>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-text-muted">{formatDateIST(req.created_at)}</span>
-                    <ExternalLink size={12} className="text-text-muted group-hover:text-[#C9A84C] transition-colors" />
-                  </div>
-                </a>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
