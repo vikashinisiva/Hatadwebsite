@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { previewLookup } from '@/lib/tngis'
 
 export const maxDuration = 30
+export const preferredRegion = 'bom1' // Mumbai — closest to TNGIS servers
 
 // Simple in-memory cache (cleared on cold start — acceptable for demo)
 const cache = new Map<string, { data: unknown; ts: number }>()

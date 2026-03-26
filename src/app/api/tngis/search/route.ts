@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { searchPlace } from '@/lib/tngis'
 
+export const preferredRegion = 'bom1' // Mumbai
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
