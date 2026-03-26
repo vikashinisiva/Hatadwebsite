@@ -3,13 +3,16 @@ import crypto from 'crypto'
 import Razorpay from 'razorpay'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const razorpay = new Razorpay({
-  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-})
+function getRazorpay() {
+  return new Razorpay({
+    key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  })
+}
 
 export async function POST(request: Request) {
   try {
+    const razorpay = getRazorpay()
     const body = await request.json()
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body
 
