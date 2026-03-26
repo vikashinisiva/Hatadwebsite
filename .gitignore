@@ -1,5 +1,11 @@
 # dependencies
 /node_modules
+
+# Dev/test files
+/Tngis testing/
+/sro_cache.json
+*.pdf
+HataD Logo*
 /.pnp
 .pnp.*
 __MACOSX
