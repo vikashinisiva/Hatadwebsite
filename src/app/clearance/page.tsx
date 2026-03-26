@@ -120,73 +120,81 @@ export default function ClearancePage() {
       // permissions API not supported — proceed anyway
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords
-          setGeoPhase('fetching')
+    async function onGeoSuccess(pos: GeolocationPosition) {
+      try {
+        const { latitude, longitude } = pos.coords
+        setGeoPhase('fetching')
 
-          const res = await fetch('/api/tngis/lookup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lat: latitude, lon: longitude }),
-            signal: AbortSignal.timeout(15000),
-          })
+        const res = await fetch('/api/tngis/lookup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: latitude, lon: longitude }),
+          signal: AbortSignal.timeout(20000),
+        })
 
-          if (res.ok) {
-            const data = await res.json()
-            const ld = data.land_details?.data
-            const land = Array.isArray(ld) ? ld[0] : ld
-            const gv = data.guideline_value?.data?.[0]
+        if (res.ok) {
+          const data = await res.json()
+          const ld = data.land_details?.data
+          const land = Array.isArray(ld) ? ld[0] : ld
+          const gv = data.guideline_value?.data?.[0]
 
-            if (land) {
-              const survey = land.survey_number + (land.sub_division ? `/${land.sub_division}` : '')
+          if (land) {
+            const survey = land.survey_number + (land.sub_division ? `/${land.sub_division}` : '')
 
-              // Show the discovery card first
-              setGeoDetails({
-                survey,
-                district: land.district_name,
-                taluk: land.taluk_name,
-                village: land.village_name,
-                landType: land.rural_urban === 'rural' ? 'Rural' : 'Urban',
-                guideline: gv ? `\u20B9${Number(gv.metric_rate).toLocaleString('en-IN')} per ${gv.unit_id}` : undefined,
-                landClass: gv?.land_name || undefined,
-                ulpin: land.ulpin || undefined,
-                elevation: data.natural_resources?.elevation ?? undefined,
-              })
-              setGeoPhase('found')
+            setGeoDetails({
+              survey,
+              district: land.district_name,
+              taluk: land.taluk_name,
+              village: land.village_name,
+              landType: land.rural_urban === 'rural' ? 'Rural' : 'Urban',
+              guideline: gv && Number(gv.metric_rate) > 0 ? `\u20B9${Number(gv.metric_rate).toLocaleString('en-IN')} per ${gv.unit_id}` : undefined,
+              landClass: gv?.land_name || undefined,
+              ulpin: land.ulpin || undefined,
+              elevation: data.natural_resources?.elevation ?? undefined,
+            })
+            setGeoPhase('found')
 
-              // Auto-fill form fields one by one — the magic effect
-              const fill = (field: string, value: string, delay: number) => {
-                setTimeout(() => {
-                  setForm((p) => ({ ...p, [field]: value }))
-                  setFlashField(field)
-                  setTimeout(() => setFlashField(null), 800)
-                }, delay)
-              }
-              fill('surveyNo', survey, 400)
-              fill('district', land.district_name, 900)
-              fill('taluk', land.taluk_name, 1400)
-              fill('village', land.village_name, 1900)
-
-              track('geo_autofill', 'clearance', { district: land.district_name, survey: land.survey_number })
-            } else {
-              setGeoPhase('error')
+            const fill = (field: string, value: string, delay: number) => {
+              setTimeout(() => {
+                setForm((p) => ({ ...p, [field]: value }))
+                setFlashField(field)
+                setTimeout(() => setFlashField(null), 800)
+              }, delay)
             }
+            fill('surveyNo', survey, 400)
+            fill('district', land.district_name, 900)
+            fill('taluk', land.taluk_name, 1400)
+            fill('village', land.village_name, 1900)
+
+            track('geo_autofill', 'clearance', { district: land.district_name, survey: land.survey_number })
           } else {
             setGeoPhase('error')
           }
-        } catch {
+        } else {
           setGeoPhase('error')
-        } finally {
-          setGeoLoading(false)
         }
-      },
-      () => {
-        setGeoLoading(false)
+      } catch {
         setGeoPhase('error')
+      } finally {
+        setGeoLoading(false)
+      }
+    }
+
+    // Try with high accuracy first, fallback to low accuracy
+    navigator.geolocation.getCurrentPosition(
+      onGeoSuccess,
+      () => {
+        // High accuracy failed — try without it (works better on desktops)
+        navigator.geolocation.getCurrentPosition(
+          onGeoSuccess,
+          () => {
+            setGeoLoading(false)
+            setGeoPhase('error')
+          },
+          { enableHighAccuracy: false, timeout: 30000, maximumAge: 300000 },
+        )
       },
-      { enableHighAccuracy: true, timeout: 30000 },
+      { enableHighAccuracy: true, timeout: 10000 },
     )
   }
 
