@@ -38,12 +38,44 @@ export function RiskCheck() {
 
   const fetchTngisData = useCallback(async (lat: number, lon: number) => {
     try {
+      // Try client-side first (works if user is in India, no CORS issues)
       const data = await clientLookup(lat, lon)
       if (data.land) return data
-      return null
     } catch {
-      return null
+      // CORS or network error — expected
     }
+
+    // Fallback to server-side proxy (works if Vercel can reach TNGIS)
+    try {
+      const resp = await fetch('/api/tngis/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat, lon }),
+        signal: AbortSignal.timeout(25000),
+      })
+      if (resp.ok) {
+        const sData = await resp.json()
+        if (sData.land_details?.success === 1) {
+          const ld = Array.isArray(sData.land_details.data) ? sData.land_details.data[0] : sData.land_details.data
+          if (ld) {
+            const gv = sData.guideline_value?.data?.[0]
+            return {
+              land: ld,
+              guidelineValue: gv && Number(gv.metric_rate) > 0 ? { rate: gv.metric_rate, unit: gv.unit_id, landName: gv.land_name, grouping: gv.land_type_grouping } : null,
+              elevation: sData.natural_resources?.elevation ?? null,
+              geology: null, masterPlan: null,
+              fmbAvailable: sData.fmb_available || false,
+              ecAvailable: sData.ec_available || false,
+              fetchTimeMs: sData._meta?.fetch_time_ms || 0,
+            } as ClientLookupResult
+          }
+        }
+      }
+    } catch {
+      // server also failed
+    }
+
+    return null
   }, [])
 
   // ---------------------------------------------------------------------------

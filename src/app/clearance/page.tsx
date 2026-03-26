@@ -126,11 +126,50 @@ export default function ClearancePage() {
         const { latitude, longitude } = pos.coords
         setGeoPhase('fetching')
 
-        const data = await clientLookup(latitude, longitude)
+        let land = null
+        let gv = null
+        let elev = null
+        let landUlpin = null
 
-        if (data.land) {
-          const land = data.land
-          const gv = data.guidelineValue
+        // Try client-side first (bypasses CORS if allowed)
+        try {
+          const cData = await clientLookup(latitude, longitude)
+          if (cData.land) {
+            land = cData.land
+            gv = cData.guidelineValue
+            elev = cData.elevation
+            landUlpin = cData.land.ulpin
+          }
+        } catch {
+          // CORS blocked — try server proxy
+        }
+
+        // Fallback to server-side
+        if (!land) {
+          try {
+            const resp = await fetch('/api/tngis/lookup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ lat: latitude, lon: longitude }),
+              signal: AbortSignal.timeout(25000),
+            })
+            if (resp.ok) {
+              const sData = await resp.json()
+              const ld = sData.land_details?.data
+              land = Array.isArray(ld) ? ld[0] : ld
+              const sgv = sData.guideline_value?.data?.[0]
+              if (sgv && Number(sgv.metric_rate) > 0) {
+                gv = { rate: sgv.metric_rate, unit: sgv.unit_id, landName: sgv.land_name, grouping: sgv.land_type_grouping }
+              }
+              elev = sData.natural_resources?.elevation ?? null
+              landUlpin = land?.ulpin
+            }
+          } catch {
+            // both failed
+          }
+        }
+
+        if (land) {
           const survey = land.survey_number + (land.sub_division ? `/${land.sub_division}` : '')
 
           setGeoDetails({
@@ -142,7 +181,7 @@ export default function ClearancePage() {
             guideline: gv && Number(gv.rate) > 0 ? `\u20B9${Number(gv.rate).toLocaleString('en-IN')} per ${gv.unit}` : undefined,
             landClass: gv?.landName || undefined,
             ulpin: land.ulpin || undefined,
-            elevation: data.elevation ?? undefined,
+            elevation: elev ?? undefined,
           })
           setGeoPhase('found')
 
