@@ -42,7 +42,7 @@ export function Hero() {
 
             <motion.h1
               variants={fadeInUp}
-              className="font-display text-5xl sm:text-6xl lg:text-[4.25rem] xl:text-7xl font-bold leading-[1.05] text-white mb-6"
+              className="font-display text-3xl sm:text-5xl lg:text-[4.25rem] xl:text-7xl font-bold leading-[1.08] text-white mb-6"
             >
               {t('hero.title')}{' '}
               <span className="text-gradient-hero-accent">{t('hero.subtitle')}</span>
@@ -68,7 +68,7 @@ export function Hero() {
             {/* Trust markers */}
             <motion.div
               variants={fadeInUp}
-              className="flex items-center justify-center gap-5 text-xs text-white/40 tracking-wide"
+              className="flex flex-wrap items-center justify-center gap-2 sm:gap-5 text-[10px] sm:text-xs text-white/40 tracking-wide"
             >
               <span>Cross-referenced verification</span>
               <span className="w-1 h-1 rounded-full bg-white/20" />
@@ -80,17 +80,17 @@ export function Hero() {
             {/* NVIDIA Inception badge */}
             <motion.div
               variants={fadeInUp}
-              className="flex items-center gap-4 mt-8 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm px-5 py-3.5 w-fit"
+              className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mt-8 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm px-4 sm:px-5 py-3 w-fit"
             >
               <Image
                 src="/nvidia-inception-program-badge-rgb-for-screen.png"
                 alt="NVIDIA Inception Program"
-                width={120}
-                height={120}
+                width={100}
+                height={100}
                 className="object-contain brightness-150"
               />
-              <div className="h-8 w-px bg-white/15" />
-              <span className="text-base text-white/60 tracking-wide">
+              <div className="hidden sm:block h-8 w-px bg-white/15" />
+              <span className="text-sm sm:text-base text-white/60 tracking-wide text-center sm:text-left">
                 Member of <span className="text-white font-semibold">NVIDIA Inception</span> Program
               </span>
             </motion.div>

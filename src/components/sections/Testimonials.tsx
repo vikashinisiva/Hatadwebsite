@@ -144,7 +144,7 @@ export function Testimonials() {
             <a
               href="/clearance"
               onClick={() => track('cta_click', 'post_testimonials')}
-              className="inline-block bg-[#1B4FD8] text-white text-sm font-semibold px-8 py-3.5 rounded-sm hover:bg-[#1636D0] transition-colors"
+              className="inline-block bg-[#1B4FD8] text-white text-sm font-semibold px-5 sm:px-8 py-3.5 rounded-sm hover:bg-[#1636D0] transition-colors"
             >
               {t('testimonials.ctaButton')}
             </a>

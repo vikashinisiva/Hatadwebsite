@@ -28,7 +28,7 @@ export function FinalCTA() {
             <motion.p variants={fadeInUp} className="text-xs font-medium tracking-[0.25em] uppercase text-accent-blue mb-6">
               {t('cta.tag')}
             </motion.p>
-            <motion.h2 variants={fadeInUp} className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-text-primary leading-[1.1] mb-5">
+            <motion.h2 variants={fadeInUp} className="font-display text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-text-primary leading-[1.1] mb-5">
               {t('cta.title')}
             </motion.h2>
             <motion.p variants={fadeInUp} className="text-lg sm:text-xl text-text-secondary font-light max-w-xl mx-auto">

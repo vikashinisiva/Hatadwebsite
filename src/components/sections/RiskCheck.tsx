@@ -321,7 +321,7 @@ export function RiskCheck() {
                                 <p className="text-sm text-text-secondary">{landData!.taluk_name}, {landData!.district_name} · {landData!.rural_urban === 'rural' ? 'Rural' : 'Urban'}</p>
                               </div>
                               {landData!.ulpin && (
-                                <div className="text-right shrink-0 ml-4">
+                                <div className="text-right shrink-0 ml-2 sm:ml-4 hidden sm:block">
                                   <p className="text-[9px] text-text-muted uppercase tracking-wider">ULPIN</p>
                                   <p className="text-xs text-text-primary font-mono font-medium">{landData!.ulpin}</p>
                                 </div>

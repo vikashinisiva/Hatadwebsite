@@ -70,8 +70,8 @@ export function Solution() {
               variants={fadeInUp}
               className={
                 i === 1
-                  ? 'relative bg-[#0D1B2A] p-8 lg:p-10'
-                  : 'relative bg-white p-8 lg:p-10'
+                  ? 'relative bg-[#0D1B2A] p-5 sm:p-8 lg:p-10'
+                  : 'relative bg-white p-5 sm:p-8 lg:p-10'
               }
             >
               {/* Step number + title row */}
