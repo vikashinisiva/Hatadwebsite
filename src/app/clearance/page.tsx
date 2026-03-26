@@ -108,6 +108,18 @@ export default function ClearancePage() {
     setGeoDetails(null)
     setError('')
 
+    // Check permission state first — avoid error if user hasn't decided yet
+    try {
+      const perm = await navigator.permissions.query({ name: 'geolocation' })
+      if (perm.state === 'denied') {
+        setGeoLoading(false)
+        setGeoPhase('error')
+        return
+      }
+    } catch {
+      // permissions API not supported — proceed anyway
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -173,9 +185,8 @@ export default function ClearancePage() {
       () => {
         setGeoLoading(false)
         setGeoPhase('error')
-        setError('Could not get your location. Please enter details manually.')
       },
-      { enableHighAccuracy: true, timeout: 10000 },
+      { enableHighAccuracy: true, timeout: 30000 },
     )
   }
 
@@ -777,9 +788,9 @@ export default function ClearancePage() {
             )}
 
             {geoPhase === 'error' && (
-              <div className="bg-red-50 border border-red-200/60 rounded-lg px-4 py-3 mb-5 flex items-center justify-between">
-                <p className="text-xs text-red-700">Could not find property records. Please fill in your details manually.</p>
-                <button onClick={() => setGeoPhase('idle')} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer ml-3 shrink-0">Try again</button>
+              <div className="bg-[#F8FAFD] border border-[#E8EDF5] rounded-lg px-4 py-3 mb-5 flex items-center justify-between">
+                <p className="text-xs text-[#7A8FAD]">{t('clearance.errorLocation')}</p>
+                <button onClick={() => setGeoPhase('idle')} className="text-xs text-[#1B4FD8] hover:text-[#1636D0] font-medium cursor-pointer ml-3 shrink-0">{t('clearance.tryAgain')}</button>
               </div>
             )}
 
