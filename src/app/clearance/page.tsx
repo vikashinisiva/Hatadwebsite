@@ -12,7 +12,7 @@ import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
 import { track } from '@/lib/track'
 import { useT } from '@/lib/i18n/context'
-import { clientLookup } from '@/lib/tngis-client'
+// TNGIS calls go through /api/tngis/lookup → GCP proxy
 
 declare global {
   interface Window {
@@ -129,44 +129,26 @@ export default function ClearancePage() {
         let land = null
         let gv = null
         let elev = null
-        let landUlpin = null
 
-        // Try client-side first (bypasses CORS if allowed)
         try {
-          const cData = await clientLookup(latitude, longitude)
-          if (cData.land) {
-            land = cData.land
-            gv = cData.guidelineValue
-            elev = cData.elevation
-            landUlpin = cData.land.ulpin
+          const resp = await fetch('/api/tngis/lookup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: latitude, lon: longitude }),
+            signal: AbortSignal.timeout(50000),
+          })
+          if (resp.ok) {
+            const sData = await resp.json()
+            const ld = sData.land_details?.data
+            land = Array.isArray(ld) ? ld[0] : ld
+            const sgv = sData.guideline_value?.data?.[0]
+            if (sgv && Number(sgv.metric_rate) > 0) {
+              gv = { rate: sgv.metric_rate, unit: sgv.unit_id, landName: sgv.land_name, grouping: sgv.land_type_grouping }
+            }
+            elev = sData.natural_resources?.elevation ?? null
           }
         } catch {
-          // CORS blocked — try server proxy
-        }
-
-        // Fallback to server-side
-        if (!land) {
-          try {
-            const resp = await fetch('/api/tngis/lookup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ lat: latitude, lon: longitude }),
-              signal: AbortSignal.timeout(25000),
-            })
-            if (resp.ok) {
-              const sData = await resp.json()
-              const ld = sData.land_details?.data
-              land = Array.isArray(ld) ? ld[0] : ld
-              const sgv = sData.guideline_value?.data?.[0]
-              if (sgv && Number(sgv.metric_rate) > 0) {
-                gv = { rate: sgv.metric_rate, unit: sgv.unit_id, landName: sgv.land_name, grouping: sgv.land_type_grouping }
-              }
-              elev = sData.natural_resources?.elevation ?? null
-              landUlpin = land?.ulpin
-            }
-          } catch {
-            // both failed
-          }
+          // proxy failed
         }
 
         if (land) {

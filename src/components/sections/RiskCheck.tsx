@@ -38,20 +38,11 @@ export function RiskCheck() {
 
   const fetchTngisData = useCallback(async (lat: number, lon: number) => {
     try {
-      // Try client-side first (works if user is in India, no CORS issues)
-      const data = await clientLookup(lat, lon)
-      if (data.land) return data
-    } catch {
-      // CORS or network error — expected
-    }
-
-    // Fallback to server-side proxy (works if Vercel can reach TNGIS)
-    try {
       const resp = await fetch('/api/tngis/lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat, lon }),
-        signal: AbortSignal.timeout(25000),
+        signal: AbortSignal.timeout(50000),
       })
       if (resp.ok) {
         const sData = await resp.json()
@@ -72,9 +63,8 @@ export function RiskCheck() {
         }
       }
     } catch {
-      // server also failed
+      // proxy failed
     }
-
     return null
   }, [])
 
