@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
+import { track } from '@/lib/track'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import { Phone, MessageCircle, Mail } from 'lucide-react'
 
@@ -58,7 +59,7 @@ export function FinalCTA() {
             variants={fadeInUp}
             className="flex flex-col items-center gap-3 mb-2"
           >
-            <a href="/clearance">
+            <a href="/clearance" onClick={() => track('cta_click', 'final_cta')}>
               <Button variant="primary" size="lg">
                 Request Your Clearance Report &rarr;
               </Button>

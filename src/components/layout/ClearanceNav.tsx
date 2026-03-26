@@ -4,6 +4,19 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { User, LogOut, Plus, ArrowLeft } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
+
+function LangToggle() {
+  const { locale, setLocale } = useI18n()
+  return (
+    <button
+      onClick={() => setLocale(locale === 'en' ? 'ta' : 'en')}
+      className="text-[11px] font-medium px-2 py-1 rounded-sm bg-surface-raised text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+    >
+      {locale === 'en' ? 'தமிழ்' : 'EN'}
+    </button>
+  )
+}
 
 interface ClearanceNavProps {
   backHref?: string
@@ -115,6 +128,7 @@ export function ClearanceNav({ backHref, backLabel }: ClearanceNavProps) {
               Sign In
             </a>
           )}
+          <LangToggle />
         </div>
       </div>
     </nav>

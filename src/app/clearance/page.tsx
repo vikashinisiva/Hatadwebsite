@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { ExternalLink, Shield, Clock, FileCheck, ArrowRight, CheckCircle, Download } from 'lucide-react'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
+import { track } from '@/lib/track'
 
 declare global {
   interface Window {
@@ -69,6 +70,14 @@ export default function ClearancePage() {
   const [downloading, setDownloading] = useState<string | null>(null)
   const [paymentProcessing, setPaymentProcessing] = useState(false)
   const razorpayLoaded = useRef(false)
+  const [geoLoading, setGeoLoading] = useState(false)
+  const [geoPhase, setGeoPhase] = useState<'idle' | 'locating' | 'fetching' | 'found' | 'error'>('idle')
+  const [geoDetails, setGeoDetails] = useState<{
+    survey: string; district: string; taluk: string; village: string
+    landType: string; guideline?: string; landClass?: string; ulpin?: string; elevation?: number
+  } | null>(null)
+  const [sroInfo, setSroInfo] = useState<string | null>(null)
+  const [flashField, setFlashField] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     surveyNo: '',
@@ -86,6 +95,102 @@ export default function ClearancePage() {
     const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000)
     return () => clearTimeout(t)
   }, [resendCooldown])
+
+  // Geolocation auto-fill — progressive discovery
+  async function handleUseLocation() {
+    if (!navigator.geolocation) return
+    setGeoLoading(true)
+    setGeoPhase('locating')
+    setGeoDetails(null)
+    setError('')
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords
+          setGeoPhase('fetching')
+
+          const res = await fetch('/api/tngis/lookup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: latitude, lon: longitude }),
+            signal: AbortSignal.timeout(15000),
+          })
+
+          if (res.ok) {
+            const data = await res.json()
+            const ld = data.land_details?.data
+            const land = Array.isArray(ld) ? ld[0] : ld
+            const gv = data.guideline_value?.data?.[0]
+
+            if (land) {
+              const survey = land.survey_number + (land.sub_division ? `/${land.sub_division}` : '')
+
+              // Show the discovery card first
+              setGeoDetails({
+                survey,
+                district: land.district_name,
+                taluk: land.taluk_name,
+                village: land.village_name,
+                landType: land.rural_urban === 'rural' ? 'Rural' : 'Urban',
+                guideline: gv ? `\u20B9${Number(gv.metric_rate).toLocaleString('en-IN')} per ${gv.unit_id}` : undefined,
+                landClass: gv?.land_name || undefined,
+                ulpin: land.ulpin || undefined,
+                elevation: data.natural_resources?.elevation ?? undefined,
+              })
+              setGeoPhase('found')
+
+              // Auto-fill form fields one by one — the magic effect
+              const fill = (field: string, value: string, delay: number) => {
+                setTimeout(() => {
+                  setForm((p) => ({ ...p, [field]: value }))
+                  setFlashField(field)
+                  setTimeout(() => setFlashField(null), 800)
+                }, delay)
+              }
+              fill('surveyNo', survey, 400)
+              fill('district', land.district_name, 900)
+              fill('taluk', land.taluk_name, 1400)
+              fill('village', land.village_name, 1900)
+
+              track('geo_autofill', 'clearance', { district: land.district_name, survey: land.survey_number })
+            } else {
+              setGeoPhase('error')
+            }
+          } else {
+            setGeoPhase('error')
+          }
+        } catch {
+          setGeoPhase('error')
+        } finally {
+          setGeoLoading(false)
+        }
+      },
+      () => {
+        setGeoLoading(false)
+        setGeoPhase('error')
+        setError('Could not get your location. Please enter details manually.')
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }
+
+  // SRO lookup when village changes
+  useEffect(() => {
+    if (!form.village.trim() || form.village.length < 3) { setSroInfo(null); return }
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/sro?village=${encodeURIComponent(form.village)}${form.district ? `&district=${encodeURIComponent(form.district)}` : ''}`)
+        if (res.ok) {
+          const data = await res.json()
+          setSroInfo(`SRO Office: ${data.sro}, ${data.zone} Zone`)
+        } else {
+          setSroInfo(null)
+        }
+      } catch { setSroInfo(null) }
+    }, 500) // debounce
+    return () => clearTimeout(timeout)
+  }, [form.village, form.district])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user }, error }) => {
@@ -180,6 +285,7 @@ export default function ClearancePage() {
   async function openRazorpayCheckout(currentSession: Session) {
     setPaymentProcessing(true)
     setError('')
+    track('payment_initiated', 'clearance', { district: form.district, surveyNo: form.surveyNo })
 
     try {
       // 1. Create order on server
@@ -231,6 +337,7 @@ export default function ClearancePage() {
             const { paymentId } = await verifyRes.json()
 
             const requestId = await submitRequest(currentSession, buildFormData(), paymentId)
+            track('payment_completed', 'clearance', { requestId, district: form.district })
             setSubmittedId(requestId)
           } catch (err) {
             setError(err instanceof Error ? err.message : 'Your payment went through but we hit an issue submitting your request. Please contact us and we\u2019ll sort it out.')
@@ -423,6 +530,15 @@ export default function ClearancePage() {
                 </span>
               </motion.div>
 
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.65 }}
+                className="mt-5 text-[#7A8FAD] text-sm text-center leading-relaxed"
+              >
+                We&apos;ve started retrieving your property records. You&apos;ll hear from us within 3 hours.
+              </motion.p>
+
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -611,6 +727,10 @@ export default function ClearancePage() {
         )}
 
         {/* Form Card */}
+        <p className="text-center text-[15px] text-[#7A8FAD] mb-6">
+          You&apos;re one survey number away from knowing exactly what you&apos;re buying.
+        </p>
+
         <div className="bg-white rounded-2xl border border-[#CBD5E8]/60 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.03)] overflow-hidden">
           <div className="p-6 sm:p-8">
             {/* Error */}
@@ -618,6 +738,45 @@ export default function ClearancePage() {
               <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                 {error}
+              </div>
+            )}
+
+            {/* Geolocation — progressive discovery */}
+            {geoPhase === 'idle' && (
+              <button
+                onClick={handleUseLocation}
+                className="w-full mb-5 py-3.5 rounded-lg text-sm font-medium bg-[#1B4FD8]/[0.06] text-[#1B4FD8] hover:bg-[#1B4FD8]/[0.1] transition-colors cursor-pointer flex items-center justify-center gap-2"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Use My Location to Auto-Fill
+              </button>
+            )}
+
+            {(geoPhase === 'locating' || geoPhase === 'fetching') && (
+              <div className="bg-[#F8FAFD] border border-[#E8EDF5] rounded-lg p-5 mb-5 text-center">
+                <div className="w-10 h-10 rounded-full bg-[#1B4FD8]/10 flex items-center justify-center mx-auto mb-3">
+                  <span className="w-5 h-5 border-2 border-[#1B4FD8]/30 border-t-[#1B4FD8] rounded-full animate-spin" />
+                </div>
+                <p className="text-[#0C1525] text-sm font-medium">
+                  {geoPhase === 'locating' ? 'Getting your location...' : 'Pulling property records...'}
+                </p>
+              </div>
+            )}
+
+            {geoPhase === 'found' && geoDetails && (
+              <div className="mb-5 bg-[#F8FAFD] border border-emerald-200/60 rounded-lg p-5">
+                <p className="text-emerald-600 text-[10px] font-semibold tracking-[0.15em] uppercase mb-4 flex items-center gap-1.5">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Property found from government records
+                </p>
+                <p className="text-[10px] text-[#7A8FAD] mt-3">Edit any field below if needed</p>
+              </div>
+            )}
+
+            {geoPhase === 'error' && (
+              <div className="bg-red-50 border border-red-200/60 rounded-lg px-4 py-3 mb-5 flex items-center justify-between">
+                <p className="text-xs text-red-700">Could not find property records. Please fill in your details manually.</p>
+                <button onClick={() => setGeoPhase('idle')} className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer ml-3 shrink-0">Try again</button>
               </div>
             )}
 
@@ -632,9 +791,10 @@ export default function ClearancePage() {
                   placeholder="e.g. 89/3"
                   value={form.surveyNo}
                   onChange={(e) => setField('surveyNo', e.target.value)}
-                  className={cn(inputClass, 'text-base py-3.5')}
+                  className={cn(inputClass, 'text-base py-3.5', flashField === 'surveyNo' && 'animate-field-flash')}
                   autoFocus
                 />
+                <p className="text-[12px] text-[#B8C5DA] mt-1.5">This is all we need to start retrieving your records.</p>
               </div>
 
               {/* District — full width */}
@@ -642,10 +802,12 @@ export default function ClearancePage() {
                 <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
                   District <span className="text-red-500">*</span>
                 </label>
-                <DistrictSelect
-                  value={form.district}
-                  onChange={(v) => setField('district', v)}
-                />
+                <div className={cn(flashField === 'district' && 'animate-field-flash rounded-lg')}>
+                  <DistrictSelect
+                    value={form.district}
+                    onChange={(v) => setField('district', v)}
+                  />
+                </div>
               </div>
 
               {/* Taluk + Village — one row */}
@@ -659,7 +821,7 @@ export default function ClearancePage() {
                     placeholder="e.g. Tambaram"
                     value={form.taluk}
                     onChange={(e) => setField('taluk', e.target.value)}
-                    className={inputClass}
+                    className={cn(inputClass, flashField === 'taluk' && 'animate-field-flash')}
                   />
                 </div>
                 <div>
@@ -671,8 +833,14 @@ export default function ClearancePage() {
                     placeholder="Village name"
                     value={form.village}
                     onChange={(e) => setField('village', e.target.value)}
-                    className={inputClass}
+                    className={cn(inputClass, flashField === 'village' && 'animate-field-flash')}
                   />
+                  {sroInfo && (
+                    <p className="mt-1.5 text-[10px] text-[#1B4FD8] font-medium flex items-center gap-1">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {sroInfo}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -807,8 +975,22 @@ export default function ClearancePage() {
                     </span>
                   )}
                 </button>
-                <p className="mt-3 text-center text-[11px] text-[#7A8FAD]">
-                  ₹3,599 per report (GST inclusive) · Delivered in 2–3 hours · Document retrieval included
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-[#3D5278] bg-[#F4F7FC] border border-[#E8EDF5] px-3 py-1.5 rounded-full">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Encrypted &amp; secure
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-[#3D5278] bg-[#F4F7FC] border border-[#E8EDF5] px-3 py-1.5 rounded-full">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    6 government sources
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-[#3D5278] bg-[#F4F7FC] border border-[#E8EDF5] px-3 py-1.5 rounded-full">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Under 3 hours
+                  </span>
+                </div>
+                <p className="mt-3 text-center text-[12px] text-[#B8C5DA]">
+                  You&apos;ll receive a confirmation email immediately. Your report will be ready within 3 hours.
                 </p>
                 <p className="mt-2 text-center text-[11px] text-[#7A8FAD]">
                   Have your documents already?{' '}

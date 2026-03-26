@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { track } from '@/lib/track'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/Button'
@@ -56,22 +57,12 @@ export function Hero() {
 
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 items-center justify-center mb-10">
               <PixelCard variant="navy" gap={6} speed={50} className="!rounded-lg">
-                <a href="/clearance">
+                <a href="/clearance" onClick={() => track('cta_click', 'hero')}>
                   <Button variant="primary" size="lg">
                     Get Your Land Clearance Report
                   </Button>
                 </a>
               </PixelCard>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="text-white border-white/20 hover:border-white/40 hover:bg-white/5"
-                onClick={() => {
-                  document.querySelector('#product')?.scrollIntoView({ behavior: 'smooth' })
-                }}
-              >
-                Learn More
-              </Button>
             </motion.div>
 
             {/* Trust markers */}

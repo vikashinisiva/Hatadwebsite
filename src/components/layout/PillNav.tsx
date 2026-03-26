@@ -6,11 +6,13 @@ import { Menu, X } from 'lucide-react'
 import gsap from 'gsap'
 import { NAV_LINKS, SITE_NAME, SITE_TAGLINE } from '@/lib/constants'
 import { Button } from '@/components/ui/Button'
+import { useI18n } from '@/lib/i18n/context'
 
 export function PillNav() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeLink, setActiveLink] = useState<string | null>(null)
+  const { locale, setLocale, t } = useI18n()
 
   const navRef = useRef<HTMLDivElement>(null)
   const pillRef = useRef<HTMLDivElement>(null)
@@ -131,11 +133,18 @@ export function PillNav() {
             ))}
           </div>
 
-          {/* CTA */}
-          <div className="pill-nav-cta">
+          {/* Language toggle + CTA */}
+          <div className="pill-nav-cta flex items-center gap-3">
+            <button
+              onClick={() => setLocale(locale === 'en' ? 'ta' : 'en')}
+              className="text-xs font-medium px-2.5 py-1.5 rounded-sm transition-colors cursor-pointer bg-white/10 hover:bg-white/20 text-white/70 hover:text-white"
+              title={locale === 'en' ? 'தமிழில் காண' : 'View in English'}
+            >
+              {locale === 'en' ? 'தமிழ்' : 'EN'}
+            </button>
             <a href="/clearance">
               <Button variant="primary" size="sm">
-                Get Your Report
+                {t('nav.getReport')}
               </Button>
             </a>
           </div>
@@ -181,10 +190,16 @@ export function PillNav() {
                   {link.label}
                 </button>
               ))}
-              <div style={{ paddingTop: '1.5rem' }}>
+              <div style={{ paddingTop: '1.5rem' }} className="space-y-3">
+                <button
+                  onClick={() => setLocale(locale === 'en' ? 'ta' : 'en')}
+                  className="w-full text-sm font-medium py-2.5 rounded-sm transition-colors cursor-pointer bg-surface-raised text-text-secondary hover:text-text-primary"
+                >
+                  {locale === 'en' ? 'தமிழில் காண' : 'View in English'}
+                </button>
                 <a href="/clearance">
                   <Button variant="primary" size="lg" className="w-full">
-                    Get Your Land Clearance Report
+                    {t('hero.cta')}
                   </Button>
                 </a>
               </div>

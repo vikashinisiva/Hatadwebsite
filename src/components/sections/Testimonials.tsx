@@ -5,6 +5,7 @@ import { motion, useInView } from 'framer-motion'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import { Shield, AlertTriangle, FileSearch } from 'lucide-react'
+import { track } from '@/lib/track'
 
 const CASES = [
   {
@@ -134,10 +135,33 @@ export function Testimonials() {
           {/* Trust line */}
           <motion.p
             variants={fadeInUp}
-            className="text-center text-sm text-text-muted mt-12"
+            className="text-center text-sm text-text-muted mt-12 mb-10"
           >
             All case details anonymised. Findings sourced from actual HataD clearance reports.
           </motion.p>
+
+          {/* Post-anxiety CTA — highest conversion moment */}
+          <motion.div
+            variants={fadeInUp}
+            className="mt-14 text-center"
+          >
+            <h3 className="font-display text-2xl sm:text-3xl font-bold text-text-primary leading-tight mb-2">
+              Undisclosed mortgage. Active litigation. Fractured title.
+            </h3>
+            <p className="text-lg text-text-secondary font-light mb-3">
+              All found before signing.
+            </p>
+            <p className="text-sm text-text-muted mb-8">
+              One survey number. Every record. Under 3 hours.
+            </p>
+            <a
+              href="/clearance"
+              onClick={() => track('cta_click', 'post_testimonials')}
+              className="inline-block bg-[#1B4FD8] text-white text-sm font-semibold px-8 py-3.5 rounded-sm hover:bg-[#1636D0] transition-colors"
+            >
+              Get Your Clearance Report &rarr;
+            </a>
+          </motion.div>
         </motion.div>
       </div>
     </section>

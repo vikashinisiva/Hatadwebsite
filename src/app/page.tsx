@@ -13,6 +13,8 @@ import { RiskCheck } from '@/components/sections/RiskCheck'
 import { Testimonials } from '@/components/sections/Testimonials'
 import { FinalCTA } from '@/components/sections/FinalCTA'
 import { AnnouncementBanner } from '@/components/ui/AnnouncementBanner'
+import { MobileStickyBar } from '@/components/ui/MobileStickyBar'
+import { ScrollProgress } from '@/components/ui/ScrollProgress'
 
 export default function Home() {
   return (
@@ -34,6 +36,8 @@ export default function Home() {
         <FinalCTA />
       </main>
       <Footer />
+      <MobileStickyBar />
+      <ScrollProgress />
     </div>
   )
 }
