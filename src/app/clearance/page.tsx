@@ -129,7 +129,7 @@ export default function ClearancePage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat: latitude, lon: longitude }),
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(28000),
         })
 
         if (res.ok) {

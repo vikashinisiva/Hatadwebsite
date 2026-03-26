@@ -44,7 +44,7 @@ export function RiskCheck() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat, lon }),
-        signal: AbortSignal.timeout(8000), // Hard 8s client timeout
+        signal: AbortSignal.timeout(25000),
       })
       if (!resp.ok) return null
       const data = await resp.json() as TngisPreviewResult
