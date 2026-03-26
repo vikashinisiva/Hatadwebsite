@@ -6,41 +6,28 @@ import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import { Shield, AlertTriangle, FileSearch } from 'lucide-react'
 import { track } from '@/lib/track'
-
-const CASES = [
-  {
-    icon: AlertTriangle,
-    tag: 'Boundary & Litigation',
-    location: 'Tamil Nadu',
-    type: 'Residential plot',
-    headline: 'The agent said it was clear. It wasn\u2019t.',
-    body: 'An active civil dispute filed in 2021 had no trace in the EC or registration documents. Found only through court record cross-reference.',
-    result: 'The buyer didn\u2019t sign.',
-    outcome: 'Encumbrance + undisclosed active litigation',
-  },
-  {
-    icon: FileSearch,
-    tag: 'Undisclosed Mortgage',
-    location: 'Tamil Nadu',
-    type: 'Residential plot',
-    headline: 'The documents looked clean. The liability wasn\u2019t.',
-    body: 'A mortgage taken against the property in 2019 appeared nowhere in the documents the seller provided. Surfaced through cross-referencing multiple government records.',
-    result: 'The buyer renegotiated.',
-    outcome: 'Hidden mortgage + linked encumbrances',
-  },
-  {
-    icon: Shield,
-    tag: 'Fractured Title',
-    location: 'Tamil Nadu',
-    type: 'Multi-owner residential',
-    headline: 'Three people claimed ownership. Only one was right.',
-    body: 'Conflicting entries across Patta, A-Register, and Sale Deed \u2014 each showing a different owner. Full chain mapped. Title fracture point identified.',
-    result: 'The buyer walked away.',
-    outcome: 'Ownership conflict across 3 government records',
-  },
-]
+import { useT } from '@/lib/i18n/context'
 
 export function Testimonials() {
+  const t = useT()
+
+  const CASES = [
+    {
+      icon: AlertTriangle, tag: t('testimonials.case1Tag'), location: 'Tamil Nadu', type: 'Residential plot',
+      headline: t('testimonials.case1Headline'), body: t('testimonials.case1Body'),
+      result: t('testimonials.case1Result'), outcome: t('testimonials.case1Outcome'),
+    },
+    {
+      icon: FileSearch, tag: t('testimonials.case2Tag'), location: 'Tamil Nadu', type: 'Residential plot',
+      headline: t('testimonials.case2Headline'), body: t('testimonials.case2Body'),
+      result: t('testimonials.case2Result'), outcome: t('testimonials.case2Outcome'),
+    },
+    {
+      icon: Shield, tag: t('testimonials.case3Tag'), location: 'Tamil Nadu', type: 'Multi-owner residential',
+      headline: t('testimonials.case3Headline'), body: t('testimonials.case3Body'),
+      result: t('testimonials.case3Result'), outcome: t('testimonials.case3Outcome'),
+    },
+  ]
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-60px' })
 
@@ -63,19 +50,19 @@ export function Testimonials() {
           {/* Header */}
           <div className="text-center mb-16">
             <motion.div variants={fadeInUp}>
-              <SectionLabel>What We&apos;ve Found</SectionLabel>
+              <SectionLabel>{t('testimonials.tag')}</SectionLabel>
             </motion.div>
             <motion.h2
               variants={fadeInUp}
               className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary leading-tight mt-5 mb-5"
             >
-              What Our Clients Didn&apos;t Walk Into.
+              {t('testimonials.title')}
             </motion.h2>
             <motion.p
               variants={fadeInUp}
               className="text-lg text-text-secondary font-light max-w-2xl mx-auto"
             >
-              Real findings from real clearance reports. Details anonymised to protect client confidentiality.
+              {t('testimonials.subtitle')}
             </motion.p>
           </div>
 
@@ -115,7 +102,7 @@ export function Testimonials() {
                 {/* Outcome */}
                 <div className="border-t border-border pt-5 mt-auto">
                   <p className="text-[10px] font-medium tracking-[0.12em] uppercase text-text-muted mb-1.5">
-                    Findings
+                    {t('testimonials.findings')}
                   </p>
                   <p className="text-xs text-text-secondary font-medium">
                     {c.outcome}
@@ -137,7 +124,7 @@ export function Testimonials() {
             variants={fadeInUp}
             className="text-center text-sm text-text-muted mt-12 mb-10"
           >
-            All case details anonymised. Findings sourced from actual HataD clearance reports.
+            {t('testimonials.anonymised')}
           </motion.p>
 
           {/* Post-anxiety CTA — highest conversion moment */}
@@ -146,20 +133,20 @@ export function Testimonials() {
             className="mt-14 text-center"
           >
             <h3 className="font-display text-2xl sm:text-3xl font-bold text-text-primary leading-tight mb-2">
-              Undisclosed mortgage. Active litigation. Fractured title.
+              {t('testimonials.ctaTitle')}
             </h3>
             <p className="text-lg text-text-secondary font-light mb-3">
-              All found before signing.
+              {t('testimonials.ctaSubtitle')}
             </p>
             <p className="text-sm text-text-muted mb-8">
-              One survey number. Every record. Under 3 hours.
+              {t('testimonials.ctaDescription')}
             </p>
             <a
               href="/clearance"
               onClick={() => track('cta_click', 'post_testimonials')}
               className="inline-block bg-[#1B4FD8] text-white text-sm font-semibold px-8 py-3.5 rounded-sm hover:bg-[#1636D0] transition-colors"
             >
-              Get Your Clearance Report &rarr;
+              {t('testimonials.ctaButton')}
             </a>
           </motion.div>
         </motion.div>

@@ -4,26 +4,16 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainer, staggerContainerFast, fadeInUp, scaleIn } from '@/lib/animations'
-
-const STEPS = [
-  {
-    num: '01',
-    title: 'Cross-Reference',
-    body: 'Every document is checked against every other — not just read in isolation.',
-  },
-  {
-    num: '02',
-    title: 'Detect Contradictions',
-    body: 'Most checks read each document separately. We check what happens when they contradict each other \u2014 across all six government sources simultaneously.',
-  },
-  {
-    num: '03',
-    title: 'Map the Full Picture',
-    body: 'One structured report covering ownership, liabilities, government records, and zoning.',
-  },
-]
+import { useT } from '@/lib/i18n/context'
 
 export function Solution() {
+  const t = useT()
+
+  const STEPS = [
+    { num: '01', title: t('solution.step1Title'), body: t('solution.step1Body') },
+    { num: '02', title: t('solution.step2Title'), body: t('solution.step2Body') },
+    { num: '03', title: t('solution.step3Title'), body: t('solution.step3Body') },
+  ]
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
@@ -46,23 +36,22 @@ export function Solution() {
         >
           <div>
             <motion.div variants={fadeInUp}>
-              <SectionLabel className="mb-6">The Solution</SectionLabel>
+              <SectionLabel className="mb-6">{t('solution.tag')}</SectionLabel>
             </motion.div>
 
             <motion.h2
               variants={fadeInUp}
               className="font-display text-4xl sm:text-5xl font-bold text-text-primary leading-[1.1]"
             >
-              Land Clearance.{' '}
+              {t('solution.title')}{' '}
               <span className="text-text-secondary font-light">
-                Not Just Document Review.
+                {t('solution.titleLight')}
               </span>
             </motion.h2>
           </div>
           <div className="flex items-end lg:justify-end">
             <motion.p variants={fadeInUp} className="text-lg text-text-secondary leading-relaxed max-w-sm">
-              Most due diligence reads what documents say. HataD checks whether they{' '}
-              <span className="text-text-primary font-medium">agree.</span>
+              {t('solution.description')}
             </motion.p>
           </div>
         </motion.div>
@@ -100,7 +89,7 @@ export function Solution() {
               {i === 1 && (
                 <div className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-medium tracking-[0.1em] uppercase text-[#C9A84C]/80">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]" />
-                  Cross-document analysis
+                  {t('solution.step2Label')}
                 </div>
               )}
 
@@ -149,13 +138,13 @@ export function Solution() {
             </span>
             <span className="w-px h-8 bg-border" />
             <span className="text-sm text-text-secondary leading-snug">
-              Every report.<br />No exceptions.
+              {t('solution.timeLabel')}
             </span>
           </div>
 
           <div className="text-right sm:text-right">
             <p className="text-sm text-text-secondary font-medium mb-1">
-              One report. Every record.
+              {t('solution.priceContext')}
             </p>
             <p className="text-lg font-semibold text-text-primary">
               ₹3,599

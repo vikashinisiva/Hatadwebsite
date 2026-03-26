@@ -6,9 +6,9 @@
   "nav.signOut": "Sign Out",
 
   "hero.tag": "Land Clearance Intelligence",
-  "hero.title": "Know what you're buying.",
-  "hero.subtitle": "Before you sign.",
-  "hero.description": "We cross-reference 6 government databases and deliver a comprehensive land clearance report — so you don't sign on unclear records.",
+  "hero.title": "Before You Sign, Know Exactly What You're",
+  "hero.subtitle": "Inheriting.",
+  "hero.description": "Every critical land document — cross-referenced, risk-flagged, and delivered as a single intelligence report. Before you sign.",
   "hero.cta": "Get Your Land Clearance Report",
 
   "problem.tag": "The Problem",
@@ -100,6 +100,8 @@
   "testimonials.ctaSubtitle": "All found before signing.",
   "testimonials.ctaDescription": "One survey number. Every record. Under 3 hours.",
   "testimonials.ctaButton": "Get Your Clearance Report →",
+
+  "clearance.faqTitle": "Frequently Asked Questions",
 
   "faq.q1": "What documents will you retrieve?",
   "faq.a1": "We retrieve and cross-reference the Encumbrance Certificate (EC), Patta, Field Measurement Book (FMB), Sale Deed chain, A-Register, mutation records, and court/litigation records — across 6 government databases.",

@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/Button'
 import PixelCard from '@/components/ui/PixelCard'
 import { fadeInUp, staggerContainer } from '@/lib/animations'
+import { useT } from '@/lib/i18n/context'
 
 const HeroBackground = dynamic(
   () => import('@/components/ui/HeroBackground').then(mod => ({ default: mod.HeroBackground })),
@@ -14,6 +15,7 @@ const HeroBackground = dynamic(
 )
 
 export function Hero() {
+  const t = useT()
   return (
     <section
       id="hero"
@@ -35,31 +37,29 @@ export function Hero() {
               variants={fadeInUp}
               className="text-xs font-medium tracking-[0.25em] uppercase text-white/50 mb-6"
             >
-              Land Clearance Intelligence
+              {t('hero.tag')}
             </motion.p>
 
             <motion.h1
               variants={fadeInUp}
               className="font-display text-5xl sm:text-6xl lg:text-[4.25rem] xl:text-7xl font-bold leading-[1.05] text-white mb-6"
             >
-              Before You Sign, Know Exactly What You&apos;re{' '}
-              <span className="text-gradient-hero-accent">Inheriting.</span>
+              {t('hero.title')}{' '}
+              <span className="text-gradient-hero-accent">{t('hero.subtitle')}</span>
             </motion.h1>
 
             <motion.p
               variants={fadeInUp}
               className="text-lg text-white/55 leading-relaxed mb-8 max-w-xl"
             >
-              Every critical land document — cross-referenced, risk-flagged, and delivered
-              as a single intelligence report.{' '}
-              <span className="text-white font-semibold">Before you sign.</span>
+              {t('hero.description')}
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 items-center justify-center mb-10">
               <PixelCard variant="navy" gap={6} speed={50} className="!rounded-lg">
                 <a href="/clearance" onClick={() => track('cta_click', 'hero')}>
                   <Button variant="primary" size="lg">
-                    Get Your Land Clearance Report
+                    {t('hero.cta')}
                   </Button>
                 </a>
               </PixelCard>

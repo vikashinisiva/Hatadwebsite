@@ -11,6 +11,7 @@ import { ExternalLink, Shield, Clock, FileCheck, ArrowRight, CheckCircle, Downlo
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
 import { track } from '@/lib/track'
+import { useT } from '@/lib/i18n/context'
 
 declare global {
   interface Window {
@@ -38,11 +39,7 @@ const TN_DISTRICTS = [
   'Vellore', 'Villupuram', 'Virudhunagar',
 ]
 
-const PROCESS_STEPS = [
-  { icon: FileCheck, label: 'Submit', desc: 'Enter property details & pay' },
-  { icon: Shield, label: 'Verify', desc: '6 government sources cross-checked' },
-  { icon: CheckCircle, label: 'Report', desc: 'Download in under 3 hours' },
-]
+// PROCESS_STEPS moved inside component to access t()
 
 function formatDateIST(dateStr: string): string {
   return new Date(dateStr).toLocaleString('en-IN', {
@@ -57,7 +54,14 @@ function formatDateIST(dateStr: string): string {
 }
 
 export default function ClearancePage() {
+  const t = useT()
   const router = useRouter()
+
+  const PROCESS_STEPS = [
+    { icon: FileCheck, label: t('steps.submit'), desc: t('steps.submitDesc') },
+    { icon: Shield, label: t('steps.verify'), desc: t('steps.verifyDesc') },
+    { icon: CheckCircle, label: t('steps.report'), desc: t('steps.reportDesc') },
+  ]
   const [session, setSession] = useState<Session | null>(null)
   const [sessionLoading, setSessionLoading] = useState(true)
   const [pastRequests, setPastRequests] = useState<PastRequest[]>([])
@@ -507,10 +511,10 @@ export default function ClearancePage() {
                 transition={{ delay: 0.4, duration: 0.4 }}
               >
                 <p className="text-[#1B4FD8] text-xs font-medium tracking-[0.2em] uppercase mb-2">
-                  Request Confirmed
+                  {t('clearance.confirmTitle')}
                 </p>
                 <h2 className="font-display text-[#0C1525] text-2xl font-bold tracking-tight mb-2">
-                  Your report is in queue
+                  {t('clearance.confirmHeading')}
                 </h2>
                 <p className="text-[#7A8FAD] text-sm leading-relaxed">
                   We&apos;re cross-referencing official records.<br />
@@ -524,7 +528,7 @@ export default function ClearancePage() {
                 transition={{ delay: 0.55, duration: 0.35 }}
                 className="mt-6 flex items-center gap-2 bg-[#F4F7FC] border border-[#E8EDF5] rounded-lg px-4 py-2.5"
               >
-                <span className="text-[#7A8FAD] text-xs">Reference</span>
+                <span className="text-[#7A8FAD] text-xs">{t('clearance.confirmReference')}</span>
                 <span className="text-[#0C1525] text-xs font-mono font-semibold tracking-wider">
                   {submittedId.slice(0, 8).toUpperCase()}
                 </span>
@@ -536,7 +540,7 @@ export default function ClearancePage() {
                 transition={{ delay: 0.65 }}
                 className="mt-5 text-[#7A8FAD] text-sm text-center leading-relaxed"
               >
-                We&apos;ve started retrieving your property records. You&apos;ll hear from us within 3 hours.
+                {t('clearance.confirmRetrieving')}
               </motion.p>
 
               <motion.div
@@ -554,7 +558,7 @@ export default function ClearancePage() {
                   />
                 </div>
                 <p className="text-[10px] text-[#CBD5E8] mt-2 text-center tracking-wide">
-                  Opening your tracking page…
+                  {t('clearance.confirmRedirect')}
                 </p>
               </motion.div>
             </motion.div>
@@ -571,14 +575,13 @@ export default function ClearancePage() {
 
         <div className="relative px-6 md:px-12 lg:px-20 xl:px-28 pt-16 pb-20 text-center">
           <p className="text-[#1B4FD8] text-xs font-medium tracking-[0.25em] uppercase mb-4">
-            Land Clearance Intelligence
+            {t('clearance.heroTag')}
           </p>
           <h1 className="font-display text-[#0C1525] text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-            Request Your Clearance Report
+            {t('clearance.heroTitle')}
           </h1>
           <p className="text-[#7A8FAD] text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-            Tell us your property details.
-            We retrieve every document on record — including ones most buyers never know to ask for.
+            {t('clearance.heroDescription')}
           </p>
 
           {/* Process Timeline */}
@@ -728,7 +731,7 @@ export default function ClearancePage() {
 
         {/* Form Card */}
         <p className="text-center text-[15px] text-[#7A8FAD] mb-6">
-          You&apos;re one survey number away from knowing exactly what you&apos;re buying.
+          {t('clearance.trustLine')}
         </p>
 
         <div className="bg-white rounded-2xl border border-[#CBD5E8]/60 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.03)] overflow-hidden">
@@ -748,7 +751,7 @@ export default function ClearancePage() {
                 className="w-full mb-5 py-3.5 rounded-lg text-sm font-medium bg-[#1B4FD8]/[0.06] text-[#1B4FD8] hover:bg-[#1B4FD8]/[0.1] transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                Use My Location to Auto-Fill
+                {t('clearance.useLocation')}
               </button>
             )}
 
@@ -784,7 +787,7 @@ export default function ClearancePage() {
               {/* Survey / Patta Number — full width, prominent */}
               <div>
                 <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                  Survey / Patta Number <span className="text-red-500">*</span>
+                  {t('clearance.surveyLabel')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -794,13 +797,13 @@ export default function ClearancePage() {
                   className={cn(inputClass, 'text-base py-3.5', flashField === 'surveyNo' && 'animate-field-flash')}
                   autoFocus
                 />
-                <p className="text-[12px] text-[#B8C5DA] mt-1.5">This is all we need to start retrieving your records.</p>
+                <p className="text-[12px] text-[#B8C5DA] mt-1.5">{t('clearance.surveyHelper')}</p>
               </div>
 
               {/* District — full width */}
               <div>
                 <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                  District <span className="text-red-500">*</span>
+                  {t('clearance.districtLabel')} <span className="text-red-500">*</span>
                 </label>
                 <div className={cn(flashField === 'district' && 'animate-field-flash rounded-lg')}>
                   <DistrictSelect
@@ -814,7 +817,7 @@ export default function ClearancePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Taluk
+                    {t('clearance.talukLabel')}
                   </label>
                   <input
                     type="text"
@@ -826,7 +829,7 @@ export default function ClearancePage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Village
+                    {t('clearance.villageLabel')}
                   </label>
                   <input
                     type="text"
@@ -848,7 +851,7 @@ export default function ClearancePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Applicant Name
+                    {t('clearance.nameLabel')}
                   </label>
                   <input
                     type="text"
@@ -860,7 +863,7 @@ export default function ClearancePage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                    Phone Number <span className="text-red-500">*</span>
+                    {t('clearance.phoneLabel')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -875,7 +878,7 @@ export default function ClearancePage() {
               {/* Email — full width */}
               <div>
                 <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
-                  Email Address <span className="text-red-500">*</span>
+                  {t('clearance.emailLabel')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -966,11 +969,11 @@ export default function ClearancePage() {
                   {submitting || paymentProcessing ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {paymentProcessing ? 'Processing payment...' : session ? 'Preparing checkout...' : 'Sending code...'}
+                      {paymentProcessing ? t('clearance.processingPayment') : session ? t('clearance.preparingCheckout') : t('clearance.sendingCode')}
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Pay ₹3,599 & Request Report
+                      {t('clearance.payButton')}
                       <ArrowRight size={16} />
                     </span>
                   )}
@@ -978,19 +981,19 @@ export default function ClearancePage() {
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                   <span className="inline-flex items-center gap-1.5 text-[11px] text-[#3D5278] bg-[#F4F7FC] border border-[#E8EDF5] px-3 py-1.5 rounded-full">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Encrypted &amp; secure
+                    {t('clearance.trustEncrypted')}
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-[11px] text-[#3D5278] bg-[#F4F7FC] border border-[#E8EDF5] px-3 py-1.5 rounded-full">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    6 government sources
+                    {t('clearance.trust6Sources')}
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-[11px] text-[#3D5278] bg-[#F4F7FC] border border-[#E8EDF5] px-3 py-1.5 rounded-full">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Under 3 hours
+                    {t('clearance.trustUnder3h')}
                   </span>
                 </div>
                 <p className="mt-3 text-center text-[12px] text-[#B8C5DA]">
-                  You&apos;ll receive a confirmation email immediately. Your report will be ready within 3 hours.
+                  {t('clearance.confirmationNote')}
                 </p>
                 <p className="mt-2 text-center text-[11px] text-[#7A8FAD]">
                   Have your documents already?{' '}
@@ -1029,30 +1032,15 @@ export default function ClearancePage() {
         {/* FAQ */}
         <div className="mt-12">
           <h2 className="text-center text-xs font-semibold text-[#3D5278] tracking-wider uppercase mb-6">
-            Frequently Asked Questions
+            {t('clearance.faqTitle') !== 'clearance.faqTitle' ? t('clearance.faqTitle') : 'Frequently Asked Questions'}
           </h2>
           <div className="space-y-3">
             {[
-              {
-                q: 'What documents will you retrieve?',
-                a: 'We retrieve the Encumbrance Certificate (EC) from TNREGINET, Patta and A-Register from the Revenue Department, FMB from the Taluk Office, Sale Deed and title chain from the Sub-Registrar, mutation records, and litigation status from the District Court. All records are cross-referenced in your report.',
-              },
-              {
-                q: 'How long does the report take?',
-                a: 'Most reports are delivered within 2–3 hours of submission. If your report takes longer due to complex records or high volume, we\u2019ll notify you by email with an updated timeline.',
-              },
-              {
-                q: 'Is my data secure?',
-                a: 'Yes. Your data is stored on encrypted cloud infrastructure with row-level access controls \u2014 only you can access your requests and reports. Download links expire after 7 days, and uploaded documents are permanently deleted after your report is delivered.',
-              },
-              {
-                q: 'What if I need a refund?',
-                a: 'Once a request is submitted, document retrieval begins immediately, so refunds are not available. If we\u2019re unable to retrieve sufficient records, a full refund is issued automatically. If we process the wrong property due to our error, we\u2019ll reprocess at no charge within 24 hours.',
-              },
-              {
-                q: 'Can I use this report for a bank loan or legal transaction?',
-                a: 'The report is a comprehensive clearance check, but it does not constitute legal advice or title insurance. We recommend sharing it with your advocate or bank for transactions above \u20B950 lakh or involving disputed titles.',
-              },
+              { q: t('faq.q1'), a: t('faq.a1') },
+              { q: t('faq.q2'), a: t('faq.a2') },
+              { q: t('faq.q3'), a: t('faq.a3') },
+              { q: t('faq.q4'), a: t('faq.a4') },
+              { q: t('faq.q5'), a: t('faq.a5') },
             ].map((item) => (
               <details
                 key={item.q}
