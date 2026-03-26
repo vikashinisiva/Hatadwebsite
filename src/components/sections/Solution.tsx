@@ -14,7 +14,7 @@ const STEPS = [
   {
     num: '02',
     title: 'Detect Contradictions',
-    body: 'Mismatched names, conflicting boundaries, differing extents — all flagged automatically.',
+    body: 'Most checks read each document separately. We check what happens when they contradict each other \u2014 across all six government sources simultaneously.',
   },
   {
     num: '03',
@@ -67,7 +67,7 @@ export function Solution() {
           </div>
         </motion.div>
 
-        {/* Process steps — bordered cards */}
+        {/* Process steps — card 02 visually dominant */}
         <motion.div
           variants={staggerContainerFast}
           initial="hidden"
@@ -79,21 +79,32 @@ export function Solution() {
             <motion.div
               key={step.num}
               variants={fadeInUp}
-              className="relative bg-white p-8 lg:p-10"
+              className={
+                i === 1
+                  ? 'relative bg-[#0D1B2A] p-8 lg:p-10'
+                  : 'relative bg-white p-8 lg:p-10'
+              }
             >
               {/* Step number + title row */}
               <div className="flex items-baseline gap-3 mb-3">
-                <span className="text-xs font-mono tracking-wider text-accent-blue">{step.num}</span>
-                <h3 className="font-display text-lg font-semibold text-text-primary">
+                <span className={`text-xs font-mono tracking-wider ${i === 1 ? 'text-[#C9A84C]' : 'text-accent-blue'}`}>{step.num}</span>
+                <h3 className={`font-display font-semibold ${i === 1 ? 'text-xl text-white' : 'text-lg text-text-primary'}`}>
                   {step.title}
                 </h3>
               </div>
 
-              <p className="text-sm text-text-secondary leading-relaxed">
+              <p className={`text-sm leading-relaxed ${i === 1 ? 'text-white/60' : 'text-text-secondary'}`}>
                 {step.body}
               </p>
 
-              {/* Bottom arrow indicator */}
+              {i === 1 && (
+                <div className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-medium tracking-[0.1em] uppercase text-[#C9A84C]/80">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]" />
+                  Cross-document analysis
+                </div>
+              )}
+
+              {/* Arrow indicator */}
               {i < STEPS.length - 1 && (
                 <motion.div
                   className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-6 h-6 rounded-full bg-surface-raised border border-border/60 items-center justify-center"
@@ -142,9 +153,17 @@ export function Solution() {
             </span>
           </div>
 
-          <p className="text-sm text-text-muted">
-            Backed by data. Built for decisions worth crores.
-          </p>
+          <div className="text-right sm:text-right">
+            <p className="text-sm text-text-secondary font-medium mb-1">
+              One report. Every record.
+            </p>
+            <p className="text-lg font-semibold text-text-primary">
+              ₹3,599
+            </p>
+            <p className="text-xs text-text-muted">
+              GST inclusive · Delivered in under 3 hours
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

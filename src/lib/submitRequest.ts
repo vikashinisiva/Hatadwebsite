@@ -17,6 +17,7 @@ export interface ClearanceFormData {
 export async function submitRequest(
   session: Session,
   formData: ClearanceFormData,
+  paymentId?: string,
 ): Promise<string> {
   const requestId = crypto.randomUUID()
   const userId = session.user.id
@@ -29,7 +30,7 @@ export async function submitRequest(
       .from('clearance-documents')
       .upload(path, file, { contentType: file.type, upsert: false })
     if (error) {
-      throw new Error(`Failed to upload ${file.name}: ${error.message}`)
+      throw new Error(`We couldn\u2019t upload ${file.name}. Please check the file and try again.`)
     }
     documentUrls.push(path)
   }
@@ -59,12 +60,13 @@ export async function submitRequest(
       propertyDetails,
       documentUrls,
       deadline,
+      paymentId,
     }),
   })
 
   if (!insertRes.ok) {
     const data = await insertRes.json()
-    throw new Error(data.error || 'Failed to submit request')
+    throw new Error('Something went wrong while submitting your request. Please try again.')
   }
 
   return requestId

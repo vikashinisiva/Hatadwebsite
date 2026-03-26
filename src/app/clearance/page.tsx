@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { submitRequest, ClearanceFormData } from '@/lib/submitRequest'
@@ -9,6 +10,12 @@ import { cn } from '@/lib/utils'
 import { ExternalLink, Shield, Clock, FileCheck, ArrowRight, CheckCircle, Download } from 'lucide-react'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
+
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => { open: () => void; close: () => void }
+  }
+}
 
 interface PastRequest {
   id: string
@@ -31,9 +38,9 @@ const TN_DISTRICTS = [
 ]
 
 const PROCESS_STEPS = [
-  { icon: FileCheck, label: 'Submit', desc: 'Enter your property details' },
-  { icon: Shield, label: 'Verify', desc: 'We cross-reference every record' },
-  { icon: CheckCircle, label: 'Report', desc: 'Receive your clearance report' },
+  { icon: FileCheck, label: 'Submit', desc: 'Enter property details & pay' },
+  { icon: Shield, label: 'Verify', desc: '6 government sources cross-checked' },
+  { icon: CheckCircle, label: 'Report', desc: 'Download in under 3 hours' },
 ]
 
 function formatDateIST(dateStr: string): string {
@@ -60,6 +67,8 @@ export default function ClearancePage() {
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [paymentProcessing, setPaymentProcessing] = useState(false)
+  const razorpayLoaded = useRef(false)
 
   const [form, setForm] = useState({
     surveyNo: '',
@@ -81,7 +90,7 @@ export default function ClearancePage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user }, error }) => {
       if (error || !user) {
-        supabase.auth.signOut()
+        supabase.auth.signOut().catch(() => {})
         setSession(null)
         setSessionLoading(false)
         return
@@ -90,12 +99,23 @@ export default function ClearancePage() {
         setSession(s)
         setSessionLoading(false)
         if (s) fetchPastRequests(s.user.id)
+      }).catch(() => {
+        setSession(null)
+        setSessionLoading(false)
       })
+    }).catch(() => {
+      supabase.auth.signOut().catch(() => {})
+      setSession(null)
+      setSessionLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (!s) {
+        setSession(null)
+        return
+      }
       setSession(s)
-      if (s) fetchPastRequests(s.user.id)
+      fetchPastRequests(s.user.id)
     })
 
     return () => subscription.unsubscribe()
@@ -149,12 +169,90 @@ export default function ClearancePage() {
   }
 
   function validate(): boolean {
-    if (!form.surveyNo.trim()) { setError('Survey / Patta number is required'); return false }
-    if (!form.district.trim()) { setError('District is required'); return false }
-    if (!form.phone.trim()) { setError('Phone number is required'); return false }
-    if (!form.email.trim()) { setError('Email is required'); return false }
+    if (!form.surveyNo.trim()) { setError('Please enter your survey or patta number'); return false }
+    if (!form.district.trim()) { setError('Please select your district'); return false }
+    if (!form.phone.trim()) { setError('Please enter your phone number'); return false }
+    if (!form.email.trim()) { setError('Please enter your email address'); return false }
     setError('')
     return true
+  }
+
+  async function openRazorpayCheckout(currentSession: Session) {
+    setPaymentProcessing(true)
+    setError('')
+
+    try {
+      // 1. Create order on server
+      const orderRes = await fetch('/api/razorpay/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          name: form.applicantName.trim(),
+          amount: 359900,
+        }),
+      })
+
+      if (!orderRes.ok) {
+        throw new Error('Something went wrong while setting up payment. Please try again.')
+      }
+
+      const { orderId } = await orderRes.json()
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: 359900,
+        currency: 'INR',
+        name: 'HataD',
+        description: 'Land Clearance Report',
+        order_id: orderId,
+        prefill: {
+          email: form.email.trim(),
+          contact: form.phone.trim(),
+          name: form.applicantName.trim(),
+        },
+        theme: {
+          color: '#0D1B2A',
+          backdrop_color: 'rgba(12,21,37,0.6)',
+        },
+        handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          try {
+            const verifyRes = await fetch('/api/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response),
+            })
+
+            if (!verifyRes.ok) {
+              throw new Error('We couldn\u2019t confirm your payment. Please try again or contact us.')
+            }
+
+            const { paymentId } = await verifyRes.json()
+
+            const requestId = await submitRequest(currentSession, buildFormData(), paymentId)
+            setSubmittedId(requestId)
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Your payment went through but we hit an issue submitting your request. Please contact us and we\u2019ll sort it out.')
+          } finally {
+            setPaymentProcessing(false)
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setPaymentProcessing(false)
+            setSubmitting(false)
+          },
+        },
+      }
+
+      const rzp = new window.Razorpay(options)
+      rzp.open()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please refresh and try again.')
+      setPaymentProcessing(false)
+      setSubmitting(false)
+    }
   }
 
   async function handleSubmit() {
@@ -168,24 +266,18 @@ export default function ClearancePage() {
         options: { shouldCreateUser: true },
       })
       setSubmitting(false)
-      if (otpError) { setError(otpError.message); return }
+      if (otpError) { setError('We couldn\u2019t send the code. Please check your email and try again.'); return }
       setAuthStep('otp')
       setResendCooldown(30)
       return
     }
 
     setSubmitting(true)
-    try {
-      const requestId = await submitRequest(session, buildFormData())
-      setSubmittedId(requestId)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed. Please try again.')
-      setSubmitting(false)
-    }
+    await openRazorpayCheckout(session)
   }
 
   async function handleVerifyOtp() {
-    if (otpValue.length < 6) { setError('Please enter the 6-digit code'); return }
+    if (otpValue.length < 6) { setError('Please enter the 6-digit code from your email'); return }
     setSubmitting(true)
     setError('')
 
@@ -197,18 +289,12 @@ export default function ClearancePage() {
 
     if (verifyError) {
       setSubmitting(false)
-      setError(verifyError.message)
+      setError('That code didn\u2019t work. Please check and try again, or request a new one.')
       return
     }
 
     if (data.session) {
-      try {
-        const requestId = await submitRequest(data.session, buildFormData())
-        setSubmittedId(requestId)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Submission failed. Please try again.')
-        setSubmitting(false)
-      }
+      await openRazorpayCheckout(data.session)
     }
   }
 
@@ -254,6 +340,10 @@ export default function ClearancePage() {
 
   return (
     <div className="min-h-screen bg-[#F4F7FC]">
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        onLoad={() => { razorpayLoaded.current = true }}
+      />
       {/* Submission confirmation overlay */}
       <AnimatePresence>
         {submittedId && (
@@ -372,36 +462,69 @@ export default function ClearancePage() {
           </h1>
           <p className="text-[#7A8FAD] text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
             Tell us your property details.
-            We&apos;ll retrieve the documents, cross-reference every record, and deliver your clearance report.
+            We retrieve every document on record — including ones most buyers never know to ask for.
           </p>
 
-          {/* Process Steps */}
-          <div className="mt-10 flex items-center justify-center gap-3 sm:gap-4">
+          {/* Process Timeline */}
+          <div className="mt-12 flex items-start justify-center gap-0">
             {PROCESS_STEPS.map((step, i) => (
-              <div key={step.label} className="flex items-center gap-3 sm:gap-4">
-                <div className="flex flex-col items-center gap-2">
+              <div key={step.label} className="flex items-start">
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + i * 0.15, duration: 0.4 }}
+                  className="flex flex-col items-center w-28 sm:w-36"
+                >
+                  {/* Icon circle */}
                   <div className={cn(
-                    'w-11 h-11 rounded-full flex items-center justify-center transition-all',
+                    'relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all',
                     i === 0
-                      ? 'bg-[#1B4FD8] text-white shadow-md shadow-[#1B4FD8]/25'
-                      : 'bg-white border border-[#E8EDF5] text-[#B8C5DA]',
+                      ? 'bg-[#1B4FD8] text-white shadow-lg shadow-[#1B4FD8]/25'
+                      : 'bg-white border-2 border-[#E8EDF5] text-[#B8C5DA]',
                   )}>
-                    <step.icon size={18} />
-                  </div>
-                  <div className="text-center">
-                    <p className={cn(
-                      'text-xs font-semibold tracking-wide',
-                      i === 0 ? 'text-[#1B4FD8]' : 'text-[#B8C5DA]',
+                    <step.icon size={20} />
+                    {/* Step number */}
+                    <span className={cn(
+                      'absolute -top-1 -right-1 w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center',
+                      i === 0
+                        ? 'bg-white text-[#1B4FD8] shadow-sm ring-1 ring-[#1B4FD8]/20'
+                        : 'bg-[#F4F7FC] text-[#B8C5DA] ring-1 ring-[#E8EDF5]',
                     )}>
-                      {step.label}
-                    </p>
-                    <p className="text-[10px] text-[#CBD5E8] mt-0.5 hidden sm:block max-w-[120px]">
-                      {step.desc}
-                    </p>
+                      {i + 1}
+                    </span>
                   </div>
-                </div>
+
+                  {/* Label */}
+                  <p className={cn(
+                    'text-xs font-semibold tracking-wide mt-3',
+                    i === 0 ? 'text-[#1B4FD8]' : 'text-[#7A8FAD]',
+                  )}>
+                    {step.label}
+                  </p>
+
+                  {/* Description */}
+                  <p className="text-[10px] text-[#B8C5DA] mt-1 text-center leading-snug hidden sm:block px-1">
+                    {step.desc}
+                  </p>
+                </motion.div>
+
+                {/* Connector line */}
                 {i < PROCESS_STEPS.length - 1 && (
-                  <ArrowRight size={14} className="text-[#CBD5E8] mt-[-20px] sm:mt-[-28px]" />
+                  <div className="flex items-center mt-6 sm:mt-7">
+                    <motion.div
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ delay: 0.5 + i * 0.2, duration: 0.4 }}
+                      className="w-8 sm:w-14 h-[2px] bg-gradient-to-r from-[#1B4FD8]/30 to-[#E8EDF5] origin-left"
+                    />
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.7 + i * 0.2 }}
+                    >
+                      <ArrowRight size={12} className="text-[#CBD5E8]" />
+                    </motion.div>
+                  </div>
                 )}
               </div>
             ))}
@@ -625,12 +748,12 @@ export default function ClearancePage() {
                     (submitting || otpValue.length < 6) && 'opacity-60 cursor-not-allowed',
                   )}
                 >
-                  {submitting ? (
+                  {submitting || paymentProcessing ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Confirming...
+                      {paymentProcessing ? 'Processing payment...' : 'Confirming...'}
                     </span>
-                  ) : 'Confirm & Submit →'}
+                  ) : 'Confirm & Pay ₹3,599 →'}
                 </button>
                 <div className="flex items-center justify-center gap-4">
                   <button
@@ -672,14 +795,14 @@ export default function ClearancePage() {
                     submitting && 'opacity-60 cursor-not-allowed',
                   )}
                 >
-                  {submitting ? (
+                  {submitting || paymentProcessing ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {session ? 'Submitting...' : 'Sending code...'}
+                      {paymentProcessing ? 'Processing payment...' : session ? 'Preparing checkout...' : 'Sending code...'}
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Request Clearance Report
+                      Pay ₹3,599 & Request Report
                       <ArrowRight size={16} />
                     </span>
                   )}
@@ -691,7 +814,8 @@ export default function ClearancePage() {
                   Have your documents already?{' '}
                   <a href="/clearance/upload" className="text-[#1B4FD8] hover:text-[#1636D0] transition-colors">
                     Upload them instead &rarr;
-                  </a>
+                  </a>{' '}
+                  <span className="text-[#B8C5DA]">₹1,599 (GST inclusive)</span>
                 </p>
                 <p className="mt-2 text-center text-[10px] text-[#B8C5DA]">
                   By submitting, you agree to our{' '}

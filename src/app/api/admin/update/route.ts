@@ -10,11 +10,13 @@ function verifyAdmin(request: Request): boolean {
 
 interface UpdateBody {
   id: string
-  action: 'set_report' | 'set_flags' | 'upload_report' | 'send_delay' | 'get_signed_urls'
+  action: string
   reportUrl?: string
   hasFlags?: boolean | null
   value?: boolean | null
   paths?: string[]
+  note?: string
+  status?: string
 }
 
 export async function POST(request: Request) {
@@ -48,7 +50,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to upload report' }, { status: 500 })
       }
 
-      // Update DB record
       const parsedFlags = hasFlags === 'true' ? true : hasFlags === 'false' ? false : null
 
       const { error } = await supabaseAdmin
@@ -102,8 +103,8 @@ export async function POST(request: Request) {
     // Handle JSON actions
     const body: UpdateBody = await request.json()
 
-    if (!body.id || !body.action) {
-      return NextResponse.json({ error: 'Missing id or action' }, { status: 400 })
+    if (!body.id && body.action !== 'export') {
+      return NextResponse.json({ error: 'Missing id' }, { status: 400 })
     }
 
     if (body.action === 'set_report') {
@@ -121,11 +122,9 @@ export async function POST(request: Request) {
         .eq('id', body.id)
 
       if (error) {
-        console.error('Admin update error:', error)
         return NextResponse.json({ error: 'Failed to update request' }, { status: 500 })
       }
 
-      // Fetch the request to get notify_email
       const { data: req } = await supabaseAdmin
         .from('clearance_requests')
         .select('notify_email, property_details, created_at, document_urls')
@@ -133,7 +132,6 @@ export async function POST(request: Request) {
         .single()
 
       if (req?.notify_email) {
-        // Generate signed URL for the report (7 days)
         const { data: signedData } = await supabaseAdmin.storage
           .from('clearance-reports')
           .createSignedUrl(body.reportUrl, 604800)
@@ -152,7 +150,7 @@ export async function POST(request: Request) {
               isUploadRequest: (req.document_urls?.length || 0) > 0,
             })
           } catch {
-            console.error('Notification email failed, but report was set')
+            console.error('Notification email failed')
           }
         }
       }
@@ -167,10 +165,84 @@ export async function POST(request: Request) {
         .eq('id', body.id)
 
       if (error) {
-        console.error('Admin set_flags error:', error)
         return NextResponse.json({ error: 'Failed to update flags' }, { status: 500 })
       }
+      return NextResponse.json({ success: true })
+    }
 
+    if (body.action === 'set_status') {
+      if (!body.status) {
+        return NextResponse.json({ error: 'status required' }, { status: 400 })
+      }
+      const allowed = ['pending', 'ready', 'cancelled', 'refunded']
+      if (!allowed.includes(body.status)) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+      }
+
+      const { error } = await supabaseAdmin
+        .from('clearance_requests')
+        .update({ status: body.status })
+        .eq('id', body.id)
+
+      if (error) {
+        return NextResponse.json({ error: 'Failed to update status' }, { status: 500 })
+      }
+      return NextResponse.json({ success: true })
+    }
+
+    if (body.action === 'add_note') {
+      if (!body.note?.trim()) {
+        return NextResponse.json({ error: 'Note cannot be empty' }, { status: 400 })
+      }
+
+      const { data: existing } = await supabaseAdmin
+        .from('clearance_requests')
+        .select('admin_notes')
+        .eq('id', body.id)
+        .single()
+
+      const notes = (existing?.admin_notes as string[] | null) || []
+      const timestamp = new Date().toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true,
+      })
+      notes.push(`[${timestamp}] ${body.note.trim()}`)
+
+      const { error } = await supabaseAdmin
+        .from('clearance_requests')
+        .update({ admin_notes: notes })
+        .eq('id', body.id)
+
+      if (error) {
+        return NextResponse.json({ error: 'Failed to add note' }, { status: 500 })
+      }
+      return NextResponse.json({ success: true, notes })
+    }
+
+    if (body.action === 'delete') {
+      // Delete report from storage if exists
+      const { data: req } = await supabaseAdmin
+        .from('clearance_requests')
+        .select('report_url, document_urls')
+        .eq('id', body.id)
+        .single()
+
+      if (req?.report_url) {
+        await supabaseAdmin.storage.from('clearance-reports').remove([req.report_url])
+      }
+      if (req?.document_urls?.length) {
+        await supabaseAdmin.storage.from('clearance-documents').remove(req.document_urls)
+      }
+
+      const { error } = await supabaseAdmin
+        .from('clearance_requests')
+        .delete()
+        .eq('id', body.id)
+
+      if (error) {
+        return NextResponse.json({ error: 'Failed to delete request' }, { status: 500 })
+      }
       return NextResponse.json({ success: true })
     }
 
@@ -194,7 +266,6 @@ export async function POST(request: Request) {
       } catch {
         return NextResponse.json({ error: 'Failed to send delay notification' }, { status: 500 })
       }
-
       return NextResponse.json({ success: true })
     }
 
@@ -212,7 +283,6 @@ export async function POST(request: Request) {
           urls[path] = data.signedUrl
         }
       }
-
       return NextResponse.json({ urls })
     }
 
@@ -235,7 +305,6 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Admin fetch error:', error)
       return NextResponse.json({ error: 'Failed to fetch requests' }, { status: 500 })
     }
 

@@ -9,6 +9,8 @@ import { TheReport } from '@/components/sections/TheReport'
 import { Security } from '@/components/sections/Security'
 import { BiggerPicture } from '@/components/sections/BiggerPicture'
 import { NvidiaInception } from '@/components/sections/NvidiaInception'
+import { RiskCheck } from '@/components/sections/RiskCheck'
+import { Testimonials } from '@/components/sections/Testimonials'
 import { FinalCTA } from '@/components/sections/FinalCTA'
 import { AnnouncementBanner } from '@/components/ui/AnnouncementBanner'
 
@@ -20,11 +22,13 @@ export default function Home() {
       <main>
         <Hero />
         <Problem />
+        <RiskCheck />
         <Solution />
         <WhatWeVerify />
         <WhoItsFor />
         <TheReport />
         <Security />
+        <Testimonials />
         <BiggerPicture />
         <NvidiaInception />
         <FinalCTA />

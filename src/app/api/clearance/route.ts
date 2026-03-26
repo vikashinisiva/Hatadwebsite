@@ -10,7 +10,12 @@ interface ClearanceRequestBody {
   propertyDetails: Record<string, string>
   documentUrls: string[]
   deadline: string
+  paymentId: string
 }
+
+// Expected prices in paise
+const PRICE_UPLOAD = 159900   // ₹1,599
+const PRICE_PROPERTY = 359900 // ₹3,599
 
 export async function POST(request: Request) {
   try {
@@ -32,7 +37,7 @@ export async function POST(request: Request) {
 
     const body: ClearanceRequestBody = await request.json()
 
-    if (!body.id || !body.userId || !body.notifyEmail || !body.deadline) {
+    if (!body.id || !body.userId || !body.notifyEmail || !body.deadline || !body.paymentId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 },
@@ -44,6 +49,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Determine request type and expected price
+    const isUploadRequest = (body.documentUrls?.length || 0) > 0
+    const expectedAmount = isUploadRequest ? PRICE_UPLOAD : PRICE_PROPERTY
+
+    // Atomic: mark payment as used ONLY IF it exists and is currently unused
+    // This prevents TOCTOU race conditions — only one concurrent request can succeed
+    const { data: markedPayment, error: markError } = await supabaseAdmin
+      .from('verified_payments')
+      .update({ used: true })
+      .eq('payment_id', body.paymentId)
+      .eq('used', false)
+      .select('payment_id, amount')
+      .single()
+
+    if (markError || !markedPayment) {
+      return NextResponse.json(
+        { error: 'Payment not verified or already used.' },
+        { status: 402 },
+      )
+    }
+
+    // Validate payment amount matches the request type
+    if (markedPayment.amount !== expectedAmount) {
+      // Rollback: unmark payment
+      await supabaseAdmin
+        .from('verified_payments')
+        .update({ used: false })
+        .eq('payment_id', body.paymentId)
+
+      return NextResponse.json(
+        { error: `Payment amount mismatch. Expected ₹${expectedAmount / 100} for this request type.` },
+        { status: 402 },
+      )
+    }
+
     const { error } = await supabaseAdmin.from('clearance_requests').insert({
       id: body.id,
       user_id: user.id,
@@ -52,12 +92,19 @@ export async function POST(request: Request) {
       document_urls: body.documentUrls,
       notify_email: body.notifyEmail,
       deadline: body.deadline,
+      payment_id: body.paymentId,
     })
 
     if (error) {
+      // Rollback: unmark payment so user can retry
+      await supabaseAdmin
+        .from('verified_payments')
+        .update({ used: false })
+        .eq('payment_id', body.paymentId)
+
       console.error('Clearance insert error:', error)
       return NextResponse.json(
-        { error: `Failed to create request: ${error.message}` },
+        { error: 'Failed to create request. Please try again.' },
         { status: 500 },
       )
     }

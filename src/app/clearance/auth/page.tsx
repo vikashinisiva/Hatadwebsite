@@ -84,7 +84,7 @@ function AuthPageInner() {
         const requestId = await submitRequest(session, formData)
         router.push(`/clearance/track/${requestId}`)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to submit request')
+        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
         setLoading(false)
       }
       return
@@ -109,7 +109,7 @@ function AuthPageInner() {
     setLoading(false)
 
     if (otpError) {
-      setError(otpError.message)
+      setError('We couldn\u2019t send the code. Please check your email and try again.')
       return
     }
 
@@ -118,7 +118,7 @@ function AuthPageInner() {
 
   async function handleVerifyOtp() {
     if (otp.length < 6) {
-      setError('Please enter the 6-digit code')
+      setError('Please enter the 6-digit code from your email')
       return
     }
     setLoading(true)
@@ -132,7 +132,7 @@ function AuthPageInner() {
 
     if (verifyError) {
       setLoading(false)
-      setError(verifyError.message)
+      setError('That code didn\u2019t work. Please check and try again, or request a new one.')
       return
     }
 
@@ -140,7 +140,7 @@ function AuthPageInner() {
       await handlePostAuth(data.session)
     } else {
       setLoading(false)
-      setError('Verification failed. Please try again.')
+      setError('Something went wrong. Please try again.')
     }
   }
 

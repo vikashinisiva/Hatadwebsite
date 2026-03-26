@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { submitRequest, ClearanceFormData } from '@/lib/submitRequest'
@@ -9,6 +10,12 @@ import { cn } from '@/lib/utils'
 import { Upload, FileText, Trash2, ArrowRight } from 'lucide-react'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
+
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => { open: () => void; close: () => void }
+  }
+}
 
 const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
 const MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -35,6 +42,8 @@ export default function UploadPage() {
   const [otpValue, setOtpValue] = useState('')
   const [submittedId, setSubmittedId] = useState<string | null>(null)
   const [resendCooldown, setResendCooldown] = useState(0)
+  const [paymentProcessing, setPaymentProcessing] = useState(false)
+  const razorpayLoaded = useRef(false)
 
   const [files, setFiles] = useState<File[]>([])
   const [dragging, setDragging] = useState(false)
@@ -106,10 +115,76 @@ export default function UploadPage() {
 
   function validate(): boolean {
     if (files.length === 0) { setError('Please upload at least one document'); return false }
-    if (!form.district.trim()) { setError('District is required'); return false }
-    if (!form.email.trim()) { setError('Email is required'); return false }
+    if (!form.district.trim()) { setError('Please select your district'); return false }
+    if (!form.email.trim()) { setError('Please enter your email address'); return false }
     setError('')
     return true
+  }
+
+  async function openRazorpayCheckout(currentSession: Session) {
+    setPaymentProcessing(true)
+    setError('')
+
+    try {
+      const orderRes = await fetch('/api/razorpay/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          name: '',
+          amount: 159900,
+        }),
+      })
+
+      if (!orderRes.ok) throw new Error('Something went wrong while setting up payment. Please try again.')
+      const { orderId } = await orderRes.json()
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: 159900,
+        currency: 'INR',
+        name: 'HataD',
+        description: 'Land Clearance Report — Document Upload',
+        order_id: orderId,
+        prefill: {
+          email: form.email.trim(),
+          contact: form.phone.trim(),
+        },
+        theme: { color: '#0D1B2A', backdrop_color: 'rgba(12,21,37,0.6)' },
+        handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          try {
+            const verifyRes = await fetch('/api/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response),
+            })
+            if (!verifyRes.ok) throw new Error('We couldn\u2019t confirm your payment. Please try again or contact us.')
+            const { paymentId } = await verifyRes.json()
+
+            const requestId = await submitRequest(currentSession, buildFormData(), paymentId)
+            setSubmittedId(requestId)
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Your payment went through but we hit an issue submitting your request. Please contact us and we\u2019ll sort it out.')
+          } finally {
+            setPaymentProcessing(false)
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setPaymentProcessing(false)
+            setSubmitting(false)
+          },
+        },
+      }
+
+      const rzp = new window.Razorpay(options)
+      rzp.open()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please refresh and try again.')
+      setPaymentProcessing(false)
+      setSubmitting(false)
+    }
   }
 
   async function handleSubmit() {
@@ -123,24 +198,18 @@ export default function UploadPage() {
         options: { shouldCreateUser: true },
       })
       setSubmitting(false)
-      if (otpError) { setError(otpError.message); return }
+      if (otpError) { setError('We couldn\u2019t send the code. Please check your email and try again.'); return }
       setAuthStep('otp')
       setResendCooldown(30)
       return
     }
 
     setSubmitting(true)
-    try {
-      const requestId = await submitRequest(session, buildFormData())
-      setSubmittedId(requestId)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed. Please try again.')
-      setSubmitting(false)
-    }
+    await openRazorpayCheckout(session)
   }
 
   async function handleVerifyOtp() {
-    if (otpValue.length < 6) { setError('Please enter the 6-digit code'); return }
+    if (otpValue.length < 6) { setError('Please enter the 6-digit code from your email'); return }
     setSubmitting(true)
     setError('')
 
@@ -152,18 +221,12 @@ export default function UploadPage() {
 
     if (verifyError) {
       setSubmitting(false)
-      setError(verifyError.message)
+      setError('That code didn\u2019t work. Please check and try again, or request a new one.')
       return
     }
 
     if (data.session) {
-      try {
-        const requestId = await submitRequest(data.session, buildFormData())
-        setSubmittedId(requestId)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Submission failed. Please try again.')
-        setSubmitting(false)
-      }
+      await openRazorpayCheckout(data.session)
     }
   }
 
@@ -205,6 +268,10 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F7FC]">
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        onLoad={() => { razorpayLoaded.current = true }}
+      />
       {/* Submission confirmation overlay */}
       <AnimatePresence>
         {submittedId && (
@@ -309,6 +376,15 @@ export default function UploadPage() {
       <div className="max-w-2xl mx-auto px-6 -mt-6 pb-16 relative z-10">
         <div className="bg-white rounded-2xl border border-[#CBD5E8]/60 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.03)] overflow-hidden">
           <div className="p-6 sm:p-8">
+            <div className="flex items-start gap-2.5 bg-red-100 border border-red-300 rounded-lg px-4 py-3.5 mb-6">
+              <span className="text-red-600 mt-0.5 shrink-0 text-sm font-bold">&#9888;</span>
+              <p className="text-xs text-red-800 leading-relaxed font-medium">
+                Analysis is limited to the documents you provide. Missing records won&apos;t be flagged.{' '}
+                <a href="/clearance" className="text-[#1B4FD8] hover:text-[#1636D0] transition-colors font-medium">
+                  Want us to retrieve everything instead?
+                </a>
+              </p>
+            </div>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
@@ -458,12 +534,12 @@ export default function UploadPage() {
                     (submitting || otpValue.length < 6) && 'opacity-60 cursor-not-allowed',
                   )}
                 >
-                  {submitting ? (
+                  {submitting || paymentProcessing ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Confirming...
+                      {paymentProcessing ? 'Processing payment...' : 'Confirming...'}
                     </span>
-                  ) : 'Confirm & Submit →'}
+                  ) : 'Confirm & Pay ₹1,599 →'}
                 </button>
                 <div className="flex items-center justify-center gap-4">
                   <button
@@ -505,20 +581,20 @@ export default function UploadPage() {
                     submitting && 'opacity-60 cursor-not-allowed',
                   )}
                 >
-                  {submitting ? (
+                  {submitting || paymentProcessing ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {session ? 'Submitting...' : 'Sending code...'}
+                      {paymentProcessing ? 'Processing payment...' : session ? 'Preparing checkout...' : 'Sending code...'}
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Submit Documents
+                      Pay ₹1,599 & Submit Documents
                       <ArrowRight size={16} />
                     </span>
                   )}
                 </button>
                 <p className="mt-3 text-center text-[11px] text-[#7A8FAD]">
-                  ₹1,500 per report · Delivered in 2–3 hours
+                  ₹1,599 per report (GST inclusive) · Delivered in 2–3 hours
                 </p>
                 <p className="mt-2 text-center text-[11px] text-[#7A8FAD]">
                   Don&apos;t have documents?{' '}

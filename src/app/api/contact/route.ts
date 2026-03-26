@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
+function esc(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 const REQUIRED_FIELDS = ['name', 'phone', 'district', 'village'] as const
 
 export async function POST(request: Request) {
@@ -94,28 +98,28 @@ export async function POST(request: Request) {
 
         <h3 style="color: #3D5278; margin-top: 24px;">Contact Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 6px 0; color: #7A8FAD; width: 140px;">Name</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${body.name}</td></tr>
-          <tr><td style="padding: 6px 0; color: #7A8FAD;">Phone</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${body.phone}</td></tr>
-          ${body.email ? `<tr><td style="padding: 6px 0; color: #7A8FAD;">Email</td><td style="padding: 6px 0; color: #0C1525;">${body.email}</td></tr>` : ''}
-          ${body.company ? `<tr><td style="padding: 6px 0; color: #7A8FAD;">Company</td><td style="padding: 6px 0; color: #0C1525;">${body.company}</td></tr>` : ''}
+          <tr><td style="padding: 6px 0; color: #7A8FAD; width: 140px;">Name</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${esc(body.name)}</td></tr>
+          <tr><td style="padding: 6px 0; color: #7A8FAD;">Phone</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${esc(body.phone)}</td></tr>
+          ${body.email ? `<tr><td style="padding: 6px 0; color: #7A8FAD;">Email</td><td style="padding: 6px 0; color: #0C1525;">${esc(body.email)}</td></tr>` : ''}
+          ${body.company ? `<tr><td style="padding: 6px 0; color: #7A8FAD;">Company</td><td style="padding: 6px 0; color: #0C1525;">${esc(body.company)}</td></tr>` : ''}
         </table>
 
         <h3 style="color: #3D5278; margin-top: 24px;">Property Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 6px 0; color: #7A8FAD; width: 140px;">District</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${body.district}</td></tr>
-          <tr><td style="padding: 6px 0; color: #7A8FAD;">Village / Area</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${body.village}</td></tr>
-          ${body.surveyNo ? `<tr><td style="padding: 6px 0; color: #7A8FAD;">Survey No.</td><td style="padding: 6px 0; color: #0C1525;">${body.surveyNo}</td></tr>` : ''}
+          <tr><td style="padding: 6px 0; color: #7A8FAD; width: 140px;">District</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${esc(body.district)}</td></tr>
+          <tr><td style="padding: 6px 0; color: #7A8FAD;">Village / Area</td><td style="padding: 6px 0; color: #0C1525; font-weight: 500;">${esc(body.village)}</td></tr>
+          ${body.surveyNo ? `<tr><td style="padding: 6px 0; color: #7A8FAD;">Survey No.</td><td style="padding: 6px 0; color: #0C1525;">${esc(body.surveyNo)}</td></tr>` : ''}
         </table>
 
         ${body.documents ? `
         <h3 style="color: #3D5278; margin-top: 24px;">Documents Available</h3>
-        <p style="color: #0C1525; background: #F4F7FC; padding: 12px; border-radius: 4px;">${body.documents}</p>
+        <p style="color: #0C1525; background: #F4F7FC; padding: 12px; border-radius: 4px;">${esc(body.documents)}</p>
         ` : ''}
 
         ${attachments.length > 0 ? `
         <h3 style="color: #3D5278; margin-top: 24px;">Uploaded Files (${attachments.length})</h3>
         <ul style="color: #0C1525; background: #F4F7FC; padding: 12px 12px 12px 28px; border-radius: 4px; margin: 0;">
-          ${attachments.map((a) => `<li style="padding: 2px 0;">${a.filename}</li>`).join('')}
+          ${attachments.map((a) => `<li style="padding: 2px 0;">${esc(a.filename)}</li>`).join('')}
         </ul>
         ` : ''}
 
@@ -129,7 +133,7 @@ export async function POST(request: Request) {
     await transporter.sendMail({
       from: `"HataD Website" <${process.env.SMTP_EMAIL}>`,
       to: process.env.NOTIFY_EMAIL || process.env.SMTP_EMAIL,
-      subject: `${urgencyLabel} Land Clearance Request — ${body.name} · ${body.district}`,
+      subject: `${urgencyLabel} Land Clearance Request — ${esc(body.name)} · ${esc(body.district)}`,
       html: htmlBody,
       replyTo: body.email || undefined,
       attachments,

@@ -53,28 +53,19 @@ export function FinalCTA() {
             </motion.p>
           </div>
 
-          {/* Process — minimal inline */}
+          {/* CTA button */}
           <motion.div
             variants={fadeInUp}
-            className="flex items-center justify-center gap-3 sm:gap-5 mb-12 text-text-muted text-sm"
-          >
-            <span className="text-text-secondary">Submit</span>
-            <span className="text-border">—</span>
-            <span className="text-text-secondary">Verify</span>
-            <span className="text-border">—</span>
-            <span className="text-text-secondary">Decide</span>
-          </motion.div>
-
-          {/* CTA buttons */}
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-wrap gap-4 justify-center"
+            className="flex flex-col items-center gap-3 mb-2"
           >
             <a href="/clearance">
               <Button variant="primary" size="lg">
-                Start Your Land Clearance
+                Request Your Clearance Report &rarr;
               </Button>
             </a>
+            <p className="text-sm text-text-muted">
+              ₹3,599 per report · Delivered in 2–3 hours
+            </p>
           </motion.div>
 
           {/* Just want to talk? */}
