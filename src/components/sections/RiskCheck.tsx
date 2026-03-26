@@ -9,7 +9,7 @@ import {
   CheckCircle, Navigation, IndianRupee, Landmark, FileCheck,
 } from 'lucide-react'
 import { track } from '@/lib/track'
-import type { TngisPreviewResult } from '@/lib/types/tngis'
+import { clientLookup, type ClientLookupResult } from '@/lib/tngis-client'
 
 const TN_DISTRICTS = [
   'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore',
@@ -29,26 +29,17 @@ export function RiskCheck() {
   const [district, setDistrict] = useState('')
   const [phase, setPhase] = useState<'input' | 'loading' | 'result'>('input')
   const [error, setError] = useState('')
-  const [tngisData, setTngisData] = useState<TngisPreviewResult | null>(null)
+  const [tngisData, setTngisData] = useState<ClientLookupResult | null>(null)
   const [geoLoading, setGeoLoading] = useState(false)
-  const abortRef = useRef<AbortController | null>(null)
 
   // ---------------------------------------------------------------------------
-  // TNGIS lookup (real API call with 8s client timeout + fake fallback)
+  // TNGIS lookup — runs directly in user's browser (bypasses Vercel)
   // ---------------------------------------------------------------------------
 
   const fetchTngisData = useCallback(async (lat: number, lon: number) => {
-    abortRef.current = new AbortController()
     try {
-      const resp = await fetch('/api/tngis/lookup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lon }),
-        signal: AbortSignal.timeout(25000),
-      })
-      if (!resp.ok) return null
-      const data = await resp.json() as TngisPreviewResult
-      if (data.land_details?.success === 1) return data
+      const data = await clientLookup(lat, lon)
+      if (data.land) return data
       return null
     } catch {
       return null
@@ -85,10 +76,9 @@ export function RiskCheck() {
         const data = await fetchTngisData(latitude, longitude)
         if (data) {
           setTngisData(data)
-          const ld = Array.isArray(data.land_details.data) ? data.land_details.data[0] : data.land_details.data
-          if (ld) {
-            setSurveyNo(ld.survey_number + (ld.sub_division ? `/${ld.sub_division}` : ''))
-            setDistrict(ld.district_name)
+          if (data.land) {
+            setSurveyNo(data.land.survey_number + (data.land.sub_division ? `/${data.land.sub_division}` : ''))
+            setDistrict(data.land.district_name)
           }
         }
 
@@ -125,16 +115,15 @@ export function RiskCheck() {
     setSurveyNo('')
     setDistrict('')
     setTngisData(null)
-    abortRef.current?.abort()
+    // reset
   }
 
   // ---------------------------------------------------------------------------
   // Extract display fields from TNGIS data
   // ---------------------------------------------------------------------------
 
-  const ld = tngisData?.land_details?.data
-  const landData = ld ? (Array.isArray(ld) ? ld[0] : ld) : null
-  const gv = tngisData?.guideline_value?.data?.[0]
+  const landData = tngisData?.land
+  const gv = tngisData?.guidelineValue
   const hasRealData = !!landData
 
   // ---------------------------------------------------------------------------
@@ -319,17 +308,17 @@ export function RiskCheck() {
                           </motion.div>
 
                           {/* Guideline value — money gets attention */}
-                          {gv && Number(gv.metric_rate) > 0 && (
+                          {gv && Number(gv.rate) > 0 && (
                             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
                               className="bg-[#F4F7FC] border border-[#E8EDF5] rounded-sm px-5 py-4 mb-3">
                               <div className="flex items-center justify-between">
                                 <div>
                                   <p className="text-xs text-text-muted mb-1">Government guideline value</p>
-                                  <p className="text-lg text-text-primary font-bold">{'\u20B9'}{Number(gv.metric_rate).toLocaleString('en-IN')} <span className="text-sm font-normal text-text-secondary">per {gv.unit_id}</span></p>
+                                  <p className="text-lg text-text-primary font-bold">{'\u20B9'}{Number(gv.rate).toLocaleString('en-IN')} <span className="text-sm font-normal text-text-secondary">per {gv.unit}</span></p>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-xs text-text-secondary">{gv.land_name}</p>
-                                  <p className="text-[10px] text-text-muted">{gv.land_type_grouping}</p>
+                                  <p className="text-xs text-text-secondary">{gv.landName}</p>
+                                  <p className="text-[10px] text-text-muted">{gv.grouping}</p>
                                 </div>
                               </div>
                             </motion.div>
@@ -344,7 +333,7 @@ export function RiskCheck() {
                                 <span className="text-sm text-text-primary flex items-center gap-2">
                                   <FileSearch size={13} className="text-accent-blue" /> Encumbrance Certificate
                                 </span>
-                                {tngisData?.ec_available
+                                {tngisData?.ecAvailable
                                   ? <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Available</span>
                                   : <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Needs retrieval</span>
                                 }
@@ -353,7 +342,7 @@ export function RiskCheck() {
                                 <span className="text-sm text-text-primary flex items-center gap-2">
                                   <FileCheck size={13} className="text-accent-blue" /> Field Measurement Book (FMB)
                                 </span>
-                                {tngisData?.fmb_available
+                                {tngisData?.fmbAvailable
                                   ? <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Available</span>
                                   : <span className="text-[10px] font-medium text-text-muted bg-gray-100 px-2 py-0.5 rounded-full">Not digitized</span>
                                 }

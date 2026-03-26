@@ -12,6 +12,7 @@ import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
 import { track } from '@/lib/track'
 import { useT } from '@/lib/i18n/context'
+import { clientLookup } from '@/lib/tngis-client'
 
 declare global {
   interface Window {
@@ -125,51 +126,39 @@ export default function ClearancePage() {
         const { latitude, longitude } = pos.coords
         setGeoPhase('fetching')
 
-        const res = await fetch('/api/tngis/lookup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: latitude, lon: longitude }),
-          signal: AbortSignal.timeout(28000),
-        })
+        const data = await clientLookup(latitude, longitude)
 
-        if (res.ok) {
-          const data = await res.json()
-          const ld = data.land_details?.data
-          const land = Array.isArray(ld) ? ld[0] : ld
-          const gv = data.guideline_value?.data?.[0]
+        if (data.land) {
+          const land = data.land
+          const gv = data.guidelineValue
+          const survey = land.survey_number + (land.sub_division ? `/${land.sub_division}` : '')
 
-          if (land) {
-            const survey = land.survey_number + (land.sub_division ? `/${land.sub_division}` : '')
+          setGeoDetails({
+            survey,
+            district: land.district_name,
+            taluk: land.taluk_name,
+            village: land.village_name,
+            landType: land.rural_urban === 'rural' ? 'Rural' : 'Urban',
+            guideline: gv && Number(gv.rate) > 0 ? `\u20B9${Number(gv.rate).toLocaleString('en-IN')} per ${gv.unit}` : undefined,
+            landClass: gv?.landName || undefined,
+            ulpin: land.ulpin || undefined,
+            elevation: data.elevation ?? undefined,
+          })
+          setGeoPhase('found')
 
-            setGeoDetails({
-              survey,
-              district: land.district_name,
-              taluk: land.taluk_name,
-              village: land.village_name,
-              landType: land.rural_urban === 'rural' ? 'Rural' : 'Urban',
-              guideline: gv && Number(gv.metric_rate) > 0 ? `\u20B9${Number(gv.metric_rate).toLocaleString('en-IN')} per ${gv.unit_id}` : undefined,
-              landClass: gv?.land_name || undefined,
-              ulpin: land.ulpin || undefined,
-              elevation: data.natural_resources?.elevation ?? undefined,
-            })
-            setGeoPhase('found')
-
-            const fill = (field: string, value: string, delay: number) => {
-              setTimeout(() => {
-                setForm((p) => ({ ...p, [field]: value }))
-                setFlashField(field)
-                setTimeout(() => setFlashField(null), 800)
-              }, delay)
-            }
-            fill('surveyNo', survey, 400)
-            fill('district', land.district_name, 900)
-            fill('taluk', land.taluk_name, 1400)
-            fill('village', land.village_name, 1900)
-
-            track('geo_autofill', 'clearance', { district: land.district_name, survey: land.survey_number })
-          } else {
-            setGeoPhase('error')
+          const fill = (field: string, value: string, delay: number) => {
+            setTimeout(() => {
+              setForm((p) => ({ ...p, [field]: value }))
+              setFlashField(field)
+              setTimeout(() => setFlashField(null), 800)
+            }, delay)
           }
+          fill('surveyNo', survey, 400)
+          fill('district', land.district_name, 900)
+          fill('taluk', land.taluk_name, 1400)
+          fill('village', land.village_name, 1900)
+
+          track('geo_autofill', 'clearance', { district: land.district_name, survey: land.survey_number })
         } else {
           setGeoPhase('error')
         }
