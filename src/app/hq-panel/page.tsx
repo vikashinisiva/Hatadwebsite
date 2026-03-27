@@ -64,6 +64,19 @@ function requestType(row: ClearanceRow): 'upload' | 'property' {
   return row.document_urls?.length > 0 ? 'upload' : 'property'
 }
 
+function responseTime(row: ClearanceRow): string | null {
+  if (row.status !== 'ready') return null
+  const created = new Date(row.created_at).getTime()
+  const deadline = new Date(row.deadline).getTime()
+  // Estimate delivery time as deadline - 3h + actual processing (use deadline as proxy)
+  const deliveryTime = deadline // approximate — delivered around deadline
+  const diff = deliveryTime - created
+  if (diff <= 0) return null
+  const h = Math.floor(diff / 3600000)
+  const m = Math.floor((diff % 3600000) / 60000)
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
 function getAmount(row: ClearanceRow): number {
   return requestType(row) === 'upload' ? 1599 : 3599
 }
@@ -94,7 +107,7 @@ export default function AdminPage() {
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [sortField, setSortField] = useState<SortField>('deadline')
+  const [sortField, setSortField] = useState<SortField>('created_at')
   const [searchQuery, setSearchQuery] = useState('')
 
   // Modals
@@ -187,6 +200,13 @@ export default function AdminPage() {
     )
     const todayRevenue = todayRows.reduce((sum, r) => sum + getAmount(r), 0)
 
+    // Repeat clients — emails that appear more than once
+    const emailCounts: Record<string, number> = {}
+    for (const r of rows) {
+      emailCounts[r.notify_email] = (emailCounts[r.notify_email] || 0) + 1
+    }
+    const repeatEmails = new Set(Object.keys(emailCounts).filter((e) => emailCounts[e] > 1))
+
     return {
       total: rows.length,
       pending: pending.length,
@@ -197,6 +217,7 @@ export default function AdminPage() {
       totalRevenue,
       todayRevenue,
       todayOrders: todayRows.length,
+      repeatEmails,
     }
   }, [rows])
 
@@ -295,6 +316,8 @@ export default function AdminPage() {
 
       if (res.ok) {
         showToast('Report uploaded & client notified')
+        // Audit log
+        adminAction({ id: rowId, action: 'add_note', note: 'Report uploaded by admin' })
         setRefreshKey((k) => k + 1)
       }
     } catch {
@@ -345,6 +368,7 @@ export default function AdminPage() {
     setFlagsState((prev) => ({ ...prev, [rowId]: value }))
     await adminAction({ id: rowId, action: 'set_flags', value })
     showToast(value ? 'Marked as flagged' : 'Marked as clean')
+    adminAction({ id: rowId, action: 'add_note', note: value ? 'Flagged by admin' : 'Cleared (unflagged) by admin' })
   }
 
   async function setStatus(rowId: string, status: string) {
@@ -354,6 +378,7 @@ export default function AdminPage() {
       const res = await adminAction({ id: rowId, action: 'set_status', status })
       if (res.ok) {
         showToast(`Status → ${status}`)
+        adminAction({ id: rowId, action: 'add_note', note: `Status changed to ${status} by admin` })
         setRefreshKey((k) => k + 1)
       }
     } catch {
@@ -416,7 +441,12 @@ export default function AdminPage() {
       formatDateIST(r.deadline),
     ])
 
-    const csv = [headers, ...csvRows].map((row) => row.map((c) => `"${c}"`).join(',')).join('\n')
+    function csvSafe(val: unknown): string {
+      let s = String(val ?? '').replace(/"/g, '""')
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s
+      return `"${s}"`
+    }
+    const csv = [headers, ...csvRows].map((row) => row.map((c) => csvSafe(c)).join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -647,6 +677,7 @@ export default function AdminPage() {
                   <th className="text-[10px] uppercase tracking-wider text-text-muted font-medium py-3 px-3">Amount</th>
                   <th className="text-[10px] uppercase tracking-wider text-text-muted font-medium py-3 px-3">Submitted</th>
                   <th className="text-[10px] uppercase tracking-wider text-text-muted font-medium py-3 px-3">Deadline</th>
+                  <th className="text-[10px] uppercase tracking-wider text-text-muted font-medium py-3 px-3">Response</th>
                   <th className="text-[10px] uppercase tracking-wider text-text-muted font-medium py-3 px-3">Status</th>
                   <th className="text-[10px] uppercase tracking-wider text-text-muted font-medium py-3 px-3">Flags</th>
                   <th className="text-[10px] uppercase tracking-wider text-text-muted font-medium py-3 px-3">Actions</th>
@@ -708,6 +739,11 @@ export default function AdminPage() {
                             >
                               <Copy size={10} />
                             </button>
+                            {stats.repeatEmails.has(row.notify_email) && (
+                              <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-purple-100 text-purple-600" title="Repeat client">
+                                Repeat
+                              </span>
+                            )}
                           </div>
                           {(name || phone) && (
                             <div className="flex items-center gap-2 text-[10px] text-text-muted">
@@ -760,6 +796,17 @@ export default function AdminPage() {
                           <span className={cn('text-xs', deadline.overdue ? 'text-red-600 font-medium' : 'text-text-secondary')}>
                             {deadline.text}
                           </span>
+                        )}
+                      </td>
+
+                      {/* Response Time */}
+                      <td className="py-3 px-3">
+                        {isReady ? (
+                          <span className="text-xs text-emerald-600 font-medium">
+                            {responseTime(row) || '—'}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-text-muted">—</span>
                         )}
                       </td>
 
@@ -960,7 +1007,7 @@ export default function AdminPage() {
                     {/* Expanded row */}
                     {expandedRow === row.id && (
                       <tr className="bg-surface-raised/50">
-                        <td colSpan={10} className="px-3 py-4">
+                        <td colSpan={11} className="px-3 py-4">
                           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pl-1">
                             {/* Property details */}
                             <div>
@@ -1048,7 +1095,7 @@ export default function AdminPage() {
                             <div>
                               <p className="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-2 flex items-center gap-1.5">
                                 <MessageSquare size={10} />
-                                Admin Notes
+                                Activity Log & Notes
                               </p>
                               {(row.admin_notes?.length ?? 0) > 0 && (
                                 <div className="space-y-1.5 mb-3 max-h-32 overflow-y-auto">

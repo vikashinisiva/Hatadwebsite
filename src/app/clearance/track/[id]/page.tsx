@@ -176,6 +176,8 @@ export default function TrackPage() {
   const [request, setRequest] = useState<ClearanceRequest | null>(null)
   const [animStage, setAnimStage] = useState(0)
   const [downloading, setDownloading] = useState(false)
+  const [showSharePrompt, setShowSharePrompt] = useState(false)
+  const [reportDelivered, setReportDelivered] = useState(false)
 
   const [visibleLines, setVisibleLines] = useState<string[]>([])
   const logIndexRef = useRef(0)
@@ -272,6 +274,12 @@ export default function TrackPage() {
     if (!request) return
     if (request.status === 'ready') {
       setVisibleLines([])
+      // Trigger delivery moment (only once)
+      if (!reportDelivered) {
+        setReportDelivered(true)
+        // Auto-dismiss after 4 seconds
+        setTimeout(() => setReportDelivered(false), 4000)
+      }
       return
     }
 
@@ -312,7 +320,11 @@ export default function TrackPage() {
         body: JSON.stringify({ requestId: request.id }),
       })
       const json = await res.json()
-      if (json.url) window.open(json.url, '_blank')
+      if (json.url) {
+        window.open(json.url, '_blank')
+        // Show share prompt 5 seconds after download
+        setTimeout(() => setShowSharePrompt(true), 5000)
+      }
     } catch {
       // ignore
     } finally {
@@ -429,6 +441,67 @@ export default function TrackPage() {
   return (
     <div className="min-h-screen bg-[#F4F7FC]">
       <ClearanceNav backHref="/profile" backLabel="Profile" />
+
+      {/* Report delivery moment */}
+      <AnimatePresence>
+        {reportDelivered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-6"
+            style={{
+              background: request?.has_flags
+                ? 'linear-gradient(135deg, #0C1525 0%, #1a1a2e 100%)'
+                : 'linear-gradient(135deg, #0C1525 0%, #064e3b 100%)',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className={cn(
+                'w-20 h-20 rounded-full flex items-center justify-center mb-8',
+                request?.has_flags ? 'bg-amber-500/20' : 'bg-emerald-500/20',
+              )}
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.3 }}
+              >
+                {request?.has_flags ? (
+                  <AlertTriangle size={36} className="text-amber-400" />
+                ) : (
+                  <CheckCircle2 size={36} className="text-emerald-400" />
+                )}
+              </motion.div>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.4 }}
+              className="text-white text-2xl sm:text-3xl font-bold text-center max-w-md"
+            >
+              {request?.has_flags
+                ? 'We found issues. Your report has the details.'
+                : 'Your property has been cleared.'
+              }
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.4 }}
+              className="text-white/40 text-sm mt-4"
+            >
+              Your report is ready to download
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Hero ── */}
       <div className="relative bg-[#0C1525] overflow-hidden">
@@ -933,6 +1006,42 @@ export default function TrackPage() {
           </div>
         </div>
       </div>
+
+      {/* Share prompt — slides up 5s after download */}
+      <AnimatePresence>
+        {showSharePrompt && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-0 left-0 right-0 z-50"
+          >
+            <div className="bg-white border-t border-[#E8EDF5] px-6 py-4 flex items-center justify-between gap-4 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] max-w-2xl mx-auto rounded-t-xl">
+              <div>
+                <p className="text-sm text-[#0C1525] font-medium">Know someone buying land in Tamil Nadu?</p>
+                <p className="text-xs text-[#7A8FAD] mt-0.5">Share HataD with them.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent('Check your property before signing — HataD does land clearance reports in under 3 hours. https://hatad.in')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold px-4 py-2 rounded-sm bg-[#25D366] text-white hover:bg-[#20bd5a] transition-colors"
+                >
+                  Share →
+                </a>
+                <button
+                  onClick={() => setShowSharePrompt(false)}
+                  className="text-xs text-[#B8C5DA] hover:text-[#7A8FAD] transition-colors cursor-pointer px-2 py-2"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -14,7 +14,12 @@ export function PlotMap({ geojson, height = 280 }: PlotMapProps) {
   const mapInstanceRef = useRef<L.Map | null>(null)
 
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return
+    if (!mapRef.current) return
+    // Cleanup any previous map instance (React strict mode double-render)
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove()
+      mapInstanceRef.current = null
+    }
 
     try {
       const parsed = typeof geojson === 'string' ? JSON.parse(geojson) : geojson
@@ -30,38 +35,99 @@ export function PlotMap({ geojson, height = 280 }: PlotMapProps) {
 
       mapInstanceRef.current = map
 
-      // Light minimal tile layer
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 20,
       }).addTo(map)
 
-      // Draw the plot boundary
-      const geoLayer = L.geoJSON(parsed, {
-        style: {
-          color: '#1B4FD8',
-          weight: 2.5,
-          fillColor: '#1B4FD8',
-          fillOpacity: 0.08,
-          dashArray: '6, 4',
-        },
+      // First: add invisible boundary to get bounds for fitting
+      const ghostLayer = L.geoJSON(parsed, {
+        style: { opacity: 0, fillOpacity: 0 },
       }).addTo(map)
 
-      // Fit map to the boundary
-      const bounds = geoLayer.getBounds()
+      const bounds = ghostLayer.getBounds()
       map.fitBounds(bounds, { padding: [30, 30] })
 
-      // Add a marker at centroid
-      const center = bounds.getCenter()
-      L.circleMarker(center, {
-        radius: 4,
-        color: '#1B4FD8',
-        fillColor: '#1B4FD8',
-        fillOpacity: 1,
-        weight: 0,
-      }).addTo(map)
+      // Animate the boundary drawing after tiles load
+      map.whenReady(() => {
+        setTimeout(() => {
+          // Extract coordinates for the animated polyline
+          const coords: L.LatLng[] = []
+          ghostLayer.eachLayer((layer) => {
+            if ('getLatLngs' in layer) {
+              const latLngs = (layer as L.Polygon).getLatLngs()
+              const flat = Array.isArray(latLngs[0]) ? latLngs[0] as L.LatLng[] : latLngs as L.LatLng[]
+              coords.push(...flat)
+              // Close the polygon
+              if (flat.length > 0) coords.push(flat[0])
+            }
+          })
+
+          if (coords.length === 0) {
+            // Fallback: just show static boundary
+            L.geoJSON(parsed, {
+              style: { color: '#1B4FD8', weight: 2.5, fillColor: '#1B4FD8', fillOpacity: 0.08, dashArray: '6, 4' },
+            }).addTo(map)
+            return
+          }
+
+          // Animate: draw the boundary point by point
+          const animatedLine = L.polyline([], {
+            color: '#1B4FD8',
+            weight: 2.5,
+          }).addTo(map)
+
+          const duration = 1200 // ms
+          const stepTime = duration / coords.length
+          let i = 0
+
+          function drawStep() {
+            if (i < coords.length) {
+              animatedLine.addLatLng(coords[i])
+              i++
+              setTimeout(drawStep, stepTime)
+            } else {
+              // Drawing complete — add fill
+              L.geoJSON(parsed, {
+                style: {
+                  color: '#1B4FD8',
+                  weight: 2.5,
+                  fillColor: '#1B4FD8',
+                  fillOpacity: 0.08,
+                },
+              }).addTo(map)
+
+              // Remove the animated line (replaced by filled polygon)
+              map.removeLayer(animatedLine)
+
+              // Add centroid marker with a pop-in effect
+              const center = bounds.getCenter()
+              const marker = L.circleMarker(center, {
+                radius: 0,
+                color: '#1B4FD8',
+                fillColor: '#1B4FD8',
+                fillOpacity: 1,
+                weight: 0,
+              }).addTo(map)
+
+              // Animate marker radius
+              let r = 0
+              function growMarker() {
+                r += 0.5
+                marker.setRadius(r)
+                if (r < 5) requestAnimationFrame(growMarker)
+              }
+              requestAnimationFrame(growMarker)
+            }
+          }
+
+          drawStep()
+        }, 300) // small delay after map ready
+      })
+
+      // Remove ghost layer after animation starts
+      setTimeout(() => map.removeLayer(ghostLayer), 500)
 
     } catch {
-      // Invalid GeoJSON — hide the map
       if (mapRef.current) mapRef.current.style.display = 'none'
     }
 

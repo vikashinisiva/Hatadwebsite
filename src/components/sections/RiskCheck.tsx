@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { SectionLabel } from '@/components/ui/SectionLabel'
@@ -34,6 +34,9 @@ export function RiskCheck() {
   const [error, setError] = useState('')
   const [tngisData, setTngisData] = useState<ClientLookupResult | null>(null)
   const [geoLoading, setGeoLoading] = useState(false)
+  const [sroInfo, setSroInfo] = useState<{ sro: string; zone: string; district: string } | null>(null)
+  const [isTypingSurvey, setIsTypingSurvey] = useState(false)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // ---------------------------------------------------------------------------
   // TNGIS lookup — runs directly in user's browser (bypasses Vercel)
@@ -162,6 +165,15 @@ export function RiskCheck() {
   const gv = tngisData?.guidelineValue
   const hasRealData = !!landData
 
+  // Fetch SRO info when we have village + district
+  useEffect(() => {
+    if (!landData?.village_name) { setSroInfo(null); return }
+    fetch(`/api/sro?village=${encodeURIComponent(landData.village_name)}${landData.district_name ? `&district=${encodeURIComponent(landData.district_name)}` : ''}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d ? setSroInfo({ sro: d.sro, zone: d.zone, district: d.district }) : setSroInfo(null))
+      .catch(() => setSroInfo(null))
+  }, [landData?.village_name, landData?.district_name])
+
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
@@ -224,10 +236,25 @@ export function RiskCheck() {
                       <div>
                         <label className="block text-xs font-medium text-text-secondary tracking-wide mb-2">Survey / Patta Number</label>
                         <input type="text" placeholder="e.g. 89/3" value={surveyNo}
-                          onChange={(e) => { setSurveyNo(e.target.value); setError('') }}
+                          onChange={(e) => {
+                            setSurveyNo(e.target.value); setError('')
+                            if (e.target.value.length > 0) {
+                              setIsTypingSurvey(true)
+                              if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+                              typingTimeoutRef.current = setTimeout(() => setIsTypingSurvey(false), 1500)
+                            } else {
+                              setIsTypingSurvey(false)
+                            }
+                          }}
                           onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
                           className="w-full bg-white border border-border text-text-primary placeholder:text-text-muted text-sm px-4 py-3 rounded-sm focus:outline-none focus:border-accent-blue transition-colors"
                         />
+                        {isTypingSurvey && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-accent-blue animate-pulse" />
+                            <span className="text-[11px] text-accent-blue/70 animate-pulse">Scanning Tamil Nadu records...</span>
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-text-secondary tracking-wide mb-2">District</label>
@@ -338,6 +365,15 @@ export function RiskCheck() {
                               </div>
                             )}
                           </div>
+                          {sroInfo && (
+                            <div className="mt-3 pt-3 border-t border-[#E8EDF5] flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Landmark size={12} className="text-accent-blue" />
+                                <span className="text-xs text-text-secondary">Sub-Registrar Office</span>
+                              </div>
+                              <span className="text-xs text-text-primary font-medium">{sroInfo.sro}, {sroInfo.zone} Zone</span>
+                            </div>
+                          )}
                         </motion.div>
                       )}
 
@@ -451,7 +487,7 @@ export function RiskCheck() {
                               </span>
                               {tngisData?.ecAvailable
                                 ? <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Available</span>
-                                : <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full cursor-help" title="EC exists in government records — retrieval required to analyse">Needs retrieval</span>
+                                : <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full cursor-help" title="EC exists in government records — we'll retrieve and analyse it in your report">We&apos;ll retrieve for you</span>
                               }
                             </div>
                             <div className="flex items-center justify-between">
@@ -460,7 +496,7 @@ export function RiskCheck() {
                               </span>
                               {tngisData?.fmbAvailable
                                 ? <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Available</span>
-                                : <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Manual retrieval required</span>
+                                : <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">We&apos;ll retrieve for you</span>
                               }
                             </div>
                             <div className="flex items-center justify-between">

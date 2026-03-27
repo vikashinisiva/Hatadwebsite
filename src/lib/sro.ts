@@ -106,7 +106,7 @@ function getNormalizedIndex(): Map<string, string[]> {
 export function lookupSRO(villageName: string, district?: string): SROEntry | null {
   if (!villageName?.trim()) return null
 
-  const key = villageName.toLowerCase().trim()
+  const key = villageName.toLowerCase().trim().replace(/[.\s]+$/, '') // strip trailing dots/spaces
 
   // 1. Exact match
   if (cache[key]) return cache[key]
@@ -132,7 +132,25 @@ export function lookupSRO(villageName: string, district?: string): SROEntry | nu
     let bestDist = Infinity
 
     for (const [k, entry] of Object.entries(cache)) {
-      if (entry.district.toLowerCase() !== districtNorm) continue
+      // Partial district match — "Coimbatore" matches "Coimbatore South", "Coimbatore North"
+      const entryDist = entry.district.toLowerCase()
+      if (entryDist !== districtNorm && !entryDist.startsWith(districtNorm) && !districtNorm.startsWith(entryDist)) continue
+      const d = levenshtein(norm, normalize(k))
+      if (d < bestDist && d <= 3) {
+        bestDist = d
+        bestKey = k
+      }
+    }
+
+    if (bestKey) return cache[bestKey]
+  }
+
+  // 4. Last resort — try without district constraint (broader fuzzy)
+  if (norm.length >= 5) {
+    let bestKey: string | null = null
+    let bestDist = Infinity
+
+    for (const [k] of Object.entries(cache)) {
       const d = levenshtein(norm, normalize(k))
       if (d < bestDist && d <= 2) {
         bestDist = d

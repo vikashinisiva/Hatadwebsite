@@ -927,10 +927,10 @@ function ClearancePageInner() {
                     className={cn(inputClass, flashField === 'village' && 'animate-field-flash', autoFilledFields.has('village') && 'bg-[#EBF4FF] border-[#93C5FD]')}
                   />
                   {sroInfo && (
-                    <p className="mt-1.5 text-[10px] text-[#1B4FD8] font-medium flex items-center gap-1">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {sroInfo}
-                    </p>
+                    <div className="mt-2 flex items-center gap-2 bg-[#EBF4FF]/50 border border-[#93C5FD]/30 rounded-md px-3 py-2 animate-field-flash">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1B4FD8" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      <p className="text-[11px] text-[#1B4FD8] font-medium">{sroInfo}</p>
+                    </div>
                   )}
                 </div>
               </div>
