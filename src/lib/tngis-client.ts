@@ -91,9 +91,13 @@ export interface ClientLookupResult {
   guidelineValue: { rate: string; unit: string; landName: string; grouping: string } | null
   elevation: number | null
   geology: string | null
+  geomorphology: string | null
+  soil: string | null
+  landUse: string | null
   masterPlan: string | null
   fmbAvailable: boolean
   ecAvailable: boolean
+  geojson: string | null
   fetchTimeMs: number
 }
 
@@ -105,7 +109,8 @@ export async function clientLookup(lat: number, lon: number): Promise<ClientLook
   const start = Date.now()
   const result: ClientLookupResult = {
     land: null, guidelineValue: null, elevation: null, geology: null,
-    masterPlan: null, fmbAvailable: false, ecAvailable: false, fetchTimeMs: 0,
+    geomorphology: null, soil: null, landUse: null,
+    masterPlan: null, fmbAvailable: false, ecAvailable: false, geojson: null, fetchTimeMs: 0,
   }
 
   // Step 1: Land details (must complete first)

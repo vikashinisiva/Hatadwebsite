@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Script from 'next/script'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
@@ -55,8 +55,17 @@ function formatDateIST(dateStr: string): string {
 }
 
 export default function ClearancePage() {
+  return (
+    <Suspense>
+      <ClearancePageInner />
+    </Suspense>
+  )
+}
+
+function ClearancePageInner() {
   const t = useT()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const PROCESS_STEPS = [
     { icon: FileCheck, label: t('steps.submit'), desc: t('steps.submitDesc') },
@@ -83,6 +92,7 @@ export default function ClearancePage() {
   } | null>(null)
   const [sroInfo, setSroInfo] = useState<string | null>(null)
   const [flashField, setFlashField] = useState<string | null>(null)
+  const [autoFilledFields, setAutoFilledFields] = useState<Set<string>>(new Set())
 
   const [form, setForm] = useState({
     surveyNo: '',
@@ -93,6 +103,37 @@ export default function ClearancePage() {
     phone: '',
     email: '',
   })
+
+  // Auto-fill from URL params (coming from Risk Check)
+  useEffect(() => {
+    const urlSurvey = searchParams.get('surveyNo')
+    const urlDistrict = searchParams.get('district')
+    const urlTaluk = searchParams.get('taluk')
+    const urlVillage = searchParams.get('village')
+
+    if (!urlSurvey && !urlDistrict) return // no params, skip
+
+    const filled = new Set<string>()
+
+    const fill = (field: string, value: string, delay: number) => {
+      if (!value) return
+      filled.add(field)
+      setTimeout(() => {
+        setForm((p) => ({ ...p, [field]: value }))
+        setFlashField(field)
+        setTimeout(() => setFlashField(null), 1200)
+      }, delay)
+    }
+
+    // Stagger each field with enough time to see the magic
+    fill('surveyNo', urlSurvey || '', 600)
+    fill('district', urlDistrict || '', 1400)
+    fill('taluk', urlTaluk || '', 2200)
+    fill('village', urlVillage || '', 3000)
+
+    setTimeout(() => setAutoFilledFields(new Set(filled)), 600)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Resend cooldown countdown
   useEffect(() => {
@@ -171,7 +212,7 @@ export default function ClearancePage() {
             setTimeout(() => {
               setForm((p) => ({ ...p, [field]: value }))
               setFlashField(field)
-              setTimeout(() => setFlashField(null), 800)
+              setTimeout(() => setFlashField(null), 1200)
             }, delay)
           }
           fill('surveyNo', survey, 400)
@@ -446,6 +487,13 @@ export default function ClearancePage() {
 
   const setField = useCallback((key: string, value: string) => {
     setForm((p) => ({ ...p, [key]: value }))
+    // Remove auto-fill highlight when user edits the field
+    setAutoFilledFields((prev) => {
+      if (!prev.has(key)) return prev
+      const next = new Set(prev)
+      next.delete(key)
+      return next
+    })
   }, [])
 
   function DistrictSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -759,9 +807,20 @@ export default function ClearancePage() {
         )}
 
         {/* Form Card */}
-        <p className="text-center text-[15px] text-[#7A8FAD] mb-6">
-          {t('clearance.trustLine')}
-        </p>
+        {autoFilledFields.size > 0 ? (
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="flex items-center gap-1.5 bg-[#EBF4FF] border border-[#93C5FD]/50 rounded-full px-4 py-2">
+              <CheckCircle size={13} className="text-[#1B4FD8]" />
+              <p className="text-[13px] text-[#1B4FD8] font-medium">
+                Property details carried over from your search
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-[15px] text-[#7A8FAD] mb-6">
+            {t('clearance.trustLine')}
+          </p>
+        )}
 
         <div className="bg-white rounded-2xl border border-[#CBD5E8]/60 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.03)] overflow-hidden">
           <div className="p-6 sm:p-8">
@@ -823,7 +882,7 @@ export default function ClearancePage() {
                   placeholder="e.g. 89/3"
                   value={form.surveyNo}
                   onChange={(e) => setField('surveyNo', e.target.value)}
-                  className={cn(inputClass, 'text-base py-3.5', flashField === 'surveyNo' && 'animate-field-flash')}
+                  className={cn(inputClass, 'text-base py-3.5', flashField === 'surveyNo' && 'animate-field-flash', autoFilledFields.has('surveyNo') && 'bg-[#EBF4FF] border-[#93C5FD]')}
                   autoFocus
                 />
                 <p className="text-[12px] text-[#B8C5DA] mt-1.5">{t('clearance.surveyHelper')}</p>
@@ -834,7 +893,7 @@ export default function ClearancePage() {
                 <label className="block text-xs font-medium text-[#3D5278] tracking-wide mb-2">
                   {t('clearance.districtLabel')} <span className="text-red-500">*</span>
                 </label>
-                <div className={cn(flashField === 'district' && 'animate-field-flash rounded-lg')}>
+                <div className={cn(flashField === 'district' && 'animate-field-flash rounded-lg', autoFilledFields.has('district') && '[&_select]:bg-[#EBF4FF] [&_select]:border-[#93C5FD]')}>
                   <DistrictSelect
                     value={form.district}
                     onChange={(v) => setField('district', v)}
@@ -853,7 +912,7 @@ export default function ClearancePage() {
                     placeholder="e.g. Tambaram"
                     value={form.taluk}
                     onChange={(e) => setField('taluk', e.target.value)}
-                    className={cn(inputClass, flashField === 'taluk' && 'animate-field-flash')}
+                    className={cn(inputClass, flashField === 'taluk' && 'animate-field-flash', autoFilledFields.has('taluk') && 'bg-[#EBF4FF] border-[#93C5FD]')}
                   />
                 </div>
                 <div>
@@ -865,7 +924,7 @@ export default function ClearancePage() {
                     placeholder="Village name"
                     value={form.village}
                     onChange={(e) => setField('village', e.target.value)}
-                    className={cn(inputClass, flashField === 'village' && 'animate-field-flash')}
+                    className={cn(inputClass, flashField === 'village' && 'animate-field-flash', autoFilledFields.has('village') && 'bg-[#EBF4FF] border-[#93C5FD]')}
                   />
                   {sroInfo && (
                     <p className="mt-1.5 text-[10px] text-[#1B4FD8] font-medium flex items-center gap-1">

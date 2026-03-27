@@ -591,11 +591,12 @@ body {
 }
 
 @keyframes field-flash {
-  0% { box-shadow: 0 0 0 0 rgba(27, 79, 216, 0); }
-  30% { box-shadow: 0 0 0 3px rgba(27, 79, 216, 0.15); border-color: #1B4FD8; }
-  100% { box-shadow: 0 0 0 0 rgba(27, 79, 216, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(27, 79, 216, 0); transform: scale(1); }
+  15% { box-shadow: 0 0 0 4px rgba(27, 79, 216, 0.2); border-color: #1B4FD8; transform: scale(1.01); }
+  40% { box-shadow: 0 0 0 4px rgba(27, 79, 216, 0.12); border-color: #1B4FD8; }
+  100% { box-shadow: 0 0 0 0 rgba(27, 79, 216, 0); transform: scale(1); }
 }
 
 .animate-field-flash {
-  animation: field-flash 0.8s ease-out;
+  animation: field-flash 1.2s ease-out;
 }
