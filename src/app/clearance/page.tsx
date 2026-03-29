@@ -193,13 +193,16 @@ function ClearancePageInner() {
         }
 
         if (land) {
-          const survey = land.survey_number + (land.sub_division ? `/${land.sub_division}` : '')
+          const survey = (land.survey_number || '') + (land.sub_division ? `/${land.sub_division}` : '')
+          const districtName = land.district_name || ''
+          const talukName = land.taluk_name || ''
+          const villageName = land.village_name || ''
 
           setGeoDetails({
             survey,
-            district: land.district_name,
-            taluk: land.taluk_name,
-            village: land.village_name,
+            district: districtName,
+            taluk: talukName,
+            village: villageName,
             landType: land.rural_urban === 'rural' ? 'Rural' : 'Urban',
             guideline: gv && Number(gv.rate) > 0 ? `\u20B9${Number(gv.rate).toLocaleString('en-IN')} per ${gv.unit}` : undefined,
             landClass: gv?.landName || undefined,
@@ -216,9 +219,9 @@ function ClearancePageInner() {
             }, delay)
           }
           fill('surveyNo', survey, 400)
-          fill('district', land.district_name, 900)
-          fill('taluk', land.taluk_name, 1400)
-          fill('village', land.village_name, 1900)
+          fill('district', districtName, 900)
+          fill('taluk', talukName, 1400)
+          fill('village', villageName, 1900)
 
           track('geo_autofill', 'clearance', { district: land.district_name, survey: land.survey_number })
         } else {

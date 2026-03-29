@@ -7,10 +7,10 @@ import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import {
   Search, Lock, ShieldAlert, FileSearch, Scale, MapPin, AlertTriangle,
-  CheckCircle, Navigation, IndianRupee, Landmark, FileCheck, Mountain, Layers, Map as MapIcon, TreePine,
+  CheckCircle, Navigation, Landmark, FileCheck, Mountain, Layers, Map as MapIcon, TreePine,
 } from 'lucide-react'
 import { track } from '@/lib/track'
-import { clientLookup, type ClientLookupResult } from '@/lib/tngis-client'
+import type { ClientLookupResult } from '@/lib/tngis-client'
 
 const PlotMap = dynamic(() => import('@/components/ui/PlotMap').then(m => ({ default: m.PlotMap })), { ssr: false })
 
@@ -116,8 +116,8 @@ export function RiskCheck() {
         if (data) {
           setTngisData(data)
           if (data.land) {
-            setSurveyNo(data.land.survey_number + (data.land.sub_division ? `/${data.land.sub_division}` : ''))
-            setDistrict(data.land.district_name)
+            setSurveyNo((data.land.survey_number || '') + (data.land.sub_division ? `/${data.land.sub_division}` : ''))
+            setDistrict(data.land.district_name || '')
           }
         }
 
@@ -330,7 +330,7 @@ export function RiskCheck() {
                           <p className="text-[#C9A84C] text-[10px] font-medium tracking-[0.15em] uppercase">Property Risk Preview</p>
                           <p className="text-white text-sm font-semibold mt-1">
                             {hasRealData
-                              ? `Survey No. ${landData!.survey_number}/${landData!.sub_division || ''}, ${landData!.village_name}, ${landData!.district_name}`
+                              ? `Survey No. ${landData!.survey_number || ''}/${landData!.sub_division || ''}, ${landData!.village_name || ''}, ${landData!.district_name || ''}`
                               : `Survey No. ${surveyNo}, ${district}`
                             }
                           </p>
@@ -354,9 +354,9 @@ export function RiskCheck() {
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="text-base text-text-primary font-semibold">
-                                Survey {landData!.survey_number}/{landData!.sub_division || ''}, {landData!.village_name}
+                                Survey {landData!.survey_number || ''}/{landData!.sub_division || ''}, {landData!.village_name || ''}
                               </p>
-                              <p className="text-sm text-text-secondary">{landData!.taluk_name}, {landData!.district_name} · {landData!.rural_urban === 'rural' ? 'Rural' : 'Urban'}</p>
+                              <p className="text-sm text-text-secondary">{landData!.taluk_name || ''}, {landData!.district_name || ''} · {landData!.rural_urban === 'rural' ? 'Rural' : 'Urban'}</p>
                             </div>
                             {landData!.ulpin && (
                               <div className="text-right shrink-0 ml-3 hidden sm:block">
@@ -588,7 +588,7 @@ export function RiskCheck() {
                         <AlertTriangle size={14} className="text-amber-600 mt-0.5 shrink-0" />
                         <p className="text-xs text-amber-800 leading-relaxed">
                           {hasRealData
-                            ? `We verified this property exists in ${landData!.district_name} government records. A full clearance report will retrieve ownership details, analyse the EC, and cross-reference all 6 sources for contradictions.`
+                            ? `We verified this property exists in ${landData!.district_name || 'your district'} government records. A full clearance report will retrieve ownership details, analyse the EC, and cross-reference all 6 sources for contradictions.`
                             : `Government records are available for properties in ${district}. A full clearance report will retrieve and cross-reference all 6 sources to flag contradictions, encumbrances, or litigation specific to your survey number.`
                           }
                         </p>
