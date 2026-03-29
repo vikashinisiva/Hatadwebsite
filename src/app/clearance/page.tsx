@@ -196,7 +196,7 @@ function ClearancePageInner() {
           const survey = (land.survey_number || '') + (land.sub_division ? `/${land.sub_division}` : '')
           const districtName = land.district_name || ''
           const talukName = land.taluk_name || ''
-          const villageName = land.village_name || ''
+          const villageName = land.village_name || land.revenue_town_name || land.revenue_ward_name || ''
 
           setGeoDetails({
             survey,

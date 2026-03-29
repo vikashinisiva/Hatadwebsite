@@ -330,7 +330,7 @@ export function RiskCheck() {
                           <p className="text-[#C9A84C] text-[10px] font-medium tracking-[0.15em] uppercase">Property Risk Preview</p>
                           <p className="text-white text-sm font-semibold mt-1">
                             {hasRealData
-                              ? `Survey No. ${landData!.survey_number || ''}/${landData!.sub_division || ''}, ${landData!.village_name || ''}, ${landData!.district_name || ''}`
+                              ? `Survey No. ${landData!.survey_number || ''}/${landData!.sub_division || ''}, ${(landData!.village_name || landData!.revenue_town_name || '') as string}, ${landData!.district_name || ''}`
                               : `Survey No. ${surveyNo}, ${district}`
                             }
                           </p>
@@ -354,7 +354,7 @@ export function RiskCheck() {
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="text-base text-text-primary font-semibold">
-                                Survey {landData!.survey_number || ''}/{landData!.sub_division || ''}, {landData!.village_name || ''}
+                                Survey {landData!.survey_number || ''}/{landData!.sub_division || ''}, {(landData!.village_name || landData!.revenue_town_name || '') as string}
                               </p>
                               <p className="text-sm text-text-secondary">{landData!.taluk_name || ''}, {landData!.district_name || ''} · {landData!.rural_urban === 'rural' ? 'Rural' : 'Urban'}</p>
                             </div>
