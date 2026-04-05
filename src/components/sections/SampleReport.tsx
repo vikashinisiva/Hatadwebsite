@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
-import { FileText, Download, Eye, CheckCircle, AlertTriangle, Shield, MapPin, Scale } from 'lucide-react'
+import { FileText, CheckCircle, AlertTriangle, Shield, MapPin, Scale } from 'lucide-react'
 import { track } from '@/lib/track'
 
 const REPORT_SECTIONS = [
@@ -19,7 +19,6 @@ const REPORT_SECTIONS = [
 export function SampleReport() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-60px' })
-  const [showPreview, setShowPreview] = useState(false)
 
   return (
     <section className="relative py-28 lg:py-36 px-6 md:px-12 lg:px-20 xl:px-28 2xl:px-40 overflow-hidden">
@@ -51,7 +50,7 @@ export function SampleReport() {
               variants={fadeInUp}
               className="text-lg text-text-secondary font-light max-w-2xl mx-auto"
             >
-              This is a real HataD clearance report — redacted for privacy. Every report follows this structure.
+              Here&apos;s what a completed clearance report looks like. Every report you order follows this exact structure.
             </motion.p>
           </div>
 
@@ -129,37 +128,18 @@ export function SampleReport() {
                   </div>
                 </div>
 
-                {/* Preview / Download buttons */}
-                <div className="px-6 py-5 flex flex-col sm:flex-row gap-3">
+                {/* Request sample CTA */}
+                <div className="px-6 py-5">
                   <a
-                    href="/sample-report.pdf"
+                    href="https://wa.me/918122642341?text=Hi%2C%20I%E2%80%99d%20like%20to%20see%20a%20sample%20HataD%20clearance%20report."
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => track('sample_report', 'download')}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-sm text-sm font-semibold bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238] transition-colors cursor-pointer"
+                    onClick={() => track('sample_report', 'request')}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-sm text-sm font-semibold bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238] transition-colors cursor-pointer"
                   >
-                    <Download size={15} />
-                    Download Sample PDF
+                    Request a Sample Report
                   </a>
-                  <button
-                    onClick={() => { setShowPreview(!showPreview); track('sample_report', 'preview') }}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-sm text-sm font-medium border border-border text-text-secondary hover:border-accent-blue hover:text-accent-blue transition-colors cursor-pointer"
-                  >
-                    <Eye size={15} />
-                    {showPreview ? 'Hide Preview' : 'Quick Preview'}
-                  </button>
                 </div>
-
-                {/* Inline PDF preview */}
-                {showPreview && (
-                  <div className="px-6 pb-6">
-                    <iframe
-                      src="/sample-report.pdf"
-                      className="w-full h-[500px] rounded-sm border border-border"
-                      title="Sample HataD Clearance Report"
-                    />
-                  </div>
-                )}
               </div>
 
               <p className="text-center text-[10px] text-text-muted mt-4">
