@@ -10,6 +10,7 @@ import { Security } from '@/components/sections/Security'
 import { BiggerPicture } from '@/components/sections/BiggerPicture'
 import { NvidiaInception } from '@/components/sections/NvidiaInception'
 import { RiskCheck } from '@/components/sections/RiskCheck'
+import { SampleReport } from '@/components/sections/SampleReport'
 import { Testimonials } from '@/components/sections/Testimonials'
 import { FinalCTA } from '@/components/sections/FinalCTA'
 import { AnnouncementBanner } from '@/components/ui/AnnouncementBanner'
@@ -29,6 +30,7 @@ export default function Home() {
         <WhatWeVerify />
         <WhoItsFor />
         <TheReport />
+        <SampleReport />
         <Security />
         <Testimonials />
         <BiggerPicture />
