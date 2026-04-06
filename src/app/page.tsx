@@ -13,7 +13,6 @@ import { RiskCheck } from '@/components/sections/RiskCheck'
 import { SampleReport } from '@/components/sections/SampleReport'
 import { Testimonials } from '@/components/sections/Testimonials'
 import { FinalCTA } from '@/components/sections/FinalCTA'
-import { AnnouncementBanner } from '@/components/ui/AnnouncementBanner'
 import { MobileStickyBar } from '@/components/ui/MobileStickyBar'
 import { ScrollProgress } from '@/components/ui/ScrollProgress'
 
@@ -21,7 +20,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-text-primary">
       <PillNav />
-      <AnnouncementBanner />
       <main>
         <Hero />
         <Problem />

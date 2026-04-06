@@ -10,7 +10,9 @@ export function MobileStickyBar() {
 
   useEffect(() => {
     function handleScroll() {
-      setVisible(window.scrollY > 600)
+      const scrolled = window.scrollY
+      const nearBottom = window.innerHeight + scrolled >= document.documentElement.scrollHeight - 200
+      setVisible(scrolled > 600 && !nearBottom)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)

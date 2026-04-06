@@ -4,6 +4,9 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import { I18nProvider } from '@/lib/i18n/context'
+import TermlyCMP from '@/components/TermlyCMP'
+
+const TERMLY_WEBSITE_UUID = '1df20e0c-32e3-4b9c-9837-de16e39fec01'
 
 const dmSans = DM_Sans({
   variable: '--font-dm',
@@ -49,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${dmSans.variable} antialiased`}>
+        <TermlyCMP websiteUUID={TERMLY_WEBSITE_UUID} autoBlock />
         <I18nProvider>
           {children}
         </I18nProvider>

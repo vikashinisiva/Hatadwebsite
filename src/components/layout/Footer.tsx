@@ -50,6 +50,12 @@ export function Footer() {
           <a href="/privacy" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
             Privacy Policy
           </a>
+          <a href="/cookies" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
+            Cookie Policy
+          </a>
+          <a href="#" className="termly-display-preferences text-xs text-text-muted hover:text-text-secondary transition-colors">
+            Consent Preferences
+          </a>
         </div>
       </div>
     </footer>

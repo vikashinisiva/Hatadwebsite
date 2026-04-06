@@ -10,173 +10,185 @@ export default function PrivacyPage() {
       <div className="bg-[#0D1B2A] py-10 px-6">
         <div className="max-w-3xl mx-auto">
           <p className="text-[#C9A84C] text-xs font-medium tracking-[0.15em] uppercase mb-2">HataD &mdash; Land Clearance Intelligence</p>
-          <h1 className="text-white text-2xl font-bold tracking-tight">Privacy Policy</h1>
-          <p className="text-white/40 text-xs mt-1">Effective Date: 25 March 2026</p>
+          <h1 className="text-white text-2xl font-bold tracking-tight">Privacy Notice</h1>
+          <p className="text-white/40 text-xs mt-1">Last updated: April 06, 2026</p>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <div className="space-y-8 text-sm text-text-secondary leading-relaxed">
+        <div className="space-y-6 text-sm text-text-secondary leading-relaxed">
 
           <p>
-            This Privacy Policy describes how Hypse Aero Private Limited (&ldquo;Company&rdquo;, &ldquo;we&rdquo;,
-            &ldquo;us&rdquo;, &ldquo;our&rdquo;) collects, uses, stores, and protects your personal information
-            when you use the HataD Land Clearance Intelligence platform (&ldquo;Service&rdquo;) at hypseaero.in.
+            This Privacy Notice for Hypse Aero Private Limited (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) describes how and why we
+            might access, collect, store, use, and/or share (&ldquo;process&rdquo;) your personal information when you use our services (&ldquo;Services&rdquo;),
+            including when you visit our website at <a href="https://www.hatad.in" className="text-accent-blue underline">https://www.hatad.in</a>,
+            upload land documents for verification, or contact us.
           </p>
-          <p>By using the Service, you consent to the practices described in this Policy.</p>
+          <p>
+            Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for
+            making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not
+            use our Services. If you still have questions, please contact us at{' '}
+            <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>.
+          </p>
 
-          {/* 1. Information We Collect */}
           <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">1. Information We Collect</h2>
-
-            <h3 className="text-sm font-medium text-text-primary mt-4 mb-2">1.1 Information You Provide</h3>
-            <p className="mb-2">When you submit a clearance report request, we collect:</p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li>Full name (if provided)</li>
-              <li>Email address</li>
-              <li>Phone number</li>
-              <li>Property details: district, taluk, village, survey number, patta number</li>
-              <li>Documents uploaded by you (if using the Upload Documents flow)</li>
+            <h2 className="text-base font-semibold text-text-primary mb-2">Summary of Key Points</h2>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>What personal information do we process?</strong> We may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use.</li>
+              <li><strong>Do we process sensitive personal information?</strong> We do not process sensitive personal information such as race, sexual orientation, or religious beliefs.</li>
+              <li><strong>Do we collect information from third parties?</strong> We may collect information from public databases (e.g., Tamil Nadu GIS, SRO records) strictly to deliver your clearance report.</li>
+              <li><strong>How do we process your information?</strong> To provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law.</li>
+              <li><strong>With whom do we share information?</strong> Only with service providers (payment, hosting, email) and as required by law.</li>
+              <li><strong>Your rights.</strong> Depending on where you live, you may have rights to access, correct, or delete your data.</li>
             </ul>
+          </section>
 
-            <h3 className="text-sm font-medium text-text-primary mt-4 mb-2">1.2 Information We Retrieve on Your Behalf</h3>
-            <p className="mb-2">To generate your report, we retrieve the following from government databases:</p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li>Encumbrance Certificate (EC) from TNREGINET</li>
-              <li>Patta and A-Register from the Revenue Department</li>
-              <li>Field Measurement Book (FMB) from the Taluk Office</li>
-              <li>Sale Deed and registration records from the Sub-Registrar Office</li>
-              <li>Court records from the District Court database</li>
-              <li>Planning and land use records from DTCP / CMDA where applicable</li>
-            </ul>
-
-            <h3 className="text-sm font-medium text-text-primary mt-4 mb-2">1.3 Automatically Collected Information</h3>
+          <section>
+            <h2 className="text-base font-semibold text-text-primary mb-2">1. What Information Do We Collect?</h2>
+            <h3 className="text-sm font-semibold text-text-primary mt-3 mb-1">Personal information you disclose to us</h3>
             <p>
-              We collect standard web analytics data including IP address, browser type, device type,
-              and pages visited. This data is used for service improvement and security monitoring only.
+              We collect personal information that you voluntarily provide when you register on the Services, request a clearance report, upload
+              land documents, make a payment, or contact us. This may include your name, phone number, email address, property details, survey numbers,
+              and uploaded documents (Encumbrance Certificates, Patta, FMB, Sale Deeds, etc.).
             </p>
-          </section>
-
-          {/* 2. How We Use Your Information */}
-          <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">2. How We Use Your Information</h2>
-            <p className="mb-2">We use your information to:</p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li>Process your clearance report request</li>
-              <li>Retrieve relevant government records for your property</li>
-              <li>Generate and deliver your Land Clearance Report</li>
-              <li>Send transactional emails (request confirmation, report delivery)</li>
-              <li>Issue GST invoices for your payment</li>
-              <li>Communicate with you about your request status</li>
-              <li>Improve the accuracy and quality of our Service</li>
-            </ul>
-            <p className="mt-3">We do not use your personal information for marketing without your explicit consent.</p>
-          </section>
-
-          {/* 3. Data Storage and Security */}
-          <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">3. Data Storage and Security</h2>
-            <p className="mb-2">Your data is stored on secured cloud infrastructure with the following protections:</p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li>Row-level security (RLS) ensuring each user can only access their own data</li>
-              <li>Encrypted storage for all uploaded and retrieved documents</li>
-              <li>Signed URLs with 7-day expiry for report downloads &mdash; links cannot be accessed by others</li>
-              <li>Access to the admin panel is restricted to authorised Company personnel only</li>
-            </ul>
             <p className="mt-3">
-              Uploaded and retrieved documents are permanently deleted after report delivery.
-              Account information (email, phone, request history) is retained for 2 years from
-              the date of your last request, after which it is permanently deleted unless required by law.
+              <strong>Sensitive information.</strong> We do not process sensitive information (race, religion, health, biometrics, etc.).
+            </p>
+            <p className="mt-3">
+              <strong>Payment data.</strong> We use Razorpay to process payments. We do not store your card or bank details &mdash; these are
+              handled directly by Razorpay. You can review their privacy policy at{' '}
+              <a href="https://razorpay.com/privacy/" className="text-accent-blue underline" target="_blank" rel="noopener noreferrer">razorpay.com/privacy</a>.
+            </p>
+            <p className="mt-3">
+              All personal information that you provide to us must be true, complete, and accurate, and you must notify us of any changes.
+            </p>
+            <h3 className="text-sm font-semibold text-text-primary mt-4 mb-1">Information automatically collected</h3>
+            <p>
+              Some information &mdash; such as your IP address, browser and device characteristics, operating system, language preferences, referring
+              URLs, country, and usage patterns &mdash; is collected automatically when you visit our Services. This does not reveal your specific
+              identity and is primarily used for security, analytics, and improving the Services. We also collect information through cookies and
+              similar technologies (see our <a href="/cookies" className="text-accent-blue underline">Cookie Policy</a>).
             </p>
           </section>
 
-          {/* 4. Data Sharing */}
           <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">4. Data Sharing</h2>
-            <p className="mb-2">
-              We do not sell, rent, or trade your personal information. We share data only in the
-              following limited circumstances:
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li>
-                <strong>Payment processing:</strong> Your payment details are processed by Razorpay.
-                We do not store card or bank details.
-              </li>
-              <li>
-                <strong>Email delivery:</strong> Transactional emails are sent via a third-party email
-                service provider. Only your email address and report reference are shared for this purpose.
-              </li>
-              <li>
-                <strong>Legal requirement:</strong> If required by a court order, government authority,
-                or applicable law, we may disclose your information. We will notify you of such requests
-                where legally permitted.
-              </li>
+            <h2 className="text-base font-semibold text-text-primary mb-2">2. How Do We Process Your Information?</h2>
+            <p>We process your personal information for the following reasons:</p>
+            <ul className="list-disc pl-5 space-y-1 mt-2">
+              <li>To deliver the clearance report you requested and fulfill your order;</li>
+              <li>To verify your identity and process payments;</li>
+              <li>To communicate with you about your report, updates, and support queries;</li>
+              <li>To improve, troubleshoot, and secure our Services;</li>
+              <li>To prevent fraud and comply with legal obligations;</li>
+              <li>For internal analytics, reporting, and business operations;</li>
+              <li>For any other purpose with your consent.</li>
             </ul>
           </section>
 
-          {/* 5. Your Rights */}
           <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">5. Your Rights</h2>
-            <p className="mb-2">You have the right to:</p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li>Access the personal data we hold about you</li>
-              <li>Request correction of inaccurate data</li>
-              <li>Request deletion of your data (subject to legal retention requirements)</li>
-              <li>Withdraw consent for any optional data processing</li>
+            <h2 className="text-base font-semibold text-text-primary mb-2">3. When and With Whom Do We Share Your Information?</h2>
+            <p>We may share your information in the following situations:</p>
+            <ul className="list-disc pl-5 space-y-1 mt-2">
+              <li><strong>Service providers.</strong> With trusted third parties who perform services on our behalf &mdash; including payment processing (Razorpay), hosting (Vercel, Supabase, GCP), email delivery, and analytics (Google Analytics).</li>
+              <li><strong>Legal obligations.</strong> Where required by law, regulation, legal process, or governmental request.</li>
+              <li><strong>Business transfers.</strong> In connection with any merger, sale of company assets, financing, or acquisition.</li>
+              <li><strong>With your consent.</strong> For any other purpose disclosed to you at the time of collection.</li>
             </ul>
+            <p className="mt-3">We do not sell your personal information to third parties.</p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-text-primary mb-2">4. Do We Use Cookies and Other Tracking Technologies?</h2>
+            <p>
+              Yes. We use cookies and similar tracking technologies (like web beacons and pixels) to maintain the security of our Services, save your
+              preferences, and analyze usage. Specific information about how we use cookies and how you can refuse them is set out in our{' '}
+              <a href="/cookies" className="text-accent-blue underline">Cookie Policy</a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-text-primary mb-2">5. Is Your Information Transferred Internationally?</h2>
+            <p>
+              Our primary servers are located in India (Mumbai region). Some service providers (such as Vercel and Google Analytics) may process data
+              in other countries. Regardless of location, we take reasonable steps to protect your information in accordance with this Privacy Notice
+              and applicable law.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-text-primary mb-2">6. How Long Do We Keep Your Information?</h2>
+            <p>
+              We keep your personal information only for as long as necessary to fulfill the purposes outlined in this Privacy Notice, unless a longer
+              retention period is required by law (such as tax, accounting, or legal requirements). Uploaded documents and completed reports are
+              retained for up to 12 months, after which they are securely deleted unless you request earlier deletion.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-text-primary mb-2">7. Do We Collect Information from Minors?</h2>
+            <p>
+              We do not knowingly collect data from or market to children under 18 years of age. By using the Services, you represent that you are
+              at least 18. If we learn that personal information from users less than 18 has been collected, we will deactivate the account and
+              promptly delete such data. If you become aware of any such data, please contact us at{' '}
+              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-text-primary mb-2">8. What Are Your Privacy Rights?</h2>
+            <p>
+              Depending on where you are located, you may have the right to: access your personal information, correct inaccuracies, request deletion,
+              restrict or object to processing, data portability, and withdraw consent at any time.
+            </p>
             <p className="mt-3">
               To exercise any of these rights, contact us at{' '}
-              <a href="mailto:info@hypseaero.in" className="text-accent-blue hover:underline">info@hypseaero.in</a>{' '}
-              with your email address and Reference ID.
+              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>. We will respond in accordance with
+              applicable data protection laws.
+            </p>
+            <p className="mt-3">
+              <strong>Withdrawing consent.</strong> You may withdraw your consent at any time. This will not affect the lawfulness of processing before
+              its withdrawal. Upon request to terminate your account, we will deactivate or delete your account and information from our active databases,
+              subject to any retention required for fraud prevention, legal compliance, or dispute resolution.
             </p>
           </section>
 
-          {/* 6. Cookies */}
           <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">6. Cookies</h2>
+            <h2 className="text-base font-semibold text-text-primary mb-2">9. Controls for Do-Not-Track Features</h2>
             <p>
-              We use essential cookies only &mdash; to maintain your session and authentication state.
-              We do not use advertising or tracking cookies. You may disable cookies in your browser
-              settings, but this may affect your ability to use the Service.
+              Most web browsers include a Do-Not-Track (&ldquo;DNT&rdquo;) feature. As no uniform technology standard has been finalized, we do not
+              currently respond to DNT browser signals. If a standard is adopted in the future, we will update this Notice accordingly.
             </p>
           </section>
 
-          {/* 7. Third-Party Links */}
           <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">7. Third-Party Links</h2>
+            <h2 className="text-base font-semibold text-text-primary mb-2">10. Updates to This Notice</h2>
             <p>
-              Our emails and platform may contain links to government websites (TNREGINET, etc.)
-              and third-party services. We are not responsible for the privacy practices of these external sites.
+              We may update this Privacy Notice from time to time. The updated version will be indicated by an updated &ldquo;Last updated&rdquo; date
+              at the top. If we make material changes, we may notify you by email or by prominently posting a notice on our Services. Please review
+              this Notice periodically.
             </p>
           </section>
 
-          {/* 8. Children's Privacy */}
           <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">8. Children&rsquo;s Privacy</h2>
-            <p>
-              The Service is not directed at individuals under 18 years of age.
-              We do not knowingly collect personal information from minors.
+            <h2 className="text-base font-semibold text-text-primary mb-2">11. How Can You Contact Us?</h2>
+            <p>If you have questions or comments about this Notice, contact us by post or email:</p>
+            <p className="mt-3">
+              Hypse Aero Private Limited<br />
+              77/C, Vittal Nagar, Ganeshapuram<br />
+              Coimbatore, Tamil Nadu 641023<br />
+              India<br />
+              Phone: +91 81226 42341<br />
+              Email: <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>
             </p>
           </section>
 
-          {/* 9. Changes to This Policy */}
           <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">9. Changes to This Policy</h2>
+            <h2 className="text-base font-semibold text-text-primary mb-2">12. How Can You Review, Update, or Delete Your Data?</h2>
             <p>
-              We may update this Privacy Policy from time to time. The updated policy will be posted
-              at hypseaero.in/privacy with a revised effective date. We will notify you of material
-              changes via email if you have an active account.
-            </p>
-          </section>
-
-          {/* 10. Contact */}
-          <section>
-            <h2 className="text-base font-semibold text-text-primary mb-3">10. Contact</h2>
-            <p>
-              For any privacy-related questions or requests, contact:<br />
-              <strong>Hypse Aero Private Limited</strong><br />
-              Email: <a href="mailto:info@hypseaero.in" className="text-accent-blue hover:underline">info@hypseaero.in</a><br />
-              Coimbatore, Tamil Nadu, India
+              You may have the right to request access to the personal information we hold about you, correct inaccuracies, or request deletion.
+              To make such a request, please email us at{' '}
+              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a> with your request and we will respond
+              as required by applicable law.
             </p>
           </section>
 
