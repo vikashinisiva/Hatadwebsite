@@ -27,10 +27,10 @@ export default function Home() {
         <Problem />
         <RiskCheck />
         <Solution />
+        <SampleReport />
         <WhatWeVerify />
         <WhoItsFor />
         <TheReport />
-        <SampleReport />
         <Security />
         <Testimonials />
         <BiggerPicture />
