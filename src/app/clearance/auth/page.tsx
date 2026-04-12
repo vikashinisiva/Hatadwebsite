@@ -194,7 +194,7 @@ function AuthPageInner() {
                 disabled={loading}
                 className={cn(
                   'w-full py-3 rounded-sm text-sm font-semibold tracking-wide transition-all cursor-pointer',
-                  'bg-[#1B4FD8] text-white hover:bg-[#1636D0]',
+                  'bg-[#0C1525] text-white hover:bg-[#152238]',
                   loading && 'opacity-60 cursor-not-allowed',
                 )}
               >
@@ -237,7 +237,7 @@ function AuthPageInner() {
                 disabled={loading}
                 className={cn(
                   'w-full py-3 rounded-sm text-sm font-semibold tracking-wide transition-all cursor-pointer',
-                  'bg-[#1B4FD8] text-white hover:bg-[#1636D0]',
+                  'bg-[#0C1525] text-white hover:bg-[#152238]',
                   loading && 'opacity-60 cursor-not-allowed',
                 )}
               >

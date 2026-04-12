@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DM_Sans } from 'next/font/google'
+import { DM_Sans, Playfair_Display, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
@@ -14,24 +14,69 @@ const dmSans = DM_Sans({
   weight: ['300', '400', '500', '600', '700'],
 })
 
+const playfair = Playfair_Display({
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  weight: ['400', '700'],
+})
+
+const jetbrains = JetBrains_Mono({
+  variable: '--font-jetbrains',
+  subsets: ['latin'],
+  weight: ['400', '500'],
+})
+
 export const metadata: Metadata = {
-  title: 'HataD — Land Clearance Intelligence for Tamil Nadu',
+  title: {
+    default: 'HataD — Land Clearance Intelligence for Tamil Nadu',
+    template: '%s | HataD',
+  },
   description:
-    'HataD verifies every critical land document against every other — cross-referenced, risk-flagged, and delivered in under 3 hours.',
+    '1 in 3 land deals in Tamil Nadu has a legal defect. HataD cross-verifies 10+ government records and delivers a risk report in 3 hours. ₹3,599.',
   keywords: [
-    'land clearance',
-    'land verification',
+    'land clearance Tamil Nadu',
+    'land verification India',
     'property due diligence',
     'land document verification',
+    'encumbrance certificate check',
+    'patta verification',
+    'land fraud detection',
+    'property risk report',
     'HataD',
     'Hypse Aero',
+    'land records Tamil Nadu',
+    'EC verification',
   ],
+  metadataBase: new URL('https://www.hatad.in'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'HataD — Land Clearance Intelligence',
     description:
-      'Cross-referenced land document verification. Delivered in under 3 hours. Before you sign.',
+      '1 in 3 land deals in Tamil Nadu has a legal defect. Cross-verify 10+ government records before you pay. Report in 3 hours.',
     type: 'website',
     locale: 'en_IN',
+    siteName: 'HataD',
+    url: 'https://www.hatad.in',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'HataD — Land Clearance Intelligence for Tamil Nadu',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HataD — Land Clearance Intelligence',
+    description: '1 in 3 land deals in Tamil Nadu has a legal defect. Verify before you buy.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 }
 
@@ -39,6 +84,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'HataD',
+              legalName: 'Hypse Aero Private Limited',
+              url: 'https://www.hatad.in',
+              logo: 'https://www.hatad.in/icon.png',
+              description: 'Land clearance intelligence platform for Tamil Nadu. Cross-verifies 10+ government land records and delivers risk reports in 3 hours.',
+              telephone: '+918122642341',
+              email: 'info@hypseaero.in',
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: '77/C, Vittal Nagar, Ganeshapuram',
+                addressLocality: 'Coimbatore',
+                addressRegion: 'Tamil Nadu',
+                postalCode: '641023',
+                addressCountry: 'IN',
+              },
+              sameAs: ['https://www.hypseaero.in'],
+              areaServed: {
+                '@type': 'State',
+                name: 'Tamil Nadu',
+                containedInPlace: { '@type': 'Country', name: 'India' },
+              },
+              priceRange: '₹3,599',
+            }),
+          }}
+        />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-4N3VPT49KZ" />
         <script
           dangerouslySetInnerHTML={{
@@ -51,7 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${dmSans.variable} antialiased`}>
+      <body className={`${dmSans.variable} ${playfair.variable} ${jetbrains.variable} antialiased`}>
         <TermlyCMP websiteUUID={TERMLY_WEBSITE_UUID} autoBlock />
         <I18nProvider>
           {children}

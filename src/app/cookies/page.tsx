@@ -1,7 +1,9 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Cookie Policy | HataD by Hypse Aero',
+  title: 'Cookie Policy',
+  description: 'How HataD uses cookies and tracking technologies on hatad.in. Manage your consent preferences.',
+  alternates: { canonical: '/cookies' },
 }
 
 export default function CookiesPage() {

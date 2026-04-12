@@ -84,12 +84,7 @@ export function Problem() {
   }, [isInView])
 
   return (
-    <section id="product" className="relative pt-96 pb-32 px-6 md:px-12 lg:px-20 xl:px-28 2xl:px-40 overflow-hidden">
-      {/* Top fade to blend from hero */}
-      <div
-        className="absolute top-0 left-0 right-0 h-72 pointer-events-none z-[1]"
-        style={{ background: 'linear-gradient(to bottom, #0C1525 0%, #131e33 25%, #1e2d4a 45%, #3d5278 65%, #8a9bba 82%, var(--color-background) 100%)' }}
-      />
+    <section id="product" className="relative pt-20 sm:pt-28 pb-32 px-6 md:px-12 lg:px-20 xl:px-28 2xl:px-40 overflow-hidden">
       <RadialGlow color="#CBD5E8" size="600px" opacity="0.5" position="100% 50%" />
 
       <div ref={ref}>

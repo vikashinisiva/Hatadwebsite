@@ -30,7 +30,7 @@ export function Button({
 
   const variants = {
     primary:
-      'bg-accent-blue text-white border border-accent-blue hover:bg-accent-glow hover:border-accent-glow hover:shadow-[0_4px_20px_rgba(27,79,216,0.3)]',
+      'bg-[#0C1525] text-white border border-[#0C1525] hover:bg-[#152238] hover:border-[#152238]',
     ghost:
       'bg-transparent text-text-primary border border-border hover:border-text-secondary hover:bg-surface',
   }

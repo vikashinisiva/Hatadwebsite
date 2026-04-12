@@ -1,7 +1,9 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions | HataD by Hypse Aero',
+  title: 'Terms & Conditions',
+  description: 'Terms and conditions for using HataD land clearance intelligence services by Hypse Aero Private Limited, Coimbatore, Tamil Nadu.',
+  alternates: { canonical: '/terms' },
 }
 
 export default function TermsPage() {

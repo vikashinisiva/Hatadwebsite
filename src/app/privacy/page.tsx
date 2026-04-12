@@ -1,7 +1,9 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | HataD by Hypse Aero',
+  title: 'Privacy Notice',
+  description: 'How HataD by Hypse Aero Private Limited collects, uses, and protects your personal information when using our land clearance services.',
+  alternates: { canonical: '/privacy' },
 }
 
 export default function PrivacyPage() {

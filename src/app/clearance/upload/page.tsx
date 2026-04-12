@@ -530,7 +530,7 @@ export default function UploadPage() {
                   disabled={submitting || otpValue.length < 6}
                   className={cn(
                     'w-full py-3.5 rounded-xl text-sm font-semibold tracking-wide transition-all cursor-pointer',
-                    'bg-[#1B4FD8] text-white hover:bg-[#1636D0] shadow-lg shadow-[#1B4FD8]/20',
+                    'bg-[#0C1525] text-white hover:bg-[#152238] shadow-lg shadow-[#1B4FD8]/20',
                     (submitting || otpValue.length < 6) && 'opacity-60 cursor-not-allowed',
                   )}
                 >
@@ -576,7 +576,7 @@ export default function UploadPage() {
                   disabled={submitting}
                   className={cn(
                     'mt-8 w-full py-3.5 rounded-xl text-sm font-semibold tracking-wide transition-all cursor-pointer',
-                    'bg-[#1B4FD8] text-white hover:bg-[#1636D0] shadow-lg shadow-[#1B4FD8]/20',
+                    'bg-[#0C1525] text-white hover:bg-[#152238] shadow-lg shadow-[#1B4FD8]/20',
                     'hover:shadow-xl hover:shadow-[#1B4FD8]/25 hover:-translate-y-px',
                     submitting && 'opacity-60 cursor-not-allowed',
                   )}

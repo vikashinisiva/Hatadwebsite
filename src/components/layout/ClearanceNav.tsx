@@ -122,7 +122,7 @@ export function ClearanceNav({ backHref, backLabel }: ClearanceNavProps) {
               href="/clearance/auth?next=/clearance"
               className={cn(
                 'text-xs font-medium px-4 py-2 rounded-md transition-all',
-                'bg-[#1B4FD8] text-white hover:bg-[#1636D0] shadow-sm shadow-[#1B4FD8]/20',
+                'bg-[#0C1525] text-white hover:bg-[#152238] shadow-sm shadow-[#1B4FD8]/20',
               )}
             >
               Sign In
