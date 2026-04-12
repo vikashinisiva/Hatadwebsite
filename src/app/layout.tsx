@@ -48,6 +48,10 @@ export const metadata: Metadata = {
     'EC verification',
   ],
   metadataBase: new URL('https://www.hatad.in'),
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
   alternates: {
     canonical: '/',
   },
@@ -84,6 +88,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Preload Mapbox for hero — starts fetching before JS executes */}
+        <link rel="preload" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" as="style" />
+        <link rel="preconnect" href="https://api.mapbox.com" />
+        <link rel="preconnect" href="https://events.mapbox.com" />
+        <link rel="dns-prefetch" href="https://api.mapbox.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

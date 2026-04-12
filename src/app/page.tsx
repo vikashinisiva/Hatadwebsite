@@ -1,20 +1,23 @@
+import dynamic from 'next/dynamic'
 import { PillNav } from '@/components/layout/PillNav'
 import { Footer } from '@/components/layout/Footer'
 import { Hero } from '@/components/sections/Hero'
-import { Problem } from '@/components/sections/Problem'
-import { Solution } from '@/components/sections/Solution'
-import { WhatWeVerify } from '@/components/sections/WhatWeVerify'
-import { WhoItsFor } from '@/components/sections/WhoItsFor'
-import { TheReport } from '@/components/sections/TheReport'
-import { Security } from '@/components/sections/Security'
-import { BiggerPicture } from '@/components/sections/BiggerPicture'
-import { NvidiaInception } from '@/components/sections/NvidiaInception'
-import { RiskCheck } from '@/components/sections/RiskCheck'
-import { SampleReport } from '@/components/sections/SampleReport'
-import { Testimonials } from '@/components/sections/Testimonials'
-import { FinalCTA } from '@/components/sections/FinalCTA'
 import { MobileStickyBar } from '@/components/ui/MobileStickyBar'
 import { ScrollProgress } from '@/components/ui/ScrollProgress'
+
+// Lazy-load below-the-fold sections — only load when user scrolls
+const Problem = dynamic(() => import('@/components/sections/Problem').then(m => ({ default: m.Problem })))
+const RiskCheck = dynamic(() => import('@/components/sections/RiskCheck').then(m => ({ default: m.RiskCheck })))
+const Solution = dynamic(() => import('@/components/sections/Solution').then(m => ({ default: m.Solution })))
+const SampleReport = dynamic(() => import('@/components/sections/SampleReport').then(m => ({ default: m.SampleReport })))
+const WhatWeVerify = dynamic(() => import('@/components/sections/WhatWeVerify').then(m => ({ default: m.WhatWeVerify })))
+const WhoItsFor = dynamic(() => import('@/components/sections/WhoItsFor').then(m => ({ default: m.WhoItsFor })))
+const TheReport = dynamic(() => import('@/components/sections/TheReport').then(m => ({ default: m.TheReport })))
+const Security = dynamic(() => import('@/components/sections/Security').then(m => ({ default: m.Security })))
+const Testimonials = dynamic(() => import('@/components/sections/Testimonials').then(m => ({ default: m.Testimonials })))
+const BiggerPicture = dynamic(() => import('@/components/sections/BiggerPicture').then(m => ({ default: m.BiggerPicture })))
+const NvidiaInception = dynamic(() => import('@/components/sections/NvidiaInception').then(m => ({ default: m.NvidiaInception })))
+const FinalCTA = dynamic(() => import('@/components/sections/FinalCTA').then(m => ({ default: m.FinalCTA })))
 
 export default function Home() {
   return (
