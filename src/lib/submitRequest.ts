@@ -2,7 +2,6 @@ import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
 export interface ClearanceFormData {
-  tab: 'upload' | 'property'
   files: File[]
   address: string
   district: string
@@ -65,8 +64,8 @@ export async function submitRequest(
   })
 
   if (!insertRes.ok) {
-    const data = await insertRes.json()
-    throw new Error('Something went wrong while submitting your request. Please try again.')
+    const data = await insertRes.json().catch(() => ({}))
+    throw new Error(data?.error || 'Something went wrong while submitting your request. Please try again.')
   }
 
   return requestId

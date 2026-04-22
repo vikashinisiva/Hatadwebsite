@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendNotification } from '@/lib/sendNotification'
+import { CLEARANCE_PRICE_PAISE } from '@/lib/constants'
 
 interface ClearanceRequestBody {
   id: string
@@ -12,10 +13,6 @@ interface ClearanceRequestBody {
   deadline: string
   paymentId: string
 }
-
-// Expected prices in paise
-const PRICE_UPLOAD = 159900   // ₹1,599
-const PRICE_PROPERTY = 359900 // ₹3,599
 
 export async function POST(request: Request) {
   try {
@@ -49,60 +46,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Determine request type and expected price
-    const isUploadRequest = (body.documentUrls?.length || 0) > 0
-    const expectedAmount = isUploadRequest ? PRICE_UPLOAD : PRICE_PROPERTY
-
-    // Atomic: mark payment as used ONLY IF it exists and is currently unused
-    // This prevents TOCTOU race conditions — only one concurrent request can succeed
-    const { data: markedPayment, error: markError } = await supabaseAdmin
-      .from('verified_payments')
-      .update({ used: true })
-      .eq('payment_id', body.paymentId)
-      .eq('used', false)
-      .select('payment_id, amount')
-      .single()
-
-    if (markError || !markedPayment) {
-      return NextResponse.json(
-        { error: 'Payment not verified or already used.' },
-        { status: 402 },
-      )
-    }
-
-    // Validate payment amount matches the request type
-    if (markedPayment.amount !== expectedAmount) {
-      // Rollback: unmark payment
-      await supabaseAdmin
-        .from('verified_payments')
-        .update({ used: false })
-        .eq('payment_id', body.paymentId)
-
-      return NextResponse.json(
-        { error: `Payment amount mismatch. Expected ₹${expectedAmount / 100} for this request type.` },
-        { status: 402 },
-      )
-    }
-
-    const { error } = await supabaseAdmin.from('clearance_requests').insert({
-      id: body.id,
-      user_id: user.id,
-      status: 'pending',
-      property_details: body.propertyDetails,
-      document_urls: body.documentUrls,
-      notify_email: body.notifyEmail,
-      deadline: body.deadline,
-      payment_id: body.paymentId,
+    // Atomic: mark payment used + insert clearance row in one Postgres transaction.
+    // If either step fails, both roll back — no orphaned "paid but no report" state.
+    const { error: rpcError } = await supabaseAdmin.rpc('create_clearance_with_payment', {
+      p_request_id: body.id,
+      p_user_id: user.id,
+      p_payment_id: body.paymentId,
+      p_property: body.propertyDetails,
+      p_doc_urls: body.documentUrls || [],
+      p_notify_email: body.notifyEmail,
+      p_deadline: body.deadline,
+      p_expected_amount: CLEARANCE_PRICE_PAISE,
     })
 
-    if (error) {
-      // Rollback: unmark payment so user can retry
-      await supabaseAdmin
-        .from('verified_payments')
-        .update({ used: false })
-        .eq('payment_id', body.paymentId)
-
-      console.error('Clearance insert error:', error)
+    if (rpcError) {
+      const msg = rpcError.message || ''
+      if (msg.includes('payment_not_verified_or_used')) {
+        return NextResponse.json(
+          { error: 'Payment not verified or already used.' },
+          { status: 402 },
+        )
+      }
+      if (msg.includes('amount_mismatch')) {
+        return NextResponse.json(
+          { error: `Payment amount mismatch. Expected ₹${CLEARANCE_PRICE_PAISE / 100}.` },
+          { status: 402 },
+        )
+      }
+      console.error('Clearance RPC error:', rpcError)
       return NextResponse.json(
         { error: 'Failed to create request. Please try again.' },
         { status: 500 },

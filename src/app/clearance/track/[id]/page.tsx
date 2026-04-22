@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
+import { pickVerifier } from '@/app/clearance/onboarding/steps'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -399,15 +400,23 @@ export default function TrackPage() {
           </div>
           <p className="text-[#0C1525] font-semibold text-base">Report not found</p>
           <p className="text-[#7A8FAD] text-sm mt-2 leading-relaxed">
-            This report doesn&apos;t exist or you don&apos;t have access to it.
+            This report doesn&apos;t exist or you don&apos;t have access to it. If you just paid, it may take a moment to appear.
           </p>
-          <a
-            href="/clearance"
-            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#1B4FD8] hover:underline"
-          >
-            <ArrowLeft size={14} />
-            Back to clearance
-          </a>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <a
+              href="/clearance"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[#1B4FD8] hover:underline"
+            >
+              <ArrowLeft size={14} />
+              Back to clearance
+            </a>
+            <a
+              href="/profile"
+              className="text-xs text-[#7A8FAD] hover:text-[#3D5278] transition-colors"
+            >
+              View all your requests
+            </a>
+          </div>
         </div>
       </div>
     )
@@ -641,6 +650,30 @@ export default function TrackPage() {
 
       {/* ── Main content ── */}
       <div className="px-6 md:px-12 lg:px-20 xl:px-28 -mt-5 pb-16 relative z-10">
+
+        {/* Case owner — named verifier */}
+        {(() => {
+          const verifier = pickVerifier(request.id)
+          return (
+            <div className="mb-4 bg-white border border-[#CBD5E8]/60 rounded-2xl px-5 py-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-full bg-[#0C1525] text-[#C9A84C] flex items-center justify-center font-semibold text-sm flex-shrink-0 font-mono tracking-wide">
+                {verifier.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] uppercase tracking-[0.08em] text-[#7A8FAD] font-medium">
+                  {isReady ? 'Case handled by' : 'Your case is with'}
+                </p>
+                <p className="text-sm font-semibold text-[#0C1525] mt-0.5">{verifier.name}</p>
+                <p className="text-xs text-[#3D5278] mt-0.5">End-to-end on your verification, start to delivery.</p>
+              </div>
+              {!isReady && (
+                <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] text-emerald-600 font-semibold flex-shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Online
+                </span>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Ready — download banner */}
         {isReady && request.report_url && (

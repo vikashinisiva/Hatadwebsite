@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
+import { CLEARANCE_PRICE_PAISE } from '@/lib/constants'
 
 function getRazorpay() {
   return new Razorpay({
@@ -18,19 +19,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
 
-    // Validate amount — only allow known prices (in paise)
-    const ALLOWED_AMOUNTS = [159900, 359900] // ₹1,599 and ₹3,599
-    const orderAmount = ALLOWED_AMOUNTS.includes(amount) ? amount : 359900
+    if (amount !== CLEARANCE_PRICE_PAISE) {
+      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
+    }
 
     const order = await razorpay.orders.create({
-      amount: orderAmount,
+      amount: CLEARANCE_PRICE_PAISE,
       currency: 'INR',
       receipt: `clearance_${Date.now()}`,
       notes: {
         email,
         phone: phone || '',
         name: name || '',
-        product: orderAmount === 159900 ? 'Land Clearance Report — Document Upload' : 'Land Clearance Report',
+        product: 'Land Clearance Report',
       },
     })
 

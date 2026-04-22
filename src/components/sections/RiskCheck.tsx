@@ -595,7 +595,7 @@ export function RiskCheck() {
                       </div>
 
                       <a
-                        href={`/clearance?${new URLSearchParams({
+                        href={`/clearance/onboarding?${new URLSearchParams({
                           ...(surveyNo && { surveyNo }),
                           ...(district && { district }),
                           ...(landData?.taluk_name && { taluk: landData.taluk_name }),

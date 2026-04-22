@@ -2,6 +2,29 @@ export const SITE_NAME = 'HataD'
 export const SITE_TAGLINE = 'Hypse Aero Pvt Ltd'
 export const SITE_LOCATION = 'Tamil Nadu, India'
 
+export const STORAGE_KEYS = {
+  OAUTH_NEXT: 'hatad_oauth_next',
+  PENDING_CLEARANCE: 'hatad_pending_clearance',
+  AUTO_PAY: 'hatad_auto_pay',
+  PAID_PENDING_SUBMIT: 'hatad_paid_pending_submit',
+} as const
+
+export const TN_DISTRICTS = [
+  'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore',
+  'Dharmapuri', 'Dindigul', 'Erode', 'Kallakurichi', 'Kancheepuram',
+  'Kanyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai',
+  'Nagapattinam', 'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai',
+  'Ramanathapuram', 'Ranipet', 'Salem', 'Sivagangai', 'Tenkasi',
+  'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli',
+  'Tirupattur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur',
+  'Vellore', 'Villupuram', 'Virudhunagar',
+]
+
+export const EMAIL_REGEX = /^\S+@\S+\.\S+$/
+export const PHONE_REGEX = /^\d{10}$/
+
+export const CLEARANCE_PRICE_PAISE = 359900
+
 export const NAV_LINKS = [
   { label: 'Product', href: '#product' },
   { label: "Who It's For", href: '#who' },

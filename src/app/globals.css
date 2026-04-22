@@ -90,6 +90,66 @@ body {
   filter: sepia(0.6) saturate(0.8) hue-rotate(-10deg) contrast(1.2) brightness(0.88);
 }
 
+/* Hero parallax — map scrolls slower than content */
+.hero-parallax {
+  will-change: transform;
+}
+@supports (transform: translateZ(0)) {
+  section:has(.hero-parallax) {
+    perspective: 1px;
+    transform-style: preserve-3d;
+  }
+  .hero-parallax {
+    transform: translateZ(-0.5px) scale(1.5);
+  }
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(203, 213, 232, 0.4);
+}
+
+/* Button ripple effect */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+.btn-ripple:active::after {
+  width: 200%;
+  height: 200%;
+  opacity: 1;
+  transition: width 0s, height 0s, opacity 0s;
+}
+.btn-ripple:not(:active)::after {
+  width: 200%;
+  height: 200%;
+  opacity: 0;
+  transition: width 0.5s, height 0.5s, opacity 0.4s;
+}
+
+/* Hover tilt on cards */
+.tilt-card {
+  transition: transform 0.3s ease;
+}
+.tilt-card:hover {
+  transform: perspective(800px) rotateX(2deg) rotateY(-2deg) scale(1.01);
+}
+
 /* Noise texture overlay */
 .noise-overlay::after {
   content: '';

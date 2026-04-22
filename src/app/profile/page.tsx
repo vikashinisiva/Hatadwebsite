@@ -83,7 +83,7 @@ export default function ProfilePage() {
   async function handleSignOut() {
     setSigningOut(true)
     await supabase.auth.signOut()
-    router.push('/clearance')
+    window.location.href = '/'
   }
 
   if (loading) {
@@ -113,13 +113,20 @@ export default function ProfilePage() {
         {/* User info card */}
         <div className="bg-surface border border-border rounded-sm p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#0D1B2A] flex items-center justify-center">
-              <span className="text-[#C9A84C] font-semibold text-sm">
-                {(user.email?.[0] || '?').toUpperCase()}
-              </span>
-            </div>
+            {user.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url as string} alt="" className="w-10 h-10 rounded-full border border-border" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-[#0D1B2A] flex items-center justify-center">
+                <span className="text-[#C9A84C] font-semibold text-sm">
+                  {(user.email?.[0] || '?').toUpperCase()}
+                </span>
+              </div>
+            )}
             <div>
-              <p className="text-sm font-medium text-text-primary">{user.email}</p>
+              {user.user_metadata?.full_name && (
+                <p className="text-sm font-semibold text-text-primary">{user.user_metadata.full_name as string}</p>
+              )}
+              <p className={cn('text-text-secondary', user.user_metadata?.full_name ? 'text-xs' : 'text-sm font-medium text-text-primary')}>{user.email}</p>
               <div className="flex items-center gap-1 mt-0.5">
                 <Clock size={10} className="text-text-muted" />
                 <p className="text-[11px] text-text-muted">
@@ -127,11 +134,6 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-text-muted bg-surface-raised border border-border rounded-sm px-3 py-2">
-            <Mail size={12} />
-            <span>{user.email}</span>
           </div>
         </div>
 
@@ -212,7 +214,7 @@ export default function ProfilePage() {
         {requests.length === 0 && (
           <div className="bg-surface border border-border rounded-sm p-6 mb-6 text-center">
             <p className="text-sm text-text-muted">No clearance requests yet</p>
-            <a href="/clearance" className="text-xs text-[#C9A84C] hover:underline mt-2 inline-block">
+            <a href="/clearance/onboarding" className="text-xs text-[#C9A84C] hover:underline mt-2 inline-block">
               Request your first report →
             </a>
           </div>
@@ -221,7 +223,7 @@ export default function ProfilePage() {
         {/* Actions */}
         <div className="space-y-3">
           <a
-            href="/clearance"
+            href="/clearance/onboarding"
             className="block w-full py-3 rounded-sm text-sm font-semibold tracking-wide text-center bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238] transition-colors"
           >
             Request clearance report →

@@ -37,7 +37,7 @@ export function FinalCTA() {
           </div>
 
           <motion.div variants={fadeInUp} className="flex flex-col items-center gap-3 mb-2">
-            <a href="/clearance" onClick={() => track('cta_click', 'final_cta')}>
+            <a href="/clearance/onboarding" onClick={() => track('cta_click', 'final_cta')}>
               <Button variant="primary" size="lg">
                 {t('cta.button')}
               </Button>

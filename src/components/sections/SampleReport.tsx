@@ -9,11 +9,11 @@ import { track } from '@/lib/track'
 
 const REPORT_SECTIONS = [
   { icon: MapPin, label: 'Property Identification', desc: 'Survey number, ULPIN, location, land classification' },
-  { icon: FileText, label: 'Encumbrance Certificate Analysis', desc: 'Full EC history with transaction-by-transaction breakdown' },
-  { icon: Scale, label: 'Title Chain Verification', desc: 'Ownership chain mapped from current holder to origin' },
+  { icon: Scale, label: 'Title Chain Verification', desc: 'Ownership chain mapped from current holder through every transfer' },
   { icon: Shield, label: 'Litigation & Court Records', desc: 'District court case search for disputes or injunctions' },
-  { icon: CheckCircle, label: 'Cross-Document Contradictions', desc: 'Mismatches flagged across EC, Patta, FMB, and Sale Deed' },
-  { icon: AlertTriangle, label: 'Risk Assessment & Recommendation', desc: 'Clear / Flagged verdict with detailed findings' },
+  { icon: CheckCircle, label: 'Cross-Document Contradictions', desc: 'Mismatches flagged across the documents related to your land' },
+  { icon: AlertTriangle, label: 'Risk Assessment & Recommendation', desc: 'Clear / Flagged verdict with detailed findings and citation' },
+  { icon: FileText, label: 'Encumbrance & Liability Summary', desc: 'Mortgages, charges, and liens extracted from EC records' },
 ]
 
 export function SampleReport() {

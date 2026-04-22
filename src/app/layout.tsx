@@ -5,6 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import { I18nProvider } from '@/lib/i18n/context'
 import TermlyCMP from '@/components/TermlyCMP'
+import { AuthCallback } from '@/components/AuthCallback'
 
 const TERMLY_WEBSITE_UUID = '1df20e0c-32e3-4b9c-9837-de16e39fec01'
 
@@ -88,6 +89,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Pre-hydration OAuth overlay — hides page instantly when tokens are in the URL hash.
+            Runs before React renders, so no flash of landing page during Google redirect flow. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                if (typeof window === 'undefined') return;
+                var h = window.location.hash || '';
+                if (h.indexOf('access_token=') === -1) return;
+                var s = document.createElement('style');
+                s.id = '__hatad_auth_overlay_style';
+                s.textContent = 'html,body{background:#F4F7FC!important}body>*:not(#__hatad_auth_overlay){visibility:hidden!important}';
+                document.head.appendChild(s);
+                document.addEventListener('DOMContentLoaded', function(){
+                  if (document.getElementById('__hatad_auth_overlay')) return;
+                  var d = document.createElement('div');
+                  d.id = '__hatad_auth_overlay';
+                  d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#F4F7FC;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';
+                  d.innerHTML = '<div style="text-align:center"><div style="width:32px;height:32px;border:2px solid rgba(201,168,76,.25);border-top-color:#C9A84C;border-radius:50%;margin:0 auto;animation:__hs 0.8s linear infinite"></div><p style="font-size:13px;color:#7A8FAD;margin-top:16px">Signing you in...</p></div><style>@keyframes __hs{to{transform:rotate(360deg)}}</style>';
+                  document.body.appendChild(d);
+                });
+              })();
+            `,
+          }}
+        />
         {/* Preload Mapbox for hero — starts fetching before JS executes */}
         <link rel="preload" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" as="style" />
         <link rel="preconnect" href="https://api.mapbox.com" />
@@ -138,6 +164,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${dmSans.variable} ${playfair.variable} ${jetbrains.variable} antialiased`}>
         <TermlyCMP websiteUUID={TERMLY_WEBSITE_UUID} autoBlock />
+        <AuthCallback />
         <I18nProvider>
           {children}
         </I18nProvider>

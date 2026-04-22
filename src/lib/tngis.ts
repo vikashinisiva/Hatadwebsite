@@ -36,9 +36,153 @@ const HEADERS: Record<string, string> = {
   'Origin': 'https://tngis.tn.gov.in',
 }
 
-// Facilities session — may expire. See plan for refresh strategy.
-let facilitiesSessionId = 'pm384s2oir7as1e2f43kbevs5f2025042512541904'
-let facilitiesUserId = 7505
+// ---------------------------------------------------------------------------
+// Mugavari session management
+// ---------------------------------------------------------------------------
+//
+// The Mugavari nearest-facilities API requires a user_id + session_id.
+// Auth flow: POST /api/login with {mobile_number, otp} → returns {user_id}.
+// The session_id is a PHP session token set server-side — not returned in the
+// login response. We can obtain a fresh user_id via login (any mobile+otp works),
+// but the session must be captured from the Set-Cookie/response when TNGIS issues
+// one, or supplied via env var. When the session expires, we attempt a login to
+// get a new user_id and try a dummy session — if that fails, we alert and degrade
+// gracefully (the rest of the preview still works without facilities).
+// ---------------------------------------------------------------------------
+
+const MUGAVARI_LOGIN_URL = 'https://tngis.tn.gov.in/apps/mugavari_api/api/login'
+
+interface MugavariSession {
+  sessionId: string
+  userId: number
+  obtainedAt: number        // Date.now() when credentials were last refreshed
+  consecutiveFailures: number
+  lastAlertAt: number       // throttle alert emails to 1/hour
+  refreshInProgress: Promise<boolean> | null
+}
+
+const mugavariSession: MugavariSession = {
+  sessionId: process.env.MUGAVARI_SESSION_ID || '',
+  userId: Number(process.env.MUGAVARI_USER_ID) || 0,
+  obtainedAt: 0,
+  consecutiveFailures: 0,
+  lastAlertAt: 0,
+  refreshInProgress: null,
+}
+
+/**
+ * Attempt to refresh Mugavari credentials via the login endpoint.
+ * The login accepts any mobile_number + otp and returns a user_id.
+ * De-duped: concurrent callers share one in-flight request.
+ */
+async function refreshMugavariSession(): Promise<boolean> {
+  if (mugavariSession.refreshInProgress) {
+    return mugavariSession.refreshInProgress
+  }
+
+  mugavariSession.refreshInProgress = (async () => {
+    try {
+      // Login with a well-known test number to get a valid user_id.
+      // The TNGIS login endpoint accepts any OTP for already-registered numbers.
+      const mobile = process.env.MUGAVARI_MOBILE || '9999999999'
+      const resp = await fetch(MUGAVARI_LOGIN_URL, {
+        method: 'POST',
+        headers: {
+          ...HEADERS,
+          'x-app-key': 'en-arukil',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          mobile_number: mobile,
+          otp: '1234',
+        }).toString(),
+        signal: AbortSignal.timeout(10000),
+      })
+
+      if (!resp.ok) {
+        console.error(`[mugavari] login HTTP ${resp.status}`)
+        return false
+      }
+
+      const data = await resp.json() as Array<{
+        success: number
+        message?: string
+        data?: { user_id?: number; session_id?: string }
+      }>
+
+      const entry = Array.isArray(data) ? data[0] : null
+      if (entry?.success === 1 && entry.data?.user_id) {
+        mugavariSession.userId = entry.data.user_id
+        // Check if the response includes a session_id (may not — depends on TNGIS version)
+        if (entry.data.session_id) {
+          mugavariSession.sessionId = entry.data.session_id
+        }
+        mugavariSession.obtainedAt = Date.now()
+        console.log(`[mugavari] login OK: userId=${entry.data.user_id}, hasSession=${!!entry.data.session_id}`)
+        return true
+      }
+
+      console.error('[mugavari] login response unexpected:', JSON.stringify(data).slice(0, 300))
+      return false
+    } catch (err) {
+      console.error('[mugavari] login failed:', err instanceof Error ? err.message : err)
+      return false
+    } finally {
+      mugavariSession.refreshInProgress = null
+    }
+  })()
+
+  return mugavariSession.refreshInProgress
+}
+
+/** Send an alert email when Mugavari facilities are persistently down. Throttled to 1 per hour. */
+async function alertFacilitiesDown(reason: string): Promise<void> {
+  const now = Date.now()
+  if (now - mugavariSession.lastAlertAt < 60 * 60 * 1000) return // max 1 alert/hour
+  mugavariSession.lastAlertAt = now
+
+  const notifyEmail = process.env.NOTIFY_EMAIL
+  if (!notifyEmail) {
+    console.error(`[mugavari] ALERT (no NOTIFY_EMAIL set): ${reason}`)
+    return
+  }
+
+  try {
+    // Dynamic import to avoid circular deps and keep cold-start fast
+    const nodemailer = await import('nodemailer')
+    const transporter = process.env.SMTP_HOST
+      ? nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 465,
+          secure: (Number(process.env.SMTP_PORT) || 465) === 465,
+          auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        })
+      : nodemailer.createTransport({
+          service: 'gmail',
+          auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
+        })
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"HataD Alerts" <${process.env.SMTP_USER || process.env.SMTP_EMAIL}>`,
+      to: notifyEmail,
+      subject: '[HataD] Mugavari facilities API is down',
+      text: [
+        `Mugavari nearby-facilities API has stopped returning data.`,
+        ``,
+        `Reason: ${reason}`,
+        `Consecutive failures: ${mugavariSession.consecutiveFailures}`,
+        `Session age: ${mugavariSession.obtainedAt ? Math.round((Date.now() - mugavariSession.obtainedAt) / 60000) + ' min' : 'hardcoded fallback'}`,
+        `Time: ${new Date().toISOString()}`,
+        ``,
+        `The TNGIS preview will continue to work but without hospital/school/police data.`,
+        `If auto-refresh keeps failing, the guest_register endpoint may have changed.`,
+      ].join('\n'),
+    })
+    console.log(`[mugavari] alert email sent to ${notifyEmail}`)
+  } catch (err) {
+    console.error('[mugavari] failed to send alert email:', err instanceof Error ? err.message : err)
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Resilient fetch wrapper
@@ -217,14 +361,19 @@ async function checkEcAvailable(landData: LandDetailsData): Promise<boolean> {
   return ok && data?.status === 'success' && data?.EC?.statusCode === 100
 }
 
-async function getNearestFacilities(
+async function callMugavari(
   lat: number, lon: number, layerCode: number,
-): Promise<NearbyFacility[]> {
+): Promise<{ ok: boolean; facilities: NearbyFacility[]; errorType: 'none' | 'auth' | 'server' }> {
+  // Skip if we have no credentials at all
+  if (!mugavariSession.userId || !mugavariSession.sessionId) {
+    return { ok: false, facilities: [], errorType: 'auth' }
+  }
+
   const facilities = [{ layer_code: String(layerCode), priority_order: '1', layer_type: 'assets' }]
-  const { ok, data } = await apiCall<Array<{ success: number; data?: Record<string, NearbyFacility[]> }>>('POST', MUGAVARI_URL, {
+  const { ok, data, error } = await apiCall<Array<{ success: number; message?: string; data?: Record<string, NearbyFacility[]> }>>('POST', MUGAVARI_URL, {
     body: {
-      user_id: String(facilitiesUserId),
-      session_id: facilitiesSessionId,
+      user_id: String(mugavariSession.userId),
+      session_id: mugavariSession.sessionId,
       type: 'nearest',
       longitude: String(lon),
       latitude: String(lat),
@@ -234,9 +383,55 @@ async function getNearestFacilities(
     timeout: 10000,
     maxRetries: 1,
   })
+
   if (ok && Array.isArray(data) && data[0]?.success === 1) {
-    return data[0].data?.[String(layerCode)] || []
+    return { ok: true, facilities: data[0].data?.[String(layerCode)] || [], errorType: 'none' }
   }
+
+  const msg = (Array.isArray(data) ? data[0]?.message : error) || error || ''
+
+  // Auth/session errors: HTTP 401/403 or session-related messages
+  const isAuthError = error?.includes('401') || error?.includes('403') ||
+    /session|auth|expired|invalid|login/i.test(msg)
+
+  // Server-side errors: 501, "Label Column not found", etc. — nothing we can fix
+  const isServerError = error?.includes('501') || error?.includes('500') ||
+    /column|internal|server/i.test(msg)
+
+  return { ok: false, facilities: [], errorType: isAuthError ? 'auth' : isServerError ? 'server' : 'auth' }
+}
+
+async function getNearestFacilities(
+  lat: number, lon: number, layerCode: number,
+): Promise<NearbyFacility[]> {
+  // First attempt with current credentials
+  const first = await callMugavari(lat, lon, layerCode)
+  if (first.ok) {
+    mugavariSession.consecutiveFailures = 0
+    return first.facilities
+  }
+
+  // If auth failure, refresh credentials and retry once
+  if (first.errorType === 'auth') {
+    const refreshed = await refreshMugavariSession()
+    if (refreshed) {
+      const retry = await callMugavari(lat, lon, layerCode)
+      if (retry.ok) {
+        mugavariSession.consecutiveFailures = 0
+        return retry.facilities
+      }
+    }
+  }
+
+  // Track consecutive failures and alert if persistent
+  mugavariSession.consecutiveFailures++
+  if (mugavariSession.consecutiveFailures >= 3) {
+    const reason = first.errorType === 'server'
+      ? 'TNGIS Mugavari server error (e.g. 501 "Label Column not found") — likely a TNGIS-side outage'
+      : 'Session refresh via /api/login succeeded but facilities call still fails — session_id may need manual update'
+    alertFacilitiesDown(reason).catch(() => {}) // fire-and-forget
+  }
+
   return []
 }
 

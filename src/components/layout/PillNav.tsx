@@ -7,11 +7,14 @@ import gsap from 'gsap'
 import { NAV_LINKS, SITE_NAME, SITE_TAGLINE } from '@/lib/constants'
 import { Button } from '@/components/ui/Button'
 import { useI18n } from '@/lib/i18n/context'
+import { supabase } from '@/lib/supabase'
 
 export function PillNav() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeLink, setActiveLink] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [isSignedIn, setIsSignedIn] = useState(false)
   const { locale, setLocale, t } = useI18n()
 
   const navRef = useRef<HTMLDivElement>(null)
@@ -22,6 +25,18 @@ export function PillNav() {
     const onScroll = () => setScrolled(window.scrollY > 80)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsSignedIn(!!session)
+      setAvatarUrl((session?.user?.user_metadata?.avatar_url as string) || null)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setIsSignedIn(!!s)
+      setAvatarUrl((s?.user?.user_metadata?.avatar_url as string) || null)
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   // Track active section via IntersectionObserver
@@ -133,16 +148,31 @@ export function PillNav() {
             ))}
           </div>
 
-          {/* Language toggle + CTA */}
+          {/* Language toggle + Auth + CTA */}
           <div className="pill-nav-cta flex items-center gap-3">
             <button
               onClick={() => setLocale(locale === 'en' ? 'ta' : 'en')}
-              className="text-xs font-medium px-2.5 py-1.5 rounded-sm transition-colors cursor-pointer bg-white/10 hover:bg-white/20 text-white/70 hover:text-white"
+              className="text-xs font-medium px-2.5 py-1.5 rounded-sm transition-colors cursor-pointer bg-[#0D1B2A]/5 hover:bg-[#0D1B2A]/10 text-text-secondary hover:text-text-primary"
               title={locale === 'en' ? 'தமிழில் காண' : 'View in English'}
             >
               {locale === 'en' ? 'தமிழ்' : 'EN'}
             </button>
-            <a href="/clearance">
+            {isSignedIn ? (
+              <a href="/profile" className="shrink-0">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="w-7 h-7 rounded-full border border-border" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-[#0D1B2A]/8 border border-border flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-secondary"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                )}
+              </a>
+            ) : (
+              <a href="/clearance/auth?next=/profile" className="text-xs font-medium px-3 py-1.5 rounded-sm transition-colors bg-[#0D1B2A] text-white hover:bg-[#152238]">
+                Sign In
+              </a>
+            )}
+            <a href="/clearance/onboarding">
               <Button variant="primary" size="sm">
                 {t('nav.getReport')}
               </Button>
@@ -191,13 +221,22 @@ export function PillNav() {
                 </button>
               ))}
               <div style={{ paddingTop: '1.5rem' }} className="space-y-3">
+                {isSignedIn ? (
+                  <a href="/profile" className="block w-full text-sm font-medium py-2.5 rounded-sm text-center transition-colors bg-surface-raised text-text-secondary hover:text-text-primary">
+                    My Profile
+                  </a>
+                ) : (
+                  <a href="/clearance/auth?next=/profile" className="block w-full text-sm font-medium py-2.5 rounded-sm text-center transition-colors bg-surface-raised text-text-secondary hover:text-text-primary">
+                    Sign In
+                  </a>
+                )}
                 <button
                   onClick={() => setLocale(locale === 'en' ? 'ta' : 'en')}
                   className="w-full text-sm font-medium py-2.5 rounded-sm transition-colors cursor-pointer bg-surface-raised text-text-secondary hover:text-text-primary"
                 >
                   {locale === 'en' ? 'தமிழில் காண' : 'View in English'}
                 </button>
-                <a href="/clearance">
+                <a href="/clearance/onboarding">
                   <Button variant="primary" size="lg" className="w-full">
                     {t('hero.cta')}
                   </Button>

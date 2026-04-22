@@ -6,7 +6,7 @@ import { track } from '@/lib/track'
 import { Button } from '@/components/ui/Button'
 
 /* ── Config ─────────────────────────────────────────────── */
-const MAP_READY_TIMEOUT = 18000  // longer for globe zoom sequence
+const MAP_READY_TIMEOUT = 18000
 const CITY_INTERVAL = 20000
 const PAN_DELAY = 3000
 const PAN_DURATION = 12000
@@ -19,6 +19,8 @@ const CITIES = [
   { name: 'Chennai',     lat: '13.0827° N', lon: '80.2707° E', center: [80.2707, 13.0827] as [number, number] },
 ]
 
+const HEADLINE = '1 in 3 land deals in Tamil Nadu has a legal defect.'
+
 /* ── Hero ─────────────────────────────────────────────────── */
 export function Hero() {
   const [cityIdx, setCityIdx] = useState(0)
@@ -27,6 +29,8 @@ export function Hero() {
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null)
+  const heroRef = useRef<HTMLElement>(null)
+  const cursorGlowRef = useRef<HTMLDivElement>(null)
 
   // ── Mapbox GL ──
   useEffect(() => {
@@ -48,109 +52,76 @@ export function Hero() {
       const map = new mapboxgl.default.Map({
         container: mapContainerRef.current!,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [79.0, 11.0],  // center of Tamil Nadu
-        zoom: 2,               // globe view
+        center: [79.0, 11.0],
+        zoom: 3.5,
         pitch: 0,
         bearing: 0,
         interactive: false,
         attributionControl: false,
         antialias: true,
         projection: 'globe',
-        fadeDuration: 0,          // instant tile transitions (no fade flicker)
+        fadeDuration: 0,
         trackResize: true,
-        refreshExpiredTiles: false, // don't re-fetch tiles during animation
+        refreshExpiredTiles: false,
       })
 
       mapInstanceRef.current = map
 
-      // Globe atmosphere styling
       map.on('style.load', () => {
         map.setFog({
-          color: 'rgba(244, 247, 252, 0.9)',
-          'high-color': 'rgba(200, 210, 230, 0.5)',
-          'horizon-blend': 0.05,
+          color: '#F4F7FC',
+          'high-color': '#F4F7FC',
+          'horizon-blend': 0.15,
           'space-color': '#F4F7FC',
           'star-intensity': 0,
         })
       })
 
       map.on('load', () => {
-        // Remove ALL labels, icons, symbols — clean map, no glitching text
         const style = map.getStyle()
         style.layers?.forEach(l => {
-          if (l.type === 'symbol') {
-            map.removeLayer(l.id)
-          }
+          if (l.type === 'symbol') map.removeLayer(l.id)
+          if (l.id.includes('building')) map.removeLayer(l.id)
         })
 
-        // Start globe → city zoom (multi-step, searching feel)
         if (!mapReadyRef.current) {
           mapReadyRef.current = true
           setPhase('zooming')
 
           const city = CITIES[0]
 
-          // Step 1: slow rotate on globe, scanning (2s)
+          // 1. Globe — gentle scan eastward (1.5s)
           setTimeout(() => {
-            map.easeTo({
-              center: [82.0, 22.0],
-              zoom: 2.5,
-              bearing: -20,
-              duration: 2500,
-              easing: (t: number) => t,
-            })
-          }, 500)
+            map.easeTo({ center: [80.0, 20.0], zoom: 3.2, bearing: -10, duration: 2000, easing: (t: number) => t })
+          }, 300)
 
-          // Step 2: drift toward India, slight overshoot west (searching)
+          // 2. Descend toward India — slight overshoot (3s)
           setTimeout(() => {
-            map.flyTo({
-              center: [76.0, 19.0],
-              zoom: 5,
-              bearing: -12,
-              duration: 3500,
-              essential: true,
-              curve: 1.2,
-            })
-          }, 3200)
+            map.flyTo({ center: [77.5, 18.0], zoom: 5.5, bearing: -6, duration: 3000, essential: true, curve: 1.1 })
+          }, 2500)
 
-          // Step 3: correct east — found Tamil Nadu, slow approach
+          // 3. Correct — find Tamil Nadu (2.5s)
           setTimeout(() => {
-            map.flyTo({
-              center: [78.8, 11.5],
-              zoom: 8,
-              bearing: 8,
-              duration: 3000,
-              essential: true,
-              curve: 1,
-            })
-          }, 7000)
+            map.flyTo({ center: [78.5, 11.2], zoom: 8.5, bearing: 4, duration: 2500, essential: true, curve: 0.9 })
+          }, 5800)
 
-          // Step 4: pause-drift while "reading" the region
+          // 4. Hover — reading the region (2s)
           setTimeout(() => {
-            map.easeTo({
-              center: [78.3, 10.8],
-              zoom: 9.5,
-              bearing: 3,
-              duration: 2500,
-              easing: (t: number) => t * (2 - t), // ease-out
-            })
-          }, 10200)
+            map.easeTo({ center: [78.2, 10.5], zoom: 10, bearing: 0, duration: 2000, easing: (t: number) => t * (2 - t) })
+          }, 8500)
 
-          // Step 5: lock — snap bearing straight, final approach
+          // 5. Drop — lock flat onto city (2.5s)
           setTimeout(() => {
-            map.flyTo({
-              center: city.center,
-              zoom: 13,
-              bearing: 0,
-              pitch: 0,
-              duration: 3000,
-              essential: true,
-              curve: 0.6,
-            })
-          }, 13000)
+            map.flyTo({ center: city.center, zoom: 15, bearing: 0, pitch: 0, duration: 2500, essential: true, curve: 0.5 })
+          }, 10800)
 
-          // Branding after final zoom
-          setTimeout(() => startReveal(), 16500)
+          // 6. Tilt — analysis mode (2s, ease-out)
+          setTimeout(() => {
+            map.easeTo({ pitch: 55, bearing: 20, duration: 2000, easing: (t: number) => 1 - Math.pow(1 - t, 3) })
+          }, 13800)
+
+          // 7. Branding
+          setTimeout(() => startReveal(), 16200)
         }
       })
     })
@@ -162,23 +133,18 @@ export function Hero() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Reveal branding after zoom completes ──
+  // ── Reveal branding ──
   const startReveal = useCallback(() => {
     setPhase('done')
   }, [])
 
-  // ── 5s timeout fallback ──
+  // ── Timeout fallback ──
   useEffect(() => {
     const fallback = setTimeout(() => {
-      if (!mapReadyRef.current) {
-        mapReadyRef.current = true
-        startReveal()
-      }
+      if (!mapReadyRef.current) { mapReadyRef.current = true; startReveal() }
     }, MAP_READY_TIMEOUT)
     timersRef.current.push(fallback)
-    return () => {
-      timersRef.current.forEach(clearTimeout)
-    }
+    return () => timersRef.current.forEach(clearTimeout)
   }, [startReveal])
 
   // ── Fly to new city ──
@@ -198,10 +164,7 @@ export function Hero() {
     const dist = Math.sqrt(dLon * dLon + dLat * dLat)
     const flyDuration = Math.max(8000, Math.min(20000, dist * 5000))
 
-    map.flyTo({
-      center: city.center, zoom: 13, pitch: 0, bearing: 0,
-      duration: flyDuration, essential: true, curve: 0.8, speed: 0.3,
-    })
+    map.flyTo({ center: city.center, zoom: 15, pitch: 60, bearing: 30, duration: flyDuration, essential: true, curve: 0.8, speed: 0.3 })
 
     panTimerRef.current = setTimeout(() => {
       mapInstanceRef.current?.easeTo({
@@ -213,42 +176,74 @@ export function Hero() {
     return () => { if (panTimerRef.current) clearTimeout(panTimerRef.current) }
   }, [cityIdx])
 
-  // ── Initial slow pan ──
+  // ── Slow bearing drift ──
   useEffect(() => {
     if (phase !== 'done') return
     const map = mapInstanceRef.current
     if (!map) return
-    const city = CITIES[cityIdx % CITIES.length]
-    const t = setTimeout(() => {
-      map.easeTo({
-        center: [city.center[0] + PAN_OFFSET, city.center[1] + PAN_OFFSET * 0.5],
-        bearing: 0, duration: PAN_DURATION, easing: (t: number) => t,
-      })
-    }, PAN_DELAY)
-    return () => clearTimeout(t)
+
+    function startDrift() {
+      if (!mapInstanceRef.current) return
+      const currentBearing = mapInstanceRef.current.getBearing()
+      mapInstanceRef.current.easeTo({ bearing: currentBearing + 20, pitch: 55, duration: 60000, easing: (t: number) => t })
+    }
+
+    const t = setTimeout(startDrift, PAN_DELAY)
+    const interval = setInterval(startDrift, 63000)
+    return () => { clearTimeout(t); clearInterval(interval); mapInstanceRef.current?.stop() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 
   // ── City cycling ──
   useEffect(() => {
     if (phase !== 'done') return
-    const interval = setInterval(() => {
-      setCityIdx(prev => (prev + 1) % CITIES.length)
-    }, CITY_INTERVAL)
+    const interval = setInterval(() => setCityIdx(prev => (prev + 1) % CITIES.length), CITY_INTERVAL)
     return () => clearInterval(interval)
   }, [phase])
 
+  // ── Cursor glow ──
+  useEffect(() => {
+    const hero = heroRef.current
+    const glow = cursorGlowRef.current
+    if (!hero || !glow) return
+
+    function onMove(e: MouseEvent) {
+      const rect = hero!.getBoundingClientRect()
+      glow!.style.left = `${e.clientX - rect.left}px`
+      glow!.style.top = `${e.clientY - rect.top}px`
+      glow!.style.opacity = '1'
+    }
+    function onLeave() { glow!.style.opacity = '0' }
+
+    hero.addEventListener('mousemove', onMove)
+    hero.addEventListener('mouseleave', onLeave)
+    return () => { hero.removeEventListener('mousemove', onMove); hero.removeEventListener('mouseleave', onLeave) }
+  }, [])
+
   return (
-    <section id="hero" className="relative h-[100dvh] min-h-[580px] w-full overflow-hidden bg-[#F4F7FC]">
-      {/* ── Map ── */}
+    <section ref={heroRef} id="hero" className="relative h-[100dvh] min-h-[580px] w-full overflow-hidden bg-[#F4F7FC]">
+      {/* ── Cursor glow ── */}
+      <div
+        ref={cursorGlowRef}
+        className="hidden sm:block absolute z-[1] w-64 h-64 rounded-full pointer-events-none opacity-0 transition-opacity duration-300"
+        style={{
+          background: 'radial-gradient(circle, rgba(27,79,216,0.06) 0%, transparent 70%)',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+
+      {/* ── Map (parallax) ── */}
       <div
         ref={mapContainerRef}
         style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0,
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          width: '100%', height: '100%',
+          zIndex: 0,
           willChange: 'transform',
-          contain: 'layout style paint',
+          filter: 'brightness(0.82) contrast(1.15)',
         }}
       />
+
 
       {/* ── Branding ── */}
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-5 sm:px-6 pointer-events-none" style={{ contain: 'layout' }}>
@@ -267,22 +262,23 @@ export function Hero() {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 0.6, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-4 sm:mt-5 h-px w-8 sm:w-10 bg-[#0C1525]/15 origin-center"
+            className="mt-4 sm:mt-5 h-px w-8 sm:w-10 bg-[#060B12]/15 origin-center"
           />
 
-          <motion.p
+          {/* Typing headline */}
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1 }}
-            className="mt-4 sm:mt-5 text-[13px] sm:text-sm md:text-base font-semibold text-[#0C1525]/80 max-w-[280px] sm:max-w-md leading-relaxed"
+            transition={{ duration: 0.4, delay: 1 }}
+            className="mt-4 sm:mt-5"
           >
-            1 in 3 land deals in Tamil Nadu has a legal defect.
-          </motion.p>
+            <HeadlineTyper />
+          </motion.div>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1.4 }}
+            transition={{ duration: 0.6, delay: 3.5 }}
             className="mt-2 sm:mt-3 text-[10px] sm:text-[11px] md:text-xs text-[#0C1525]/45 max-w-[260px] sm:max-w-sm leading-relaxed"
           >
             We cross-verify 10+ government records and tell you before you pay. 3 hours. ₹3,599.
@@ -291,7 +287,7 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1.7 }}
+            transition={{ duration: 0.6, delay: 3.8 }}
           >
             <CoordinateTyper cityIdx={cityIdx} />
           </motion.div>
@@ -299,40 +295,49 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 3.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 sm:mt-10"
+            transition={{ delay: 5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-4"
           >
-            <a href="/clearance" onClick={() => track('cta_click', 'hero')}>
+            <a href="/clearance/onboarding" onClick={() => track('cta_click', 'hero')}>
               <Button variant="primary" size="lg">
                 Verify Before You Buy →
               </Button>
+            </a>
+            <a
+              href="https://wa.me/918122642341?text=Hi%2C%20I%E2%80%99d%20like%20to%20see%20a%20sample%20HataD%20clearance%20report."
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track('sample_report', 'hero')}
+              className="inline-flex items-center justify-center px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-[#0C1525]/60 border border-[#0C1525]/30 rounded-sm hover:border-[#0C1525]/50 hover:text-[#0C1525]/80 transition-colors"
+            >
+              Request a Sample Report
             </a>
           </motion.div>
         </div>
       </div>
 
-      {/* ── Bottom bar ── */}
+      {/* ── Bottom bar with animated counters ── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2.5, duration: 0.6 }}
+        transition={{ delay: 4.5, duration: 0.6 }}
         className="absolute bottom-0 left-0 right-0 z-30"
       >
-        {/* Desktop: horizontal row */}
-        <div className="hidden sm:flex bg-[#0C1525] py-3 px-6 items-center justify-center gap-8 md:gap-16">
-          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium">47 fraud cases detected</span>
+        <div className="hidden sm:flex bg-[#060B12] py-3 px-6 items-center justify-center gap-8 md:gap-16">
+          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium"><Counter end={47} duration={2000} /> fraud cases detected</span>
           <span className="w-px h-3 bg-white/20" />
-          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium">₹150Cr+ protected</span>
+          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium">₹<Counter end={150} duration={2500} />Cr+ protected</span>
           <span className="w-px h-3 bg-white/20" />
-          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium">300+ reports delivered</span>
+          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium"><Counter end={300} duration={2000} />+ reports delivered</span>
+          <span className="w-px h-3 bg-white/20" />
+          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium">NVIDIA Inception Member</span>
         </div>
-        {/* Mobile: compact row */}
-        <div className="flex sm:hidden bg-[#0C1525] py-2.5 px-4 items-center justify-between">
-          <span className="text-[9px] text-white/60 tracking-wide font-medium">47 frauds caught</span>
+        <div className="flex sm:hidden bg-[#060B12] py-2.5 px-4 items-center justify-between">
+          <span className="text-[9px] text-white/60 tracking-wide font-medium"><Counter end={47} duration={2000} /> frauds caught</span>
           <span className="w-px h-2.5 bg-white/15" />
-          <span className="text-[9px] text-white/60 tracking-wide font-medium">₹150Cr+ saved</span>
+          <span className="text-[9px] text-white/60 tracking-wide font-medium">₹<Counter end={150} duration={2500} />Cr+ saved</span>
           <span className="w-px h-2.5 bg-white/15" />
-          <span className="text-[9px] text-white/60 tracking-wide font-medium">300+ reports</span>
+          <span className="text-[9px] text-white/60 tracking-wide font-medium">NVIDIA Inception</span>
         </div>
       </motion.div>
 
@@ -343,7 +348,47 @@ export function Hero() {
   )
 }
 
-/* ── CoordinateTyper ─────────────────────────────────────── */
+/* ── Headline Typer ──────────────────────────────────────── */
+function HeadlineTyper() {
+  const [charIdx, setCharIdx] = useState(0)
+
+  useEffect(() => {
+    if (charIdx >= HEADLINE.length) return
+    const t = setTimeout(() => setCharIdx(prev => prev + 1), 45)
+    return () => clearTimeout(t)
+  }, [charIdx])
+
+  return (
+    <p className="text-[13px] sm:text-sm md:text-base font-semibold text-[#0C1525]/80 max-w-[280px] sm:max-w-md leading-relaxed">
+      {HEADLINE.slice(0, charIdx)}
+      {charIdx < HEADLINE.length && <span className="animate-pulse">|</span>}
+    </p>
+  )
+}
+
+/* ── Animated Counter ────────────────────────────────────── */
+function Counter({ end, duration }: { end: number; duration: number }) {
+  const [count, setCount] = useState(0)
+  const started = useRef(false)
+
+  useEffect(() => {
+    if (started.current) return
+    started.current = true
+    const start = performance.now()
+
+    function tick(now: number) {
+      const pct = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - pct, 3)
+      setCount(Math.round(eased * end))
+      if (pct < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [end, duration])
+
+  return <>{count}</>
+}
+
+/* ── Coordinate Typer ────────────────────────────────────── */
 function CoordinateTyper({ cityIdx }: { cityIdx: number }) {
   const [charIdx, setCharIdx] = useState(0)
   const [paused, setPaused] = useState(false)

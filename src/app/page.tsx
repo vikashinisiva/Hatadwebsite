@@ -4,6 +4,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Hero } from '@/components/sections/Hero'
 import { MobileStickyBar } from '@/components/ui/MobileStickyBar'
 import { ScrollProgress } from '@/components/ui/ScrollProgress'
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 
 // Lazy-load below-the-fold sections — only load when user scrolls
 const Problem = dynamic(() => import('@/components/sections/Problem').then(m => ({ default: m.Problem })))
@@ -41,6 +42,7 @@ export default function Home() {
       <Footer />
       <MobileStickyBar />
       <ScrollProgress />
+      <WhatsAppButton />
     </div>
   )
 }

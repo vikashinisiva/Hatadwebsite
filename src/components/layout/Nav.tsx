@@ -63,7 +63,7 @@ export function Nav() {
 
           {/* Right CTA — desktop */}
           <div className="hidden md:flex items-center gap-3">
-            <a href="/clearance">
+            <a href="/clearance/onboarding">
               <Button variant="primary" size="sm">
                 Get Your Report
               </Button>
@@ -110,7 +110,7 @@ export function Nav() {
                 </button>
               ))}
               <div className="pt-6">
-                <a href="/clearance">
+                <a href="/clearance/onboarding">
                   <Button variant="primary" size="lg" className="w-full">
                     Get Your Land Clearance Report
                   </Button>

@@ -20,7 +20,7 @@ export function Button({
   className,
 }: ButtonProps) {
   const base =
-    'inline-flex items-center justify-center font-medium tracking-wide transition-all duration-200 cursor-pointer select-none'
+    'inline-flex items-center justify-center font-medium tracking-wide transition-all duration-200 cursor-pointer select-none btn-ripple'
 
   const sizes = {
     sm: 'px-4 py-2 text-xs',

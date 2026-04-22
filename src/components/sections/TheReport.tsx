@@ -46,7 +46,7 @@ export function TheReport() {
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-4">
-              <a href="/clearance">
+              <a href="/clearance/onboarding">
                 <Button variant="primary" size="md">
                   Request Your Report
                 </Button>
