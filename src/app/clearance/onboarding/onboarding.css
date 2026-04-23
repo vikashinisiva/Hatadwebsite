@@ -802,18 +802,63 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ───── Mobile: stack vertically below 900px ───── */
+/* ───── Field row utility (responsive 2-col → stack) ───── */
+.ob-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ───── Tablet: stack columns below 900px ───── */
 @media (max-width: 900px) {
   .ob-panel { grid-template-columns: 1fr; }
   .ob-panel-left {
-    padding: 40px 22px 24px;
+    padding: 32px 24px 24px;
+    max-width: 100%;
   }
-  .ob-panel-right { padding: 32px 22px; }
-  .ob-h1 { font-size: 28px; }
-  .ob-chrome { padding: 14px 22px; }
-  .ob-stepper { padding: 14px 16px 10px; }
-  .ob-step { min-width: 64px; }
-  .ob-step-connector { flex: 0 0 28px; }
-  .ob-step-label { font-size: 10px; }
-  .ob-otp input { width: 42px; height: 52px; font-size: 18px; }
+  .ob-panel-right {
+    padding: 24px 24px 40px;
+    max-width: 100%;
+  }
+  .ob-panel-left > *:first-child,
+  .ob-panel-right > *:first-child {
+    max-width: 100%;
+  }
+  .ob-chrome { padding: 12px 20px; gap: 16px; }
+  .ob-chrome-wm { font-size: 13px; letter-spacing: 0.24em; }
+  .ob-stepper { gap: 0; }
+  .ob-step-connector { flex: 0 0 24px; margin: 0 6px; }
+}
+
+/* ───── Phone: tighter spacing, simplify stepper ───── */
+@media (max-width: 640px) {
+  .ob-panel-left { padding: 24px 18px 16px; }
+  .ob-panel-right { padding: 20px 18px 32px; }
+  .ob-chrome {
+    grid-template-columns: auto 1fr auto;
+    padding: 10px 16px;
+    gap: 12px;
+  }
+  .ob-chrome-wm { font-size: 12px; }
+  .ob-step-label { display: none; }
+  .ob-step.active .ob-step-label { display: inline; font-size: 9.5px; }
+  .ob-step-connector { flex: 0 0 16px; margin: 0 4px; }
+  .ob-step-dot { width: 20px; height: 20px; font-size: 9px; }
+  .ob-exit-link { font-size: 11px; }
+  .ob-field-row { grid-template-columns: 1fr; gap: 8px; }
+  .ob-field-row > .ob-field { margin-bottom: 0 !important; }
+  .ob-field-row + * { margin-top: 8px; }
+  .ob-otp { gap: 6px; }
+  .ob-otp input { width: 40px; height: 48px; font-size: 18px; }
+  .ob-footer-row { flex-wrap: wrap; }
+  .ob-footer-row > .ob-btn-ghost { flex: 0 0 auto; }
+  .ob-trust { padding: 18px; }
+  .ob-stat { padding: 0 8px; }
+  .ob-stat-num { font-size: 22px; }
+  .ob-stat-lab { font-size: 9.5px; letter-spacing: 0.06em; }
+}
+
+/* Patta replica needs to never overflow on tiny screens */
+@media (max-width: 420px) {
+  .ob-panel-right { padding-left: 14px; padding-right: 14px; }
 }

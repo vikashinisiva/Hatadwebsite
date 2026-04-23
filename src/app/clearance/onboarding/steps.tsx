@@ -426,7 +426,7 @@ export function StepProperty({
           </select>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div className="ob-field-row">
           <div className="ob-field" style={{ marginBottom: 0 }}>
             <label className="ob-label">Taluk</label>
             <input className={fieldClass('taluk', 'ob-input')} placeholder="e.g. Kovilpatti" value={data.taluk} onChange={e => set('taluk', e.target.value)}/>
@@ -443,7 +443,7 @@ export function StepProperty({
           <div className="ob-hint"><OBIcon name="document" size={12}/> Find this on your patta — in the first column of the land table.</div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div className="ob-field-row">
           <div className="ob-field" style={{ marginBottom: 0 }}>
             <label className="ob-label">Your Name</label>
             <input className="ob-input" placeholder="Full name" value={data.applicantName} onChange={e => set('applicantName', e.target.value)}/>

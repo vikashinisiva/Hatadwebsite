@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { track } from '@/lib/track'
-import { Button } from '@/components/ui/Button'
 
 /* ── Config ─────────────────────────────────────────────── */
 const MAP_READY_TIMEOUT = 18000
@@ -18,8 +17,6 @@ const CITIES = [
   { name: 'Coimbatore',  lat: '11.0168° N', lon: '76.9558° E', center: [76.9558, 11.0168] as [number, number] },
   { name: 'Chennai',     lat: '13.0827° N', lon: '80.2707° E', center: [80.2707, 13.0827] as [number, number] },
 ]
-
-const HEADLINE = '1 in 3 land deals in Tamil Nadu has a legal defect.'
 
 /* ── Hero ─────────────────────────────────────────────────── */
 export function Hero() {
@@ -240,79 +237,90 @@ export function Hero() {
           width: '100%', height: '100%',
           zIndex: 0,
           willChange: 'transform',
-          filter: 'brightness(0.82) contrast(1.15)',
+          filter: 'brightness(0.74) contrast(1.55) saturate(1.18)',
         }}
       />
 
 
       {/* ── Branding ── */}
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-5 sm:px-6 pointer-events-none" style={{ contain: 'layout' }}>
-        <div className="relative flex flex-col items-center text-center pointer-events-auto w-full max-w-lg sm:max-w-xl">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+        <div className="relative flex flex-col items-center text-center pointer-events-auto w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
+          {/* Eyebrow */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-8xl xl:text-9xl font-bold tracking-[0.2em] sm:tracking-[0.3em] text-[#0C1525]"
-            style={{ textShadow: '0 2px 16px rgba(244,247,252,0.9)', marginRight: '-0.2em' }}
+            transition={{ duration: 0.5, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-7 sm:mt-9 text-[10px] sm:text-[11px] font-semibold tracking-[0.28em] uppercase text-[#0C1525]/55"
           >
-            HATAD
-          </motion.h1>
-
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.6, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-4 sm:mt-5 h-px w-8 sm:w-10 bg-[#060B12]/15 origin-center"
-          />
-
-          {/* Typing headline */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 1 }}
-            className="mt-4 sm:mt-5"
-          >
-            <HeadlineTyper />
+            Before you sign
           </motion.div>
 
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-2.5 sm:mt-3 font-display font-bold tracking-tight leading-[1.08] text-[#0C1525] text-center mx-auto px-2"
+            style={{
+              fontSize: 'clamp(28px, 6.2vw, 64px)',
+              maxWidth: 'min(100%, clamp(320px, 75vw, 900px))',
+              textWrap: 'balance',
+            }}
+          >
+            Is this land{' '}
+            <em
+              className="font-serif text-[#C9A84C]"
+              style={{
+                fontStyle: 'italic',
+                fontSize: '0.88em',
+                letterSpacing: '-0.01em',
+                lineHeight: 1,
+                verticalAlign: 'baseline',
+              }}
+            >
+              actually
+            </em>{' '}
+            clean?
+          </motion.h1>
+
+          {/* Subheadline */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 3.5 }}
-            className="mt-2 sm:mt-3 text-[10px] sm:text-[11px] md:text-xs text-[#0C1525]/45 max-w-[260px] sm:max-w-sm leading-relaxed"
+            transition={{ duration: 0.6, delay: 1.1 }}
+            className="mt-3 sm:mt-4 text-[13.5px] sm:text-[15.5px] md:text-[17px] lg:text-[18px] text-[#0C1525]/70 leading-[1.45] text-center px-2 mx-auto"
+            style={{ maxWidth: 'min(100%, clamp(320px, 60vw, 640px))', textWrap: 'balance' }}
           >
-            We cross-verify 10+ government records and tell you before you pay. 3 hours. ₹3,599.
+            1 in 3 land deals in Tamil Nadu has a legal defect. <span className="text-[#0C1525] font-medium">We find it before you pay.</span>
           </motion.p>
 
+          {/* Verify line */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1.35 }}
+            className="mt-3 sm:mt-4 text-[12px] sm:text-[13.5px] md:text-[14px] text-[#3D5278] leading-[1.55] text-center px-2 mx-auto"
+            style={{ maxWidth: 'min(100%, clamp(320px, 56vw, 580px))', textWrap: 'balance' }}
+          >
+            We cross-verify <strong className="font-semibold text-[#0C1525]">10+ government records</strong> across six departments — and tell you before you pay.
+          </motion.p>
+
+          {/* Stat row */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 3.8 }}
+            transition={{ duration: 0.5, delay: 1.55 }}
+            className="mt-3 inline-flex items-center gap-2 sm:gap-3 text-[10.5px] sm:text-[11.5px] tracking-wide text-[#0C1525]/55"
           >
-            <CoordinateTyper cityIdx={cityIdx} />
+            <span className="font-semibold text-[#0C1525]">3 hrs</span>
+            <span className="opacity-40">·</span>
+            <span className="font-semibold text-[#0C1525]">₹3,599</span>
+            <span className="opacity-40">·</span>
+            <span>GST inclusive</span>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-4"
-          >
-            <a href="/clearance/onboarding" onClick={() => track('cta_click', 'hero')}>
-              <Button variant="primary" size="lg">
-                Verify Before You Buy →
-              </Button>
-            </a>
-            <a
-              href="https://wa.me/918122642341?text=Hi%2C%20I%E2%80%99d%20like%20to%20see%20a%20sample%20HataD%20clearance%20report."
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => track('sample_report', 'hero')}
-              className="inline-flex items-center justify-center px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-[#0C1525]/60 border border-[#0C1525]/30 rounded-sm hover:border-[#0C1525]/50 hover:text-[#0C1525]/80 transition-colors"
-            >
-              Request a Sample Report
-            </a>
-          </motion.div>
+          {/* Survey input + Verify CTA */}
+          <SurveyVerifyForm cityIdx={cityIdx}/>
         </div>
       </div>
 
@@ -324,7 +332,13 @@ export function Hero() {
         className="absolute bottom-0 left-0 right-0 z-30"
       >
         <div className="hidden sm:flex bg-[#060B12] py-3 px-6 items-center justify-center gap-8 md:gap-16">
-          <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium"><Counter end={47} duration={2000} /> fraud cases detected</span>
+          <span className="inline-flex items-center gap-2 text-[10px] sm:text-xs text-white/75 tracking-wide font-medium">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+            </span>
+            <Counter end={12} duration={1800} /> reports delivered this week
+          </span>
           <span className="w-px h-3 bg-white/20" />
           <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium">₹<Counter end={150} duration={2500} />Cr+ protected</span>
           <span className="w-px h-3 bg-white/20" />
@@ -333,7 +347,13 @@ export function Hero() {
           <span className="text-[10px] sm:text-xs text-white/70 tracking-wide font-medium">NVIDIA Inception Member</span>
         </div>
         <div className="flex sm:hidden bg-[#060B12] py-2.5 px-4 items-center justify-between">
-          <span className="text-[9px] text-white/60 tracking-wide font-medium"><Counter end={47} duration={2000} /> frauds caught</span>
+          <span className="inline-flex items-center gap-1.5 text-[9px] text-white/65 tracking-wide font-medium">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+            </span>
+            <Counter end={12} duration={1800} /> this week
+          </span>
           <span className="w-px h-2.5 bg-white/15" />
           <span className="text-[9px] text-white/60 tracking-wide font-medium">₹<Counter end={150} duration={2500} />Cr+ saved</span>
           <span className="w-px h-2.5 bg-white/15" />
@@ -347,22 +367,252 @@ export function Hero() {
     </section>
   )
 }
+/* ── Survey Verify Form ──────────────────────────────────── */
+type GeoMode = 'idle' | 'manual' | 'locating' | 'fetching' | 'found' | 'error' | 'denied'
 
-/* ── Headline Typer ──────────────────────────────────────── */
-function HeadlineTyper() {
-  const [charIdx, setCharIdx] = useState(0)
+interface FoundDetails {
+  surveyNo: string
+  district: string
+  taluk: string
+  village: string
+}
 
-  useEffect(() => {
-    if (charIdx >= HEADLINE.length) return
-    const t = setTimeout(() => setCharIdx(prev => prev + 1), 45)
-    return () => clearTimeout(t)
-  }, [charIdx])
+function SurveyVerifyForm({ cityIdx }: { cityIdx: number }) {
+  const [mode, setMode] = useState<GeoMode>('idle')
+  const [value, setValue] = useState('')
+  const [found, setFound] = useState<FoundDetails | null>(null)
+  const city = CITIES[cityIdx % CITIES.length]
+  const placeholder = `e.g. 142/3B, ${city.name}`
+
+  async function handleUseLocation() {
+    if (!navigator.geolocation) { setMode('error'); return }
+    setMode('locating')
+    track('hero_geo_click', 'hero')
+
+    try {
+      const perm = await navigator.permissions.query({ name: 'geolocation' as PermissionName })
+      if (perm.state === 'denied') { setMode('denied'); return }
+    } catch { /* permissions API unsupported — proceed */ }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setMode('fetching')
+        try {
+          const resp = await fetch('/api/tngis/lookup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+            signal: AbortSignal.timeout(15000),
+          })
+          if (!resp.ok) { setMode('error'); return }
+          const data = await resp.json()
+          const ld = data.land_details?.data
+          const land = Array.isArray(ld) ? ld[0] : ld
+          if (!land) { setMode('error'); return }
+
+          const survey = (land.survey_number || '') + (land.sub_division ? `/${land.sub_division}` : '')
+          const district = land.district_name || ''
+          const taluk = land.taluk_name || ''
+          const village = land.village_name || land.revenue_town_name || land.revenue_ward_name || ''
+
+          setFound({ surveyNo: survey, district, taluk, village })
+          setMode('found')
+          track('hero_geo_success', 'hero', { district })
+
+          // Brief pause so the buyer sees the find, then route
+          setTimeout(() => {
+            const params = new URLSearchParams({ step: '1' })
+            if (survey) params.set('surveyNo', survey)
+            if (district) params.set('district', district)
+            if (taluk) params.set('taluk', taluk)
+            if (village) params.set('village', village)
+            window.location.href = `/clearance/onboarding?${params.toString()}`
+          }, 1600)
+        } catch { setMode('error') }
+      },
+      (err) => {
+        setMode(err.code === err.PERMISSION_DENIED ? 'denied' : 'error')
+      },
+      { enableHighAccuracy: true, timeout: 12000 },
+    )
+  }
+
+  function handleSurveySubmit(e: React.FormEvent) {
+    e.preventDefault()
+    track('hero_survey_submit', 'hero', { hasSurvey: !!value.trim() })
+    const trimmed = value.trim()
+    const url = trimmed
+      ? `/clearance/onboarding?step=1&surveyNo=${encodeURIComponent(trimmed)}`
+      : '/clearance/onboarding'
+    window.location.href = url
+  }
+
+  const isWorking = mode === 'locating' || mode === 'fetching'
+  const showManual = mode === 'manual' || mode === 'denied' || mode === 'error'
 
   return (
-    <p className="text-[13px] sm:text-sm md:text-base font-semibold text-[#0C1525]/80 max-w-[280px] sm:max-w-md leading-relaxed">
-      {HEADLINE.slice(0, charIdx)}
-      {charIdx < HEADLINE.length && <span className="animate-pulse">|</span>}
-    </p>
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay: 1.8, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full max-w-[480px] mt-7 sm:mt-8 mx-auto"
+    >
+      {/* PRIMARY: Geo button (or status) */}
+      {!showManual && (
+        <button
+          type="button"
+          onClick={handleUseLocation}
+          disabled={isWorking || mode === 'found'}
+          aria-label="Use my location to find this property"
+          className="group relative w-full flex items-center justify-center gap-3 rounded-lg bg-[#0C1525] hover:bg-[#152238] text-white px-5 sm:px-6 py-4 sm:py-[18px] shadow-[0_10px_32px_-8px_rgba(12,21,37,0.32)] hover:shadow-[0_14px_36px_-6px_rgba(12,21,37,0.4)] transition-all duration-300 disabled:opacity-95 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {mode === 'locating' && (
+            <>
+              <span className="w-4 h-4 border-2 border-white/25 border-t-white rounded-full animate-spin" />
+              <span className="text-[14px] sm:text-[15px] font-semibold tracking-tight">Getting your location…</span>
+            </>
+          )}
+          {mode === 'fetching' && (
+            <>
+              <span className="w-4 h-4 border-2 border-white/25 border-t-white rounded-full animate-spin" />
+              <span className="text-[14px] sm:text-[15px] font-semibold tracking-tight">Pulling property records…</span>
+            </>
+          )}
+          {mode === 'found' && found && (
+            <span className="flex items-center gap-2.5 text-[13.5px] sm:text-[14.5px] font-semibold tracking-tight">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Found {found.surveyNo || 'this parcel'} in {found.village || found.district}
+            </span>
+          )}
+          {mode === 'idle' && (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span className="text-[14px] sm:text-[15px] font-semibold tracking-tight">Use my location to verify</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-hover:translate-x-0.5"
+                aria-hidden="true"
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Toggle to manual mode */}
+      {!showManual && mode !== 'found' && (
+        <p className="mt-2.5 text-[11px] sm:text-[12px] text-[#3D5278] text-center">
+          Not on the property?{' '}
+          <button
+            type="button"
+            onClick={() => { setMode('manual'); track('hero_manual_toggle', 'hero') }}
+            className="font-medium text-[#0C1525] underline underline-offset-[3px] decoration-[#0C1525]/30 hover:decoration-[#0C1525] decoration-[1.5px] transition-all cursor-pointer"
+          >
+            Enter survey number instead
+          </button>
+        </p>
+      )}
+
+      {/* SECONDARY: Manual survey input (shown after toggle / on geo error) */}
+      {showManual && (
+        <>
+          {mode === 'denied' && (
+            <p className="mb-3 text-[11.5px] sm:text-[12.5px] text-[#B91C1C] text-center">
+              Location access blocked. Enter your survey number to continue.
+            </p>
+          )}
+          {mode === 'error' && (
+            <p className="mb-3 text-[11.5px] sm:text-[12.5px] text-[#B91C1C] text-center">
+              Couldn&apos;t locate this property. Enter the survey number to continue.
+            </p>
+          )}
+          <form
+            onSubmit={handleSurveySubmit}
+            className="group relative flex items-stretch overflow-hidden rounded-lg bg-white ring-1 ring-[#0C1525]/12 shadow-[0_8px_28px_-10px_rgba(12,21,37,0.22)] focus-within:ring-[#0C1525] focus-within:shadow-[0_10px_32px_-8px_rgba(12,21,37,0.28)] transition-all duration-300"
+          >
+            <label
+              htmlFor="hero-survey-input"
+              className="flex items-center pl-4 pr-3.5 sm:pl-5 sm:pr-4 bg-[#F4F7FC] border-r border-[#0C1525]/10 text-[9.5px] sm:text-[10.5px] font-semibold tracking-[0.18em] uppercase text-[#3D5278] cursor-text select-none"
+            >
+              Survey&nbsp;No.
+            </label>
+            <input
+              id="hero-survey-input"
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={placeholder}
+              aria-label="Survey number"
+              className="flex-1 min-w-0 bg-transparent text-left text-[14px] sm:text-[15px] text-[#0C1525] placeholder:text-[#7A8FAD]/70 px-3.5 sm:px-4 py-3.5 sm:py-4 outline-none font-medium tracking-tight"
+              autoComplete="off"
+              spellCheck={false}
+              autoFocus
+            />
+            <button
+              type="submit"
+              aria-label="Continue with this survey number"
+              className="flex items-center gap-2 px-5 sm:px-6 bg-[#0C1525] text-white text-[13px] sm:text-[14px] font-semibold tracking-tight hover:bg-[#152238] transition-colors cursor-pointer"
+            >
+              Continue
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-hover:translate-x-0.5 group-focus-within:translate-x-0.5"
+                aria-hidden="true"
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
+          </form>
+          <p className="mt-2.5 text-[11px] sm:text-[12px] text-[#7A8FAD] text-center">
+            We&apos;ll ask for village &amp; district on the next step.{' '}
+            <button
+              type="button"
+              onClick={() => setMode('idle')}
+              className="text-[#0C1525] underline underline-offset-[2px] decoration-[#0C1525]/30 hover:decoration-[#0C1525] cursor-pointer"
+            >
+              Use location instead
+            </button>
+          </p>
+        </>
+      )}
+
+      {/* Sample report fallback */}
+      <p className="mt-3 sm:mt-3.5 text-[11.5px] sm:text-[12.5px] text-[#3D5278] text-center">
+        Or{' '}
+        <a
+          href="https://wa.me/918122642341?text=Hi%2C%20I%E2%80%99d%20like%20to%20see%20a%20sample%20HataD%20clearance%20report."
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => track('sample_report', 'hero')}
+          className="font-medium text-[#0C1525] underline underline-offset-[3px] decoration-[#0C1525]/30 hover:decoration-[#0C1525] decoration-[1.5px] transition-all"
+        >
+          see a sample report
+        </a>{' '}
+        first <span className="text-[#7A8FAD]">— no signup needed.</span>
+      </p>
+    </motion.div>
   )
 }
 
@@ -388,34 +638,3 @@ function Counter({ end, duration }: { end: number; duration: number }) {
   return <>{count}</>
 }
 
-/* ── Coordinate Typer ────────────────────────────────────── */
-function CoordinateTyper({ cityIdx }: { cityIdx: number }) {
-  const [charIdx, setCharIdx] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const prevCityRef = useRef(cityIdx)
-
-  const city = CITIES[cityIdx % CITIES.length]
-  const fullText = `${city.lat}, ${city.lon} — ${city.name}`
-
-  useEffect(() => {
-    if (prevCityRef.current !== cityIdx) {
-      prevCityRef.current = cityIdx
-      setCharIdx(0)
-      setPaused(false)
-    }
-  }, [cityIdx])
-
-  useEffect(() => {
-    if (paused) return
-    if (charIdx >= fullText.length) { setPaused(true); return }
-    const t = setTimeout(() => setCharIdx(prev => prev + 1), 60)
-    return () => clearTimeout(t)
-  }, [charIdx, paused, fullText.length])
-
-  return (
-    <p className="mt-2 sm:mt-4 h-5 text-[9px] sm:text-[10px] md:text-xs tracking-[0.08em] sm:tracking-[0.12em] text-[#0C1525]/40 tabular-nums">
-      {fullText.slice(0, charIdx)}
-      {!paused && <span className="animate-pulse">|</span>}
-    </p>
-  )
-}
