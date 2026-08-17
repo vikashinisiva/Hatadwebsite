@@ -67,7 +67,7 @@ const COPY = {
     /* "departments and courts", not "departments": of the 30, twenty-nine are
        government departments and one is the judiciary. "Courts" also comes out
        of the enumeration that follows, where it was doing the same job twice. */
-    sub: `We read ${SOURCE_CLAIM} government departments and courts — registration, revenue, survey, forest, highways, planning — and hand you one report.`,
+    sub: `We read ${SOURCE_CLAIM} government departments and courts: registration, revenue, survey, forest, highways, planning. You get one report.`,
     placeholder: 'Email or mobile number',
     /*
      * The reason to join now.
@@ -125,7 +125,7 @@ const COPY = {
      */
     hint: 'One notice at launch. Nothing else.',
     hintEmail: 'A confirmation now, then one notice at launch.',
-    thanks: "You're in. We'll write once — the day we go live.",
+    thanks: "You're in. We'll write once, on the day we go live.",
     sending: 'Adding',
     goLive: 'Public launch in',
     cdDays: 'days',
@@ -150,7 +150,7 @@ const COPY = {
       phone_prefix: 'Indian mobile numbers start with 6, 7, 8 or 9.',
       phone_fake: 'Enter a number we can actually reach you on.',
       email_shape: 'That email address looks incomplete.',
-      email_disposable: 'Use an address you actually check — we only write once.',
+      email_disposable: 'Use an address you actually check. We only write once.',
     } satisfies Record<ContactReject, string>,
     alreadyJoined: "You're already on the list. Same place, same link.",
     position: 'Your place',
@@ -175,7 +175,7 @@ const COPY = {
      * system exists to solve, and it is the one sentence on the page that says
      * what HataD actually is.
      */
-    line: `The records are public. Every one of them. They sit in ${SOURCE_COUNT} offices that were never built to talk to each other — one holds the deed, another the tax, another indexes by name and not by land. Nobody has ever read them together. That is the whole of what we do.`,
+    line: `The records are public. Every one of them. They sit in ${SOURCE_COUNT} offices that were never built to talk to each other. One holds the deed, another the tax, another indexes by name and not by land. Nobody has ever read them together. That is the whole of what we do.`,
     /*
      * NVIDIA Inception.
      *
@@ -201,6 +201,19 @@ const COPY = {
     shTitle: 'Featured in IIT Madras Shaastra.',
     shBody: 'The annual technical festival of IIT Madras.',
     shMeta: 'August 2026',
+    /* Verbatim from the interview, attributed to the company rather than to a
+       the team rather than a person: the words are already first-person plural,
+       and a founder's name would make a policy sound like one man's opinion
+       when it is meant to be how HataD operates.
+
+       The venue is named because that is where the trust comes from. A claim
+       about our own incentives is worth little on our own page; the same claim
+       made at IIT Madras Shaastra is on the record somewhere we did not
+       control, and the credential band above already establishes we were
+       there. */
+    quote:
+      '“If someone decides not to buy a property because of our report, we count that as a success. It means we’ve prevented a future problem.”',
+    quoteBy: 'Team HataD, at IIT Madras Shaastra',
     vrTag: 'Illustrative example',
     vrParcel: 'Survey No. 114/2B · Salem',
     sourcesIndex: 'Sources',
@@ -225,7 +238,7 @@ const COPY = {
     faq: [
       {
         q: 'I already have an Encumbrance Certificate.',
-        a: 'An EC lists registered transactions for the period you asked for, and nothing else. It will not show a pending civil suit, a forest Section 4 notification, a highway 3A alignment, or land classified as poromboke. Those live in other departments — and that is where deals fail.',
+        a: 'An EC lists registered transactions for the period you asked for, and nothing else. It will not show a pending civil suit, a forest Section 4 notification, a highway 3A alignment, or land classified as poromboke. Those live in other departments, and that is where deals fail.',
       },
       {
         q: 'The patta is in the seller’s name.',
@@ -233,7 +246,7 @@ const COPY = {
       },
       {
         q: 'My advocate is already checking the documents.',
-        a: 'Keep them. An advocate reads the documents they are handed. We go and find the ones you were not given — what the FMB sketch actually shows, whether the plot sits under an acquisition notice, whether a temple or Waqf claim is registered against it. Take our report to your advocate.',
+        a: 'Keep them. An advocate reads the documents they are handed. We go and find the ones you were not given: what the FMB sketch actually shows, whether the plot sits under an acquisition notice, whether a temple or Waqf claim is registered against it. Take our report to your advocate.',
       },
       {
         q: 'What do you need from me?',
@@ -252,14 +265,14 @@ const COPY = {
   ta: {
     index: 'விரைவில்',
     head: 'பணம் கொடுப்பதற்கு முன், நிலத்தில் என்ன குறை உள்ளது என்று அறியுங்கள்.',
-    sub: `பதிவுத்துறை, வருவாய், அளவை, வனம், நெடுஞ்சாலை, நகர அமைப்பு — ${SOURCE_CLAIM} அரசுத் துறைகள் மற்றும் நீதிமன்றங்களின் ஆவணங்களைப் படித்து, ஒரே அறிக்கையாகத் தருகிறோம்.`,
+    sub: `பதிவுத்துறை, வருவாய், அளவை, வனம், நெடுஞ்சாலை, நகர அமைப்பு உள்ளிட்ட ${SOURCE_CLAIM} அரசுத் துறைகள் மற்றும் நீதிமன்றங்களின் ஆவணங்களைப் படித்து, ஒரே அறிக்கையாகத் தருகிறோம்.`,
     placeholder: 'மின்னஞ்சல் அல்லது கைபேசி எண்',
     offerLead: 'பத்திரப் பதிவுகளை விட வேகமாக நகர்வது பேரம்.',
     offerBody: (day: string) =>
       `${day} முதல், நீங்கள் நிலத்தில் நிற்கும் அன்றே அதைச் சரிபார்க்கலாம்.`,
     offerBodyLive: 'நீங்கள் நிலத்தில் நிற்கும் அன்றே அதைச் சரிபார்க்கலாம்.',
     closeLead: 'எப்படியும் ஒரு நாள் தெரிய வரும்.',
-    closeBody: 'பணம் கொடுப்பதற்கு முன்பா, கொடுத்த பின்பா — அதுதான் ஒரே கேள்வி.',
+    closeBody: 'பணம் கொடுப்பதற்கு முன்பா, கொடுத்த பின்பா? அதுதான் ஒரே கேள்வி.',
     offerClose: 'பட்டியலில் உள்ளவர்களுக்கு முதல் இடம்.',
     cta: 'இணை',
     hint: 'வெளியீட்டின் போது ஒரு அறிவிப்பு மட்டும்.',
@@ -292,7 +305,7 @@ const COPY = {
       phone_prefix: 'இந்திய கைபேசி எண்கள் 6, 7, 8 அல்லது 9 இல் தொடங்கும்.',
       phone_fake: 'உங்களைத் தொடர்பு கொள்ளக்கூடிய உண்மையான எண்ணை உள்ளிடவும்.',
       email_shape: 'மின்னஞ்சல் முகவரி முழுமையாக இல்லை.',
-      email_disposable: 'நீங்கள் உண்மையில் பயன்படுத்தும் முகவரியைத் தரவும் — ஒரே ஒரு முறை மட்டும் எழுதுவோம்.',
+      email_disposable: 'நீங்கள் உண்மையில் பயன்படுத்தும் முகவரியைத் தரவும். ஒரே ஒரு முறை மட்டும் எழுதுவோம்.',
     } satisfies Record<ContactReject, string>,
     alreadyJoined: 'நீங்கள் ஏற்கனவே பட்டியலில் உள்ளீர்கள். அதே இடம், அதே இணைப்பு.',
     position: 'உங்கள் இடம்',
@@ -305,7 +318,10 @@ const COPY = {
     ccSro: 'சார்-பதிவு அலுவலகங்கள்',
     ccDistricts: 'வருவாய் மாவட்டங்கள்',
     ccZones: 'பதிவு மண்டலங்கள்',
-    line: `ஆவணங்கள் பொதுவானவை. ஒவ்வொன்றுமே. ஆனால் ஒன்றோடு ஒன்று பேசாத ${SOURCE_COUNT} அலுவலகங்களில் அவை கிடக்கின்றன — ஒன்றில் பத்திரம், இன்னொன்றில் வரி, மற்றொன்று நிலத்தை அல்ல பெயரை வைத்துத் தேடுகிறது. இவற்றை ஒன்றாக யாரும் படித்ததில்லை. அதுதான் நாங்கள் செய்வது.`,
+    line: `ஆவணங்கள் பொதுவானவை. ஒவ்வொன்றுமே. ஆனால் ஒன்றோடு ஒன்று பேசாத ${SOURCE_COUNT} அலுவலகங்களில் அவை கிடக்கின்றன. ஒன்றில் பத்திரம், இன்னொன்றில் வரி, மற்றொன்று நிலத்தை அல்ல பெயரை வைத்துத் தேடுகிறது. இவற்றை ஒன்றாக யாரும் படித்ததில்லை. அதுதான் நாங்கள் செய்வது.`,
+    quote:
+      '“எங்கள் அறிக்கையைப் பார்த்து ஒருவர் நிலத்தை வாங்க வேண்டாம் என்று முடிவெடுத்தால், அதை நாங்கள் வெற்றியாகவே கருதுகிறோம். ஒரு எதிர்கால பிரச்சினையைத் தடுத்துவிட்டோம் என்பதே அதன் பொருள்.”',
+    quoteBy: 'டீம் HataD, IIT Madras Shaastra-வில்',
     vrTag: 'எடுத்துக்காட்டு மட்டும்',
     vrParcel: 'புல எண் 114/2B · சேலம்',
     sourcesIndex: 'ஆதாரங்கள்',
@@ -319,7 +335,7 @@ const COPY = {
     faq: [
       {
         q: 'என்னிடம் ஏற்கனவே EC உள்ளது.',
-        a: 'EC என்பது நீங்கள் கேட்ட காலத்தில் பதிவான பரிவர்த்தனைகளை மட்டுமே காட்டும். நிலுவையில் உள்ள வழக்கு, வனத்துறை பிரிவு 4 அறிவிப்பு, நெடுஞ்சாலை 3A வரிசை, அல்லது புறம்போக்கு வகைப்பாடு — இவை வேறு துறைகளில் உள்ளன. பரிவர்த்தனைகள் தோல்வியடைவது அங்குதான்.',
+        a: 'EC என்பது நீங்கள் கேட்ட காலத்தில் பதிவான பரிவர்த்தனைகளை மட்டுமே காட்டும். நிலுவையில் உள்ள வழக்கு, வனத்துறை பிரிவு 4 அறிவிப்பு, நெடுஞ்சாலை 3A வரிசை, அல்லது புறம்போக்கு வகைப்பாடு: இவை வேறு துறைகளில் உள்ளன. பரிவர்த்தனைகள் தோல்வியடைவது அங்குதான்.',
       },
       {
         q: 'பட்டா விற்பவர் பெயரில் உள்ளது.',
@@ -327,7 +343,7 @@ const COPY = {
       },
       {
         q: 'என் வழக்கறிஞர் ஆவணங்களைப் பார்க்கிறார்.',
-        a: 'அவரைத் தொடரவும். வழக்கறிஞர் அவரிடம் கொடுக்கப்பட்ட ஆவணங்களைப் படிப்பார். நாங்கள் உங்களுக்குக் கொடுக்கப்படாத ஆவணங்களைத் தேடுகிறோம் — FMB படம் என்ன காட்டுகிறது, நிலம் கையகப்படுத்தல் அறிவிப்பில் உள்ளதா, கோயில் அல்லது வக்பு உரிமைகோரல் பதிவாகியுள்ளதா. எங்கள் அறிக்கையை உங்கள் வழக்கறிஞரிடம் கொடுங்கள்.',
+        a: 'அவரைத் தொடரவும். வழக்கறிஞர் அவரிடம் கொடுக்கப்பட்ட ஆவணங்களைப் படிப்பார். நாங்கள் உங்களுக்குக் கொடுக்கப்படாத ஆவணங்களைத் தேடுகிறோம்: FMB படம் என்ன காட்டுகிறது, நிலம் கையகப்படுத்தல் அறிவிப்பில் உள்ளதா, கோயில் அல்லது வக்பு உரிமைகோரல் பதிவாகியுள்ளதா. எங்கள் அறிக்கையை உங்கள் வழக்கறிஞரிடம் கொடுங்கள்.',
       },
       {
         q: 'எனக்கு என்ன தேவை?',
@@ -1754,7 +1770,7 @@ export function LaunchTease({
           <p className="lt-index">
             <span className="lt-index-num">01</span>
             <span className="lt-index-rule" aria-hidden />
-            <span>{t.index} — Tamil Nadu</span>
+            <span>{t.index} · Tamil Nadu</span>
           </p>
 
           <h1 className="lt-title">{t.head}</h1>
@@ -2020,6 +2036,22 @@ export function LaunchTease({
       >
         {t.line}
       </ScrollReveal>
+
+      {/*
+        Said in an interview, kept in his own words.
+
+        It follows the thesis line because it is the one thing the thesis does
+        not say: what the report is FOR. Everything above argues that we read
+        what nobody reads together; this says what happens when the reading
+        comes back bad, and that the answer is not a lost sale. A verification
+        business whose incentive is to bless a deal is not worth buying from,
+        and the convincing way to say otherwise is to have already said it
+        somewhere we did not control.
+      */}
+      <figure className="lt-quote">
+        <blockquote>{t.quote}</blockquote>
+        <figcaption>{t.quoteBy}</figcaption>
+      </figure>
 
       {/*
         Sits immediately after the thesis line and before the questions, which

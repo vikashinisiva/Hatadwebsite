@@ -1679,6 +1679,45 @@ body {
 
 /* Districts: a dense index, not chips */
 /*
+ * ══ The founder's line ══
+ *
+ * Sits under the thesis reveal, quieter than it. The reveal is the argument in
+ * the page's own voice; this is a person saying something the page cannot say
+ * about itself, so it is set smaller and lighter rather than louder.
+ *
+ * A hairline on the left instead of quote marks in the margin: the page is
+ * built from hairlines, and a decorative glyph would be the only ornament on it.
+ */
+.lt-quote {
+  margin: 0;
+  padding: clamp(36px, 7vh, 84px) clamp(20px, 4vw, 64px) clamp(48px, 9vh, 104px);
+  border-top: 1px solid #CBD5E8;
+}
+.lt-quote blockquote {
+  margin: 0;
+  max-width: 44ch;
+  padding-left: clamp(16px, 2vw, 24px);
+  border-left: 2px solid #1B4FD8;
+  font-size: clamp(1.125rem, 2.4vw, 1.625rem);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  color: #0C1525;
+  /* Pulls the opening quote mark back so the text edge lines up with the rule
+     rather than sitting a glyph-width inside it. */
+  text-indent: -0.42em;
+}
+.lt-quote figcaption {
+  margin: clamp(14px, 2vh, 20px) 0 0;
+  padding-left: clamp(18px, 2vw, 26px);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+
+/*
  * ══ Coverage stage ══
  *
  * A tall track with a sticky stage inside it. The reader scrolls normally; the

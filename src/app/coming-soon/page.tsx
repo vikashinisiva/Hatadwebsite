@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: 'Land record verification for Tamil Nadu',
   // Mirrors the on-page claim, counted from the same source so the two cannot
   // drift apart.
-  description: `Know what's wrong with the land before you pay for it. HataD reads ${SOURCE_CLAIM} Tamil Nadu government departments and courts and hands you one report. Launching soon — join the waitlist.`,
+  description: `Know what's wrong with the land before you pay for it. HataD reads ${SOURCE_CLAIM} Tamil Nadu government departments and courts and hands you one report. Launching soon. Join the waitlist.`,
   /*
    * Canonical is correct now that this is the indexable page: with COMING_SOON=1
    * the proxy rewrites "/" here, so "/" genuinely is this document's address.
@@ -50,16 +50,16 @@ export const metadata: Metadata = {
    */
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'HataD — Launching soon',
+    title: 'HataD, launching soon',
     description: `Know what's wrong with the land before you pay for it. ${SOURCE_CLAIM} government departments and courts, one report. Join the waitlist for first-week access.`,
     type: 'website',
     locale: 'en_IN',
     siteName: 'HataD',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'HataD — Launching soon' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'HataD, launching soon' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HataD — Launching soon',
+    title: 'HataD, launching soon',
     description: 'Land record verification for Tamil Nadu. Join the waitlist.',
     images: ['/og-image.png'],
   },

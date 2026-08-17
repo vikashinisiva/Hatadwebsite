@@ -34,8 +34,8 @@ const COPY = {
     subject: 'You’re on the HataD list',
     heading: 'You’re on the list.',
     body: [
-      `We’ll write once more — on ${day}, the day HataD opens. Nothing between now and then.`,
-      `HataD reads ${SOURCE_CLAIM} Tamil Nadu government departments and courts — registration, revenue, survey, forest, highways, planning — and hands you one report on a plot before you pay for it.`,
+      `We’ll write once more, on ${day}, the day HataD opens. Nothing between now and then.`,
+      `HataD reads ${SOURCE_CLAIM} Tamil Nadu government departments and courts: registration, revenue, survey, forest, highways, planning. You get one report on a plot before you pay for it.`,
     ],
     closing: 'The list goes first.',
   }),
@@ -43,8 +43,8 @@ const COPY = {
     subject: 'நீங்கள் HataD பட்டியலில் இணைந்துவிட்டீர்கள்',
     heading: 'பட்டியலில் இணைந்துவிட்டீர்கள்.',
     body: [
-      `${day} அன்று — HataD தொடங்கும் நாளில் — இன்னும் ஒரு முறை மட்டும் உங்களுக்கு எழுதுவோம். அதுவரை வேறு எந்த மின்னஞ்சலும் இல்லை.`,
-      `பதிவுத்துறை, வருவாய், அளவை, வனம், நெடுஞ்சாலை, நகர அமைப்பு — ${SOURCE_CLAIM} அரசுத் துறைகள் மற்றும் நீதிமன்றங்களின் ஆவணங்களைப் படித்து, பணம் கொடுப்பதற்கு முன் ஒரே அறிக்கையாகத் தருகிறோம்.`,
+      `HataD தொடங்கும் நாளான ${day} அன்று, இன்னும் ஒரு முறை மட்டும் உங்களுக்கு எழுதுவோம். அதுவரை வேறு எந்த மின்னஞ்சலும் இல்லை.`,
+      `பதிவுத்துறை, வருவாய், அளவை, வனம், நெடுஞ்சாலை, நகர அமைப்பு உள்ளிட்ட ${SOURCE_CLAIM} அரசுத் துறைகள் மற்றும் நீதிமன்றங்களின் ஆவணங்களைப் படித்து, பணம் கொடுப்பதற்கு முன் ஒரே அறிக்கையாகத் தருகிறோம்.`,
     ],
     closing: 'பட்டியலில் உள்ளவர்களுக்கு முதல் இடம்.',
   }),
