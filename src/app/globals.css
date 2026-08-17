@@ -665,3 +665,1820 @@ body {
 .animate-field-flash {
   animation: field-flash 1.2s ease-out;
 }
+
+
+/* ─── Launch Tease — survey-sheet composition ───────────────────
+   Deliberately: no border-radius, no glass, no pills, no centred
+   column. Structure comes from hairlines and a hard asymmetric
+   split; the accent colour is used exactly once (the index number).
+──────────────────────────────────────────────────────────────── */
+
+@keyframes lt-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.lt-rise { animation: lt-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* The hero split is still the first screen; coverage and questions sit below it,
+   so the page scrolls rather than being locked to one viewport. */
+.lt-root {
+  background: #F4F7FC;
+  color: #0C1525;
+
+  /*
+   * The column scale lives here, not on .lt-panel-text, because the join form
+   * is rendered twice — once in the hero and once as the closing call to
+   * action after the questions. Custom properties inherit, so both instances
+   * read the same numbers instead of one of them carrying a copy that is free
+   * to drift from the original.
+   */
+  /*
+   * One measure for every block in this column.
+   *
+   * These had drifted to three separate values — 34rem on the sub-line, 32rem
+   * on the form, 30rem on the offer — so the sub overhung the field's underline
+   * by 32px while the offer stopped 32px short of it. Three ragged right edges
+   * at three different x positions, which reads as carelessness even when no
+   * single element looks wrong on its own.
+   */
+  --lt-measure: 34rem;
+
+  /*
+   * Vertical scale for this column. Four steps, and every gap below uses one of
+   * them — they were six unrelated clamps (32 / 28 / 34 / 18 / 12 / 42), which
+   * is why the rhythm read as arbitrary even where no single gap looked wrong.
+   *
+   * The column is three groups: the pitch (index, headline, sub-line), the
+   * action (offer, field, note), and the secondary follow row. Steps 1-2 sit
+   * inside a group, step 4 separates them — so the largest gaps always fall on
+   * the group boundaries and never inside one.
+   */
+  /*
+   * Every step lands on the 8pt grid at both ends of its clamp, so the column
+   * shares one unit instead of the arbitrary vw-derived numbers this had
+   * before (26 / 38 / 18 / 66 — not one of them a multiple of 8).
+   *
+   * Ordered by the internal-<=-external rule: whatever separates two groups
+   * must exceed any gap inside either of them, or the eye groups the wrong
+   * things together.
+   */
+  --lt-space-1: 8px;                      /* a control and its own caption */
+  --lt-space-2: clamp(12px, 1.6vw, 16px); /* neighbours inside a group */
+  --lt-space-3: clamp(16px, 2.2vw, 24px); /* within the pitch block */
+  --lt-space-4: clamp(24px, 2.6vw, 32px); /* pitch -> action, the real break */
+  /*
+   * The follow row.
+   *
+   * This is the one step that is set by eye rather than by ratio. The argument
+   * against going large is real — it puts the loudest division in the column in
+   * front of its least important element — but at 56px the row still read as
+   * the tail of the form rather than as a separate thing, and it left a band of
+   * dead space under the panel doing nothing.
+   *
+   * 40px, landed by eye after 56 / 72 / 64 all read as a hole in the column
+   * rather than a division in it. The note above it is a single quiet line, so
+   * the gap was being measured against almost nothing and looked bigger than
+   * the number suggests.
+   *
+   * This is the floor: --lt-space-4 tops out at 32px, and the internal-<=-
+   * external rule means this step can never go below that or the follow row
+   * starts reading as part of the action group. Both ends stay on the 8pt grid,
+   * and the clamp keeps clear of space-4 at every width.
+   */
+  --lt-space-5: clamp(32px, 3.2vw, 40px);
+}
+
+/* ── Header ── */
+.lt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px clamp(20px, 3vw, 40px);
+  border-bottom: 1px solid #CBD5E8;
+}
+.lt-mark { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3em; color: #0C1525; }
+.lt-lang { display: flex; align-items: center; gap: 10px; font-size: 0.6875rem; letter-spacing: 0.1em; }
+/* Anchors, not buttons: each language is a real URL now (`/` and `/ta`), so
+   these have to be crawlable links and openable in a new tab. The click is
+   intercepted for an instant in-page swap; without JS they still navigate. */
+.lt-lang a {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  font-family: inherit; font-size: inherit; letter-spacing: inherit;
+  text-decoration: none;
+  color: #7A8FAD; transition: color 0.25s;
+}
+.lt-lang a[data-on='true'] { color: #0C1525; }
+.lt-lang a:hover { color: #0C1525; }
+.lt-lang-sep { color: #CBD5E8; }
+
+/* ── Two-panel body ── */
+/* Screen one, exactly: header + split + countdown fill the viewport and nothing
+   below it peeks. Everything else is found by scrolling. */
+.lt-hero {
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.lt-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.lt-hero-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 28px;
+  flex-wrap: wrap;
+  padding: 13px clamp(20px, 3vw, 40px);
+  border-top: 1px solid #CBD5E8;
+}
+/* Tells the reader there is more without a bouncing chevron. */
+.lt-cue {
+  display: flex;
+  align-items: center;
+  /* Holds the cue against the right edge once the countdown is gone. With both
+     children present the foot's space-between already does this, so it changes
+     nothing before launch and everything after. */
+  margin-left: auto;
+  gap: 10px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.lt-cue-num { color: #1B4FD8; }
+.lt-panel-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /*
+   * Vertical padding is separated from horizontal and tied to viewport HEIGHT,
+   * not width.
+   *
+   * Both axes used to read clamp(36px, 5vw, 76px), so on a wide-but-short
+   * window the column got 72px of padding top and bottom regardless of whether
+   * there was room for it. Adding the offer block pushed the hero to 841px
+   * against an 812px viewport and the countdown — the last grid row of a
+   * min-height:100svh hero — fell off the bottom.
+   */
+  --lt-pad-y: clamp(28px, 4.6svh, 56px);
+  /*
+   * Optical drop.
+   *
+   * The column is centred, so extra padding on the top edge alone shifts the
+   * content down by HALF what is added — the centre point moves by drop/2. This
+   * is deliberately a padding change and not a translate: a transform would
+   * move the text off its own box and let it ride over the panel's bottom edge
+   * on a short window, where this simply runs out of room and stops.
+   *
+   * Tied to svh like the padding it adds to, so it gives back the offset on
+   * short screens instead of squeezing the column against the countdown.
+   */
+  --lt-drop: clamp(12px, 2.4svh, 28px);
+  padding: calc(var(--lt-pad-y) + var(--lt-drop)) clamp(20px, 4vw, 64px) var(--lt-pad-y);
+  border-right: 1px solid #CBD5E8;
+}
+.lt-panel-map { position: relative; overflow: hidden; min-height: 0; }
+
+@media (max-width: 900px) {
+  /*
+   * The readout could not be anchored to the plot at this size.
+   *
+   * The card is 236px and the leader bottoms out at 26px, so an anchored card
+   * needs 262px above the plot. The plot sits mid-panel, so that wanted ~520px
+   * of panel — against 270px at the old 32svh. Roughly half the card was cut
+   * off the top, and the half lost was the location block and the "6 of 30+"
+   * line, which are the two parts doing the persuading.
+   *
+   * So on small screens the card stops chasing the plot and pins to the corner.
+   * The anchoring is what sells it on desktop, but in a panel this short the
+   * leader has nowhere to travel and the effect was never legible anyway. The
+   * boundary still traces on the map; only the annotation stops moving.
+   */
+  .lt-body { grid-template-columns: 1fr; grid-template-rows: 46svh auto; }
+  .lt-panel-text { border-right: 0; }
+  .lt-panel-map { order: -1; border-bottom: 1px solid #CBD5E8; }
+
+}
+
+/* ── Index label ── */
+.lt-index {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--lt-space-3);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.lt-index-num { color: #1B4FD8; } /* the one accent on the page */
+.lt-index-rule { width: 40px; height: 1px; background: #CBD5E8; }
+
+/* ── Headline ── */
+.lt-title {
+  margin: 0;
+  max-width: 16ch; /* forces the editorial line break */
+  font-size: clamp(2.125rem, 4.4vw, 3.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: #0C1525;
+  text-wrap: pretty;
+}
+/* Tamil carries taller ascenders and descenders — it needs more leading
+   and less negative tracking than the Latin setting. */
+.lt-root[data-lang='ta'] .lt-title {
+  max-width: 22ch;
+  font-size: clamp(1.5rem, 3.1vw, 2.625rem);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+
+.lt-sub {
+  margin: var(--lt-space-3) 0 0;
+  max-width: var(--lt-measure);
+  font-size: 1.0625rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #3D5278;
+  /* Was leaving a 142px cliff (543 / 401) directly above the offer block.
+     Balanced it reads 486 / 458, and the break still lands on a comma. */
+  text-wrap: balance;
+}
+
+/* ── Form: a rule with a field on it, not a boxed input ── */
+.lt-form { margin-top: var(--lt-space-4); max-width: var(--lt-measure); }
+
+/* The reason to join, directly above the field.
+   No rule, no tint, no box — a bordered callout is the house style of every
+   template on the internet and would undercut the claim it is carrying. It
+   earns its separation from the sub-line by size and space alone, and the
+   field's ink underline closes the group below it. */
+.lt-offer {
+  margin: 0 0 var(--lt-space-4);
+  max-width: var(--lt-measure);
+  font-size: 0.9375rem;
+  /* Tight: three short sentences stacked, not a paragraph. At 1.65 they read as
+     three separate remarks; at 1.42 they read as one statement. */
+  line-height: 1.42;
+  color: #3D5278;
+}
+/* The observation carries the weight; the date and the terms that follow are
+   mechanism. Separated by ink and a line of its own — no bold, no size change,
+   nothing that would read as a pull quote. On its own line because balanced
+   wrapping kept breaking it mid-clause ("From 31 August you / can check"),
+   which costs more than the ragged edge it was fixing. */
+.lt-offer-lead,
+.lt-offer-body,
+.lt-offer-close { display: block; text-wrap: pretty; }
+/* No margin between the lines. A 3px nudge under the lead made the first gap
+   27.75px against 24.75px for the second — three lines with two different gaps,
+   which is what read as the block being out of alignment. Leading alone now
+   sets all of them, so they cannot disagree. */
+/* Ink on the hook and on the ask; the mechanism between them stays muted. */
+.lt-offer-lead,
+.lt-offer-close { color: #0C1525; }
+.lt-field {
+  display: flex;
+  align-items: center;
+  /*
+   * No flex `gap` here, deliberately.
+   *
+   * The country code collapses with max-width:0 rather than display:none — it
+   * has to stay in the DOM to animate open. But a collapsed flex item is still
+   * an item, so `gap` reserved its 16px anyway and pushed the input 16px right
+   * of every other element in the column: the one line that should anchor the
+   * form was the only thing out of alignment. (Only collapsed *grid tracks*
+   * drop their gutter; `visibility: collapse` would zero it here but also kill
+   * the animation.) Spacing lives on the items instead, so a collapsed item
+   * contributes nothing — see .lt-dial's own margin-right when it opens.
+   */
+  padding-bottom: 10px;
+  border-bottom: 1px solid #0C1525;
+  transition: border-color 0.25s;
+  /* Anchors the two rules below, which both sit on the border. */
+  position: relative;
+}
+.lt-field[data-error='true'] { border-bottom-color: #DC2626; }
+
+/*
+ * Focus rule.
+ *
+ * A second 1px line laid over the border, wiping in from the left. The static
+ * border stays underneath, so nothing moves and nothing changes size — the line
+ * simply gains ink. This replaces the usual glow/ring, which would be the only
+ * soft-edged thing on a page built entirely from hairlines.
+ *
+ * Drawn at bottom:-1px to cover the border exactly rather than sit beside it.
+ */
+.lt-field::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: #1B4FD8;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.lt-field:focus-within::after { transform: scaleX(1); }
+.lt-field[data-error='true']::after { background: #DC2626; }
+
+/*
+ * The travelling segment. One element, three jobs.
+ *
+ * At rest it drifts the length of the rule every few seconds at low opacity —
+ * the one thing here that moves without being asked to. Without it the whole
+ * field is inert until you touch it, which is what made it read as flat.
+ *
+ * It is the same gesture the map panel makes while it works through a parcel,
+ * so it reads as the system being live rather than as a decorative loop. Slow,
+ * faint, and with most of the cycle spent off-stage: it should be noticed on
+ * the second look, not the first.
+ *
+ * Its own pseudo-element rather than reusing ::after, which is mid-transform
+ * holding the focus state at that moment.
+ *
+ * 455% = 100/22 and 357% = 100/28 — each segment travels exactly its own
+ * container width, so it exits fully at the right edge.
+ */
+.lt-field::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 22%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #1B4FD8, transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: lt-field-idle 6s cubic-bezier(0.4, 0, 0.6, 1) 1.4s infinite;
+}
+@keyframes lt-field-idle {
+  0% { transform: translateX(-100%); opacity: 0; }
+  6% { opacity: 0.45; }
+  30% { opacity: 0.45; }
+  38% { transform: translateX(455%); opacity: 0; }
+  /* Two thirds of the cycle is empty. The pause is what keeps it from
+     reading as a progress bar. */
+  100% { transform: translateX(455%); opacity: 0; }
+}
+
+/* Once the field has attention, the focus rule is the signal and this would
+   only compete with it. */
+.lt-field:focus-within::before { animation: none; opacity: 0; }
+
+/*
+ * Stopped while the hero is off screen.
+ *
+ * Same reasoning as the map camera: an infinite animation keeps the compositor
+ * awake for the whole visit, and this page is many screens long, so the drift
+ * would spend most of its life animating something nobody can see. Paused
+ * rather than removed so it does not restart from the top of the cycle every
+ * time the reader scrolls back up.
+ *
+ * The attribute is only ever set to 'false'; its absence means on screen, so
+ * the animation runs normally before the observer has had its first callback
+ * and on any device where the effect never runs.
+ */
+.lt-hero[data-onscreen='false'] .lt-field::before { animation-play-state: paused; }
+
+/*
+ * Sending. Same segment, faster and at full strength.
+ *
+ * Indeterminate on purpose — we have no progress to report, and a fake bar that
+ * fills to 90% and waits is the kind of thing this page is arguing against.
+ *
+ * Must stay after the :focus-within rule: identical specificity, so order is
+ * what decides it, and the field is focused while it submits.
+ */
+.lt-field[data-sending='true']::before {
+  width: 28%;
+  opacity: 1;
+  animation: lt-field-sweep 1.15s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes lt-field-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(357%); }
+}
+.lt-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #0C1525;
+}
+.lt-input:focus { outline: none; }
+.lt-input::placeholder { color: #7A8FAD; }
+
+/*
+ * Country code. Collapsed to zero width until the field reads as a number, then
+ * it opens and the input slides right — animating max-width rather than width
+ * so the code can size itself to `+1` or `+971` without a magic number.
+ */
+.lt-dial {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  margin-right: 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.9375rem;
+  color: #3D5278;
+  white-space: nowrap;
+  transition:
+    max-width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease,
+    margin-right 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lt-field[data-mode='phone'] .lt-dial {
+  max-width: 6rem;
+  opacity: 1;
+  margin-right: 10px;
+}
+/* Real <select> on top, invisible: native pickers beat a custom menu on a phone,
+   which is where most of these get typed. */
+.lt-dial select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.lt-field[data-mode='phone'] .lt-dial-shown::after {
+  content: '▾';
+  margin-left: 4px;
+  font-size: 0.625rem;
+  color: #7A8FAD;
+}
+.lt-join {
+  /* Replaces the field's former flex gap — carried here so it applies only
+     between the input and this button, never beside the collapsed dial code. */
+  margin-left: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /*
+   * Full ink at rest, exactly as before.
+   *
+   * An earlier pass started this muted and lit it only once the entry was
+   * valid. It signalled the right thing but paid for it in the wrong place: the
+   * resting field is what most people see and never interact with, and dimming
+   * the only call to action on the page to make room for a state change is a
+   * bad trade. Arming is expressed by the arrow instead, which costs nothing at
+   * rest.
+   *
+   * Deliberately never disabled: clicking an empty field still needs to produce
+   * "Enter a mobile number or an email address." A disabled control swallows
+   * the click and explains nothing.
+   */
+  color: #0C1525;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  transition: color 0.3s;
+}
+.lt-join:hover:not(:disabled) { color: #1B4FD8; }
+.lt-join:disabled { cursor: default; opacity: 0.45; }
+
+/*
+ * The arrow travels; the word does not.
+ *
+ * Present and full-weight at rest — this is not a reveal. It steps forward once
+ * what has been typed would actually be accepted, which is the only moment the
+ * form knows something the reader does not. Small on purpose: 4px is enough to
+ * register as the control leaning towards the action without becoming a
+ * fidget.
+ */
+.lt-join-arrow {
+  display: inline-block;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lt-field[data-armed='true'] .lt-join-arrow { transform: translateX(4px); }
+.lt-join:hover .lt-join-arrow,
+.lt-join:focus-visible .lt-join-arrow { transform: translateX(8px); }
+
+.lt-note {
+  margin: var(--lt-space-1) 0 0;
+  font-size: 0.75rem;
+  color: #7A8FAD;
+  /* So an error arrives as the line changing colour, not as a hard swap. */
+  transition: color 0.25s;
+}
+.lt-note[data-error='true'] { color: #DC2626; }
+
+/* Follow row — a real secondary action, not a footer afterthought. Sized to be
+   read, but underlined rather than buttoned so it can't outrank the waitlist. */
+.lt-follow {
+  display: flex;
+  align-items: center;
+  /* Tight: the label and the marks are one unit, so they should read as one
+     object sitting apart from the form, not three things spread along a line. */
+  gap: 10px 12px;
+  flex-wrap: wrap;
+  max-width: var(--lt-measure);
+  /*
+   * Was 26px, against 22px between the offer and the field and 12px between the
+   * field and its note — a group boundary reading tighter than the gaps inside
+   * the group beside it, so the row looked like part of the form. It now sits
+   * on its own step, wider than any group break in the column.
+   */
+  margin-top: var(--lt-space-5);
+}
+.lt-follow-label {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.lt-follow a {
+  display: inline-flex;
+  color: #3D5278;
+  transition: color 0.25s;
+}
+.lt-follow a:hover { color: #0C1525; }
+
+/*
+ * ── Touch targets ──
+ *
+ * Every interactive control on this page is small text or a 19px icon. JOIN, the
+ * only conversion on the site, was `padding: 0` at 0.75rem — a hit area about
+ * 15px tall, well under the ~44px a thumb needs, on a page whose readers are
+ * overwhelmingly on phones.
+ *
+ * Grown with a pseudo-element rather than padding, because padding on any of
+ * these moves the layout: on .lt-join it changes the height of .lt-field and
+ * therefore the whole hero column, which is fitted to 100svh.
+ *
+ * The expansions are deliberately modest so neighbouring targets cannot steal
+ * each other's taps — see the tighter horizontal value on the social icons,
+ * which sit only 12px apart.
+ */
+.lt-join,
+.lt-copy,
+.lt-lang a,
+.lt-follow a {
+  position: relative;
+}
+.lt-join::before,
+.lt-copy::before,
+.lt-lang a::before,
+.lt-follow a::before {
+  content: '';
+  position: absolute;
+  /* ~15px of text + 30px = 45px tall. */
+  inset: -15px -8px;
+}
+/* 12px gap between the marks, so 6px a side meets exactly and never overlaps. */
+.lt-follow a::before { inset: -14px -6px; }
+
+/* Honeypot: out of the layout entirely, but not display:none — some bots skip
+   fields that are explicitly hidden. */
+.lt-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Confirmation entrance: the rule draws down, then the text settles in. */
+@keyframes lt-done-rule {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes lt-done-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.lt-done {
+  animation: lt-done-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+  transform-origin: top left;
+  margin-top: clamp(30px, 4vw, 46px);
+  max-width: 32rem;
+  padding-left: 16px;
+  border-left: 2px solid #10B981;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #0C1525;
+  position: relative;
+}
+/* The green rule is drawn separately so it can wipe down before the text lands. */
+.lt-done::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #10B981;
+  transform-origin: top;
+  animation: lt-done-rule 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.lt-done-pos {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 12px 0 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+}
+.lt-done-pos-num { font-size: 1.5rem; letter-spacing: -0.02em; color: #0C1525; }
+.lt-done-pos-label {
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.lt-share {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #CBD5E8;
+}
+.lt-share-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: #1B4FD8;
+}
+.lt-copy {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0C1525;
+  transition: opacity 0.25s;
+}
+.lt-copy:hover { opacity: 0.5; }
+
+/* ── Trust block: who the visitor is handing their details to.
+      Sits as its own band above the footer rather than beside the form. ── */
+/* ══ Credentials ══
+   The only outside proof on a page that otherwise has to be believed on its own
+   word, so they get a band rather than a footer line.
+
+   Built light, in this page's own language, rather than reusing the dark
+   NvidiaInception section from the marketing site: that one is a #0C1525 band
+   with a green radial wash and framer-motion, and dropped in here it would be
+   the only dark object between the hero and the footer — it would read as an
+   advert someone else placed on the page.
+
+   Two columns split by a hairline, which is how every other division on this
+   page is drawn. Each mark keeps its own accent colour on its label dot and
+   nowhere else. */
+.lt-cred {
+  /*
+   * Shorter than .lt-block on purpose. That padding (84px) is sized for a
+   * numbered chapter with a heading and a body under it; these are two short
+   * credentials, and at chapter height it read as a mostly empty band.
+   */
+  padding: clamp(30px, 4vw, 52px) clamp(20px, 4vw, 64px);
+  border-top: 1px solid #CBD5E8;
+}
+.lt-cred-grid {
+  display: grid;
+  gap: clamp(28px, 3.5vw, 56px);
+}
+@media (min-width: 880px) {
+  .lt-cred-grid { grid-template-columns: 1fr 1fr; }
+  /* The divider goes on the second item rather than being its own element, so
+     it cannot survive into the stacked layout where it would run the wrong way. */
+  .lt-cred-item + .lt-cred-item {
+    border-left: 1px solid #CBD5E8;
+    padding-left: clamp(28px, 3.5vw, 56px);
+  }
+}
+
+/*
+ * One plate height for both marks.
+ *
+ * The two assets disagree about everything else — the NVIDIA badge is 501x217
+ * black-and-green line art for light backgrounds, the Shaastra mark is a 319px
+ * black square. Matching them on height and letting the widths fall where they
+ * may is the only alignment that reads as deliberate; matching widths would
+ * make one of them tiny.
+ */
+.lt-cred-plate {
+  /*
+   * No plate. The marks sit on the page ground, which is the convention every
+   * credible version of this section follows — a logo in a box reads as an
+   * advert slot, a logo on the page reads as an association.
+   *
+   * The white plate that used to be here was also stretching to the full column
+   * width: `display: inline-block` does not stop a flex child from stretching,
+   * only `align-self` does. That is what produced the white bar across each
+   * column. Kept as a flex-start block so the same thing cannot happen again.
+   */
+  align-self: flex-start;
+  margin: 0 0 clamp(18px, 2.2vw, 26px);
+  line-height: 0;
+  /*
+   * Fixed height, set to the taller of the two marks, with each centred inside
+   * it. The marks are different sizes on purpose, and without this the shorter
+   * one pulls its whole text column up — the two labels sat on different lines
+   * either side of the divider, which reads as a broken grid long before anyone
+   * works out why.
+   */
+  display: flex;
+  align-items: center;
+  height: clamp(60px, 6vw, 76px);
+}
+.lt-cred-plate img {
+  display: block;
+  width: auto;
+}
+/*
+ * Sized independently.
+ *
+ * A first pass matched them on optical weight and set the Shaastra tile
+ * smaller, on the reasoning that a solid black square carries more mass than
+ * line art of the same height. That reasoning holds for a wordmark, but this
+ * asset is an avatar crop with the name set inside its own frame — shrinking it
+ * shrank the type twice over and it stopped being readable, which costs more
+ * than the imbalance it bought.
+ *
+ * So the tile is now the larger of the two and legibility wins. The badge is
+ * left where it was: it is wide, so it already holds its side of the row.
+ */
+/* Stays under the plate height above, so the row keeps a little air over the
+   taller mark and the two columns stay locked to the same baselines. */
+.lt-cred-item[data-mark='nvidia'] .lt-cred-plate img {
+  height: clamp(54px, 5.4vw, 68px);
+}
+.lt-cred-item[data-mark='shaastra'] .lt-cred-plate img {
+  height: clamp(60px, 6vw, 76px);
+}
+
+.lt-cred-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.lt-cred-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  /* Falls back to the page accent; each item overrides with its own mark's
+     colour where that colour actually holds up on #F4F7FC. */
+  background: #1B4FD8;
+}
+.lt-cred-item[data-mark='nvidia'] .lt-cred-dot { background: #76B900; }
+
+.lt-cred-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: #0C1525;
+}
+.lt-cred-body {
+  margin: 0 0 14px;
+  max-width: 42ch;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: #3D5278;
+}
+/* The date. Sits at the foot of each column so the two items end on the same
+   kind of line even when their descriptions run to different lengths. */
+.lt-cred-meta {
+  margin: auto 0 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3D5278;
+}
+.lt-cred-item { display: flex; flex-direction: column; }
+
+/* ══ Closing call to action ══
+   The same join block as the hero, given its own band. It inherits the column
+   scale from .lt-root, so the offer, the field and the note sit on exactly the
+   gaps they do at the top of the page rather than on approximations of them. */
+.lt-close {
+  padding: clamp(44px, 6vw, 84px) clamp(20px, 4vw, 64px);
+  border-top: 1px solid #CBD5E8;
+  /*
+   * Two columns, the same split the hero uses: the ask on the left, something
+   * to look at on the right. As a single column it was three lines of copy and
+   * a rule, with the right half of the page empty — the reader's last
+   * impression of the page was of it running out.
+   */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+  gap: clamp(32px, 5vw, 80px);
+  align-items: center;
+}
+
+/* ── The convergence figure ── */
+.lt-conv {
+  margin: 0;
+  min-width: 0;
+}
+/*
+ * The list is the default and the fan is the enhancement, not the other way
+ * round. A browser that never matches the media query below still gets legible
+ * content rather than 6px type.
+ */
+.lt-conv svg { display: none; }
+.lt-conv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 34rem;
+}
+.lt-conv-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid #CBD5E8;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  color: #3D5278;
+}
+.lt-conv-list-n {
+  flex: 0 0 auto;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  color: #7A8FAD;
+}
+/* The sum, given the weight the hub square carries in the drawn version. */
+.lt-conv-list-total {
+  border-bottom: 0;
+  padding-top: 14px;
+  font-weight: 700;
+  color: #0C1525;
+}
+.lt-conv-list-total .lt-conv-list-n { color: #1B4FD8; font-weight: 700; }
+
+/*
+ * 1100px, not 900px.
+ *
+ * The breakpoint is set by where the drawing becomes readable, not by where the
+ * column happens to split. In the two-column close the figure gets roughly 48%
+ * of the content width, so at 901px it is ~375px wide — a 0.72 scale, which
+ * puts the family labels at 8.3px. It only clears 11px around 1200px.
+ */
+@media (min-width: 1100px) {
+  .lt-conv svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .lt-conv-list { display: none; }
+}
+/* Hairlines, like every other division on the page. No fill, so the curves read
+   as routes rather than as shapes. */
+.lt-conv-lines path {
+  fill: none;
+  stroke: #CBD5E8;
+  stroke-width: 1;
+}
+.lt-conv-rows circle { fill: #7A8FAD; }
+.lt-conv-label {
+  font-size: 11.5px;
+  fill: #3D5278;
+}
+.lt-conv-count {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 9.5px;
+  fill: #7A8FAD;
+}
+.lt-conv-hub { fill: #1B4FD8; }
+.lt-conv-hub-label {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  fill: #0C1525;
+}
+.lt-conv figcaption {
+  margin-top: 14px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+  text-align: center;
+}
+
+/*
+ * Below this the figure would be squeezed to about 300px wide, at which point
+ * the family labels start colliding with the curves. It stacks under the form
+ * instead of shrinking — it is content, not decoration, so it is not dropped.
+ */
+@media (max-width: 900px) {
+  .lt-close { grid-template-columns: 1fr; }
+  .lt-conv { max-width: 32rem; }
+}
+
+.lt-trust {
+  padding: clamp(26px, 3.5vw, 40px) clamp(20px, 4vw, 64px);
+  border-top: 1px solid #CBD5E8;
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: #7A8FAD;
+}
+.lt-trust-name { display: block; font-weight: 500; color: #3D5278; }
+.lt-trust a { color: #7A8FAD; transition: color 0.25s; }
+.lt-trust a:hover { color: #0C1525; }
+
+/* ── Below-the-fold blocks ── */
+.lt-block {
+  padding: clamp(44px, 6vw, 84px) clamp(20px, 4vw, 64px);
+  border-top: 1px solid #CBD5E8;
+}
+.lt-block-index {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 clamp(18px, 2.5vw, 26px);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.lt-block-index-num { color: #1B4FD8; }
+.lt-block-rule { width: 40px; height: 1px; background: #CBD5E8; }
+.lt-block-title {
+  margin: 0;
+  max-width: 24ch;
+  font-size: clamp(1.375rem, 2.6vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: #0C1525;
+}
+
+/* Districts: a dense index, not chips */
+.lt-districts {
+  margin: clamp(22px, 3vw, 30px) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px 24px;
+}
+.lt-districts li {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: #3D5278;
+}
+
+/* Questions */
+/* Two columns: the answers are capped at a readable measure, so the only way to
+   use the full width is a second column rather than longer lines. */
+.lt-faq {
+  margin: clamp(22px, 3vw, 30px) 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(32px, 5vw, 80px);
+}
+.lt-faq-item {
+  padding: 18px 0;
+  border-top: 1px solid #CBD5E8;
+}
+/* Both column heads, not just the first item overall. */
+.lt-faq-item:nth-child(-n + 2) { border-top: 0; padding-top: 0; }
+.lt-faq-q {
+  margin: 0 0 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #0C1525;
+}
+.lt-faq-a {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #3D5278;
+}
+@media (max-width: 860px) {
+  .lt-faq { grid-template-columns: 1fr; }
+  .lt-faq-item:nth-child(-n + 2) { border-top: 1px solid #CBD5E8; padding-top: 18px; }
+  .lt-faq-item:first-child { border-top: 0; padding-top: 0; }
+}
+
+/* ── Map panel ── */
+/* Two classes on purpose. Mapbox stamps `mapboxgl-map` onto this same element,
+   and mapbox-gl.css sets `.mapboxgl-map { position: relative }` at equal
+   specificity but later in the cascade — which kills `inset: 0` and collapses
+   the container to zero height while the canvas renders invisibly inside it. */
+.lt-panel-map .lt-map {
+  position: absolute;
+  inset: 0;
+  filter: saturate(1.05);
+  /*
+   * Painted backdrop, so the panel is never a white hole.
+   *
+   * Mapbox is now deferred to browser-idle to keep it off the critical path,
+   * and tiles take a moment after that. Before this the reader got a blank
+   * white rectangle for that whole window — on a slow connection it read as a
+   * broken image rather than as a map arriving.
+   *
+   * Two flat stops in the page's own palette, roughly the value the basemap
+   * settles at, so the tiles fading in over it is a resolve rather than a
+   * swap. Costs nothing: no image, no request.
+   */
+  background: linear-gradient(160deg, #E8EEF7 0%, #DCE5F2 55%, #D3DEEE 100%);
+}
+.lt-map .mapboxgl-ctrl-bottom-left,
+.lt-map .mapboxgl-ctrl-bottom-right { display: none !important; }
+
+.lt-fix {
+  position: absolute;
+  left: clamp(14px, 2vw, 22px);
+  bottom: clamp(14px, 2vw, 22px);
+  display: grid;
+  gap: 3px;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E8;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  color: #0C1525;
+}
+.lt-fix-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-dm), system-ui, sans-serif;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+/* Square, not round — nothing on this page is a circle. */
+.lt-fix-dot { width: 5px; height: 5px; background: #C9A84C; transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Department readout, anchored to the plot on the map itself.
+   Positioned each frame by transform; this element sits at the map origin and
+   is translated to the parcel, so it must not participate in layout. */
+.lt-scan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform;
+  opacity: 0;
+}
+/*
+ * Hidden only before the first plot exists; from then on it is always on.
+ *
+ * No transition either way. A fade-in ran concurrently with the leader's draw
+ * and turned it into a plain dissolve — the animation was firing, it just could
+ * not be seen through the container fading up underneath it. And a fade-out on
+ * departure severed the card from the land: the panel clips it as the camera
+ * pulls away, which is what makes it read as an annotation on the map rather
+ * than a caption over it.
+ */
+/*
+ * Absent, not merely invisible, until the camera has landed somewhere.
+ *
+ * opacity:0 alone left the card in the layout, and before the first arrival
+ * positionOverlay() has no parcel to project, so .lt-scan still sits at its
+ * CSS left:0 while .lt-scan-inner carries translateX(-50%) from the entry
+ * keyframes — putting an 170px card at x=-85.
+ *
+ * Invisible on desktop, where the panel starts two-thirds across the page and
+ * -85 is still inside it. On a phone the panel starts at x=0, so it hung off
+ * the left edge of the document and dragged 56px of horizontal scroll with it.
+ * display:none is the only one of the three hiding mechanisms that takes an
+ * element out of layout as well as out of sight.
+ */
+.lt-scan[data-shown='false'] { display: none; }
+.lt-scan[data-shown='true'] { opacity: 1; }
+
+/* Annotated the way a surveyor marks a drawing: a point on the plot, a leader
+   drawn up from it, and the card landing on top. One variable sets the height
+   of the leader and the offset of the card, so they cannot disagree. */
+.lt-scan { --lead: 104px; }
+
+/* No anchor square: the traced plot boundary is the marker, and a dot sitting
+   at its centre only competed with it. The leader simply ends on the plot. */
+
+/* Grows upward out of the anchor. */
+.lt-scan-lead {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: var(--lead);
+  background: #1B4FD8;
+  opacity: 0.55;
+  transform-origin: bottom center;
+  animation: lt-lead-draw 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes lt-lead-draw {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+/* Sits centred above the leader, arriving just after it finishes drawing. */
+.lt-scan-inner {
+  position: absolute;
+  left: 0;
+  bottom: var(--lead);
+  display: grid;
+  gap: 1px;
+  padding: 9px 13px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  /* A text-shadow was not enough over 3D buildings — the labels need a surface. */
+  background: rgba(244, 247, 252, 0.94);
+  border: 1px solid #CBD5E8;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: lt-card-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/*
+ * ══ Scan card, small screens ══
+ *
+ * These rules used to live in the @media block up at the top of the file,
+ * beside the panel stacking they belong with. They never applied.
+ *
+ * Same specificity as the .lt-scan/.lt-scan-inner base rules ~900 lines below
+ * them, so the base rules won on source order alone and the card kept the
+ * desktop treatment on phones: position:absolute with the lt-card-in keyframes,
+ * whose translateX(-50%) put a 201px card at x=-101 and pushed 56px of
+ * horizontal scroll onto every mobile page. A media query matching is not the
+ * same as a media query winning.
+ *
+ * Moved here, after everything they override. Do not move them back.
+ */
+/*
+ * Pinned layout — the fallback, not the phone layout.
+ *
+ * Driven by a data attribute the code sets from the panel's measured height,
+ * not by a width breakpoint. Width was never the real constraint: the card is
+ * pinned only when there is genuinely not enough panel above the plot to hang
+ * it there, and that is a question about height. Phones now anchor the card
+ * over the parcel exactly as desktop does — see cameraPadding() — so this only
+ * engages on unusually short panels.
+ */
+@media (max-width: 900px) {
+  /* Beats the per-frame inline transform from positionOverlay(), and its
+     off-screen visibility guard — a pinned card is always in a valid place, so
+     it must not blink out when the plot leaves the frame. */
+  .lt-scan[data-pin='true'] {
+    top: 12px;
+    left: 12px;
+    transform: none !important;
+    visibility: visible !important;
+  }
+  .lt-scan[data-pin='true'] .lt-scan-lead { display: none; }
+  .lt-scan[data-pin='true'] .lt-scan-inner {
+    position: static;
+    /* The desktop entry keyframes carry translateX(-50%) to centre the card on
+       the leader. With no leader to centre on, that would shunt it off-panel. */
+    animation: lt-card-in-pinned 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+  }
+  @keyframes lt-card-in-pinned {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* Buys back ~30px so the card clears the panel on a 568px-tall screen. */
+  .lt-scan-row { line-height: 1.55; }
+  .lt-scan-sep { margin: 4px 0 2px; padding-top: 4px; }
+  .lt-scan-foot { margin-top: 5px; padding-top: 4px; }
+}
+
+
+/* translateX must be repeated in both frames — a transform animation replaces
+   the property outright rather than composing with it. */
+@keyframes lt-card-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Lets a row and its optional heading sit in the parent grid as siblings, so
+   the 1px gap stays even and nothing needs a wrapper's own spacing. */
+.lt-contents { display: contents; }
+
+/* Marks where the universal checks end and the location-triggered ones begin. */
+.lt-scan-sep {
+  margin: 6px 0 3px;
+  padding-top: 6px;
+  border-top: 1px solid #CBD5E8;
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #7A8FAD;
+  transition: color 0.4s ease;
+}
+/* The first header opens the card, so it needs no rule above it. */
+.lt-scan-sep[data-kind='base'] { margin-top: 0; padding-top: 0; border-top: 0; }
+/* Warms up as the scan crosses into it — the gold is the page's accent, used
+   here to say "this part is the point". */
+.lt-scan-sep[data-kind='local'][data-state='on'] { color: #9A7F2E; }
+
+/* Says the list is an extract. Six rows with nothing after them read as the
+   whole scope of the product, which undercounts it by a factor of five. */
+.lt-scan-foot {
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px solid #CBD5E8;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #7A8FAD;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.lt-scan-foot[data-state='on'] { opacity: 1; }
+
+.lt-scan-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.625rem;
+  letter-spacing: 0.09em;
+  line-height: 1.85;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+/* The reason the check applies. Lower-case and unspaced against the tracked
+   caps of the label, so the eye reads it as an annotation rather than a row. */
+.lt-scan-why {
+  display: block;
+  font-style: normal;
+  font-size: 0.5625rem;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-transform: none;
+  color: #7A8FAD;
+}
+.lt-scan-row[data-state='pending'] .lt-scan-why { color: #A3B3CA; }
+.lt-scan-row[data-state='pending'] { color: #7A8FAD; }
+.lt-scan-row[data-state='active'] { color: #0C1525; font-weight: 500; }
+.lt-scan-row[data-state='done'] { color: #3D5278; }
+.lt-scan-mark { font-size: 0.625rem; }
+.lt-scan-row[data-state='done'] .lt-scan-mark { color: #10B981; }
+.lt-scan-row[data-state='active'] .lt-scan-mark {
+  color: #C9A84C;
+  animation: lt-pulse 0.9s ease-in-out infinite;
+}
+@keyframes lt-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* ── Footer ── */
+.lt-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 28px;
+  flex-wrap: wrap;
+  padding: 13px clamp(20px, 3vw, 40px);
+  border-top: 1px solid #CBD5E8;
+  font-size: 0.6875rem;
+  color: #7A8FAD;
+}
+.lt-foot-label { font-size: 0.5625rem; letter-spacing: 0.2em; text-transform: uppercase; color: #7A8FAD; }
+/* Segmented countdown — the numerals carry it, the units stay quiet. */
+.lt-cd {
+  display: flex;
+  align-items: baseline;
+  gap: 8px clamp(14px, 2vw, 22px);
+  flex-wrap: wrap;
+}
+.lt-cd-row {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(12px, 1.8vw, 22px);
+}
+.lt-cd-seg {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.lt-cd-num {
+  display: inline-flex;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: clamp(1.375rem, 2.4vw, 1.875rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #0C1525;
+  /* Digits must not shift width as they tick, or the row jitters every second. */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Odometer digit. A 1em-tall window with `overflow: hidden` over a column of
+ * 0–9; `--d` scrolls the column and the transition does the roll. The digits
+ * live in `content`, so a spinning wheel costs no extra DOM.
+ */
+.lt-cd-digit {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+}
+.lt-cd-digit::before {
+  content: '0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';
+  display: block;
+  position: relative;
+  top: calc(var(--d) * -1em);
+  white-space: pre;
+  transition: top 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lt-cd-digit::before { transition: none; }
+  .lt-done, .lt-done::before { animation: none; }
+  .lt-dial { transition: none; }
+}
+.lt-cd-lab {
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.lt-foot a { color: #7A8FAD; transition: color 0.25s; }
+.lt-foot a:hover { color: #0C1525; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lt-rise { animation: none; }
+  .lt-fix-dot, .lt-field, .lt-join, .lt-scan-row { transition: none; }
+  /*
+   * The focus rule and the armed arrow still appear — they carry state, and
+   * dropping them would cost real information. Only the travel is removed.
+   */
+  .lt-field::after, .lt-join-arrow, .lt-note { transition: none; }
+  /* Both looping segments go. The idle drift is decorative by definition, and
+     the sending sweep says nothing the "Adding…" label does not — a loop with
+     no end is exactly what this preference exists to stop. */
+  .lt-field::before,
+  .lt-field[data-sending='true']::before { animation: none; opacity: 0; }
+  .lt-scan-row[data-state='active'] .lt-scan-mark { animation: none; }
+  .lt-scan-lead, .lt-scan-inner { animation: none; }
+}
+
+/*
+ * ══ Scan card on phones ══
+ *
+ * At the tablet sizing the card measured 201x236 inside a 384x388 panel — 52%
+ * of the width and 61% of the height. It stopped being an annotation on a map
+ * and became a panel with a map behind it, which inverts what the hero is for:
+ * the map is what makes this feel like a real place, and the card is the proof
+ * laid over it.
+ *
+ * Nothing is dropped. The "why" lines under the local checks (Coimbatore
+ * planning area, airport funnel zone) are the whole reason the readout reads as
+ * attention to detail rather than decoration, and phones are where most of
+ * these readers are — so this tightens type and leading instead of removing
+ * content.
+ *
+ * The width is set by one string: "BECAUSE IT'S IN COIMBATORE" in the separator
+ * label. Taking that to 0.5rem with tighter tracking is what actually narrows
+ * the card; everything else only reduces its height.
+ *
+ * 640px rather than 900px — a tablet has room for the roomier version.
+ */
+@media (max-width: 640px) {
+  .lt-scan-inner { padding: 8px 11px; }
+  .lt-scan-row {
+    font-size: 0.5625rem;
+    line-height: 1.5;
+    gap: 6px;
+  }
+  .lt-scan-mark { font-size: 0.5625rem; }
+  .lt-scan-why { font-size: 0.5rem; line-height: 1.25; }
+  .lt-scan-sep {
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    margin: 4px 0 2px;
+    padding-top: 4px;
+  }
+  .lt-scan-foot {
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+    margin-top: 5px;
+    padding-top: 4px;
+  }
+
+  /*
+   * The location readout, shrunk to match.
+   *
+   * It was still at desktop sizing — 11px type in 10x14 padding — which on a
+   * 384px panel made a fixed corner label almost as wide as the scan card that
+   * is actually doing the persuading. It is the quietest thing in the panel and
+   * should read that way.
+   *
+   * Its width is set by the coordinate line, so the type size is the only lever
+   * that matters; the padding and inset just stop it crowding the edge.
+   */
+  .lt-fix {
+    left: 10px;
+    bottom: 10px;
+    gap: 2px;
+    padding: 7px 10px;
+    font-size: 0.5625rem;
+    line-height: 1.45;
+  }
+  .lt-fix-label { font-size: 0.5rem; letter-spacing: 0.16em; gap: 6px; }
+  .lt-fix-dot { width: 4px; height: 4px; }
+}
+
+/*
+ * ══ Tether: pinned card → parcel ══
+ *
+ * On desktop the card hangs directly over the plot on a vertical leader, and
+ * that adjacency is the whole point — it says "this readout is about THAT
+ * piece of ground". On phones the card has to be pinned to the corner (there
+ * is not enough panel above the plot to hold a 186px card plus a leader), so
+ * the adjacency is gone and the card read as a floating legend.
+ *
+ * This restores the connection the other way round: instead of moving the card
+ * to the plot, draw a line from the card to the plot. Geometry is computed per
+ * frame in positionOverlay() — length and angle from the nearest point on the
+ * card's box to the projected parcel centre.
+ *
+ * Both are display:none by default so nothing changes on desktop, where the
+ * real leader is doing the job.
+ */
+.lt-scan-tether {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  background: #1B4FD8;
+  opacity: 0;
+  /* Rotates about its start, so the transform is (translate to anchor, rotate
+     toward target) and the width is simply the distance. */
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+/* Lands on the plot. Small and hollow — the traced boundary is the marker, and
+   a solid dot would compete with it the way the old anchor square did. */
+.lt-scan-tip {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  margin: -4px 0 0 -4px;
+  border: 1px solid #1B4FD8;
+  background: rgba(27, 79, 216, 0.2);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+/* Only in the pinned fallback. When the card is anchored over the plot the
+   real leader connects them and a tether would be a second line saying the
+   same thing. */
+.lt-scan[data-pin='true'] .lt-scan-tether,
+.lt-scan[data-pin='true'] .lt-scan-tip { display: block; }
+
+
+/* ─── Department web — every source named, converging on one hub ─── */
+
+
+/* ── The diagram ── */
+
+
+/* ── Hub ── */
+
+/* ── Footline ── */
+
+/* Beams are decorative and depend on measured geometry — below the breakpoint
+   the hub stacks under the rail, so the curves are hidden and the list stands
+   on its own. */
+
+/* ══ The descent — every record source, on the way down ══
+   Two columns: a rail that holds while the list runs past it. The length is the
+   point, so nothing here is compressed to fit. */
+
+.dd {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: start;
+  padding: clamp(72px, 12svh, 140px) clamp(20px, 4vw, 64px) clamp(96px, 16svh, 180px);
+  border-top: 1px solid #CBD5E8;
+}
+
+/* Sticky rather than pinned: no scroll budget to spend, no pin-spacer to
+   miscalculate, and the list keeps its natural length. */
+.dd-rail { position: sticky; top: clamp(24px, 14svh, 120px); }
+.dd-rail-inner { display: grid; gap: clamp(14px, 2svh, 20px); }
+
+.dd-index {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+.dd-index-num { color: #1B4FD8; }
+.dd-index-rule { width: 40px; height: 1px; background: #CBD5E8; }
+
+.dd-count {
+  margin: 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  line-height: 1;
+  /* Big enough to be the anchor of the column without competing with the
+     headline sizes elsewhere on the page. */
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing: -0.04em;
+  color: #0C1525;
+  font-variant-numeric: tabular-nums;
+}
+.dd-count-of {
+  font-size: 0.28em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+
+.dd-meter { height: 2px; background: #CBD5E8; overflow: hidden; }
+.dd-meter-fill {
+  display: block;
+  height: 100%;
+  background: #1B4FD8;
+  transform-origin: 0 50%;
+  /* Eased so the bar glides between rows instead of stepping. */
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── The list ── */
+.dd-cluster { margin-bottom: clamp(28px, 5svh, 56px); }
+.dd-cluster-label {
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #CBD5E8;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+
+.dd-row {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0 clamp(10px, 1.4vw, 18px);
+  padding: clamp(13px, 1.8svh, 19px) 0;
+  border-bottom: 1px solid #E2E8F4;
+  /* Unread rows sit back; crossing the line brings them forward. Opacity and a
+     small lift only — no scale, which would reflow the type. */
+  opacity: 0.32;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dd-row[data-lit] { opacity: 1; transform: none; }
+
+.dd-n {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: #A3B3CA;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.5s ease;
+}
+.dd-row[data-lit] .dd-n { color: #1B4FD8; }
+
+.dd-body { display: grid; gap: 3px; }
+.dd-name {
+  font-size: clamp(0.9375rem, 1.5vw, 1.125rem);
+  line-height: 1.35;
+  color: #0C1525;
+  text-wrap: pretty;
+}
+.dd-rec {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #7A8FAD;
+  text-wrap: pretty;
+}
+
+/* The turn. Sized up from the list it closes, because after twenty-eight rows
+   of the same rhythm the reader needs to be told the section has ended. */
+.dd-close {
+  margin: clamp(40px, 7svh, 72px) 0 0;
+  max-width: 20ch;
+  font-size: clamp(1.5rem, 3.4vw, 2.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #0C1525;
+  text-wrap: balance;
+}
+/* The resolution, deliberately quiet — the line above is the one that should
+   be remembered, and two competing statements would blunt both. */
+.dd-close-sub {
+  margin: clamp(10px, 1.6svh, 16px) 0 0;
+  max-width: 34ch;
+  font-size: clamp(0.9375rem, 1.5vw, 1.0625rem);
+  line-height: 1.55;
+  color: #3D5278;
+  text-wrap: pretty;
+}
+
+@media (max-width: 900px) {
+  /* The rail stops holding and becomes a header — a sticky column that narrow
+     would fight the list for width. */
+  .dd { grid-template-columns: 1fr; gap: clamp(20px, 4svh, 32px); }
+  .dd-rail { position: static; }
+  .dd-row { grid-template-columns: 2.5rem minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-row { opacity: 1; transform: none; transition: none; }
+  .dd-meter-fill { transition: none; }
+}
+
+/* ══ Coverage count — villages, climbing ══ */
+
+.cc {
+  /* Scroll budget for the climb: one viewport for the sticky stage plus one to
+     travel through, so the number has room to decelerate onto its total. */
+  position: relative;
+  height: 210svh;
+  margin: clamp(28px, 5svh, 56px) 0 0;
+}
+.cc-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(10px, 1.6svh, 18px);
+}
+
+.cc-num {
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-weight: 500;
+  /* Bounded by height as well as width — this is a full-screen panel, and a
+     width-only clamp overflows it on a short landscape window. */
+  font-size: clamp(3rem, min(15vw, 22svh), 11rem);
+  /* Exactly 1: the wheel steps by -1em per digit, so any other leading makes
+     the step and the line box disagree and the strip drifts out of register. */
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: #0C1525;
+  font-variant-numeric: tabular-nums;
+}
+.cc-digit {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+}
+.cc-digit::before {
+  content: '0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';
+  display: block;
+  position: relative;
+  top: calc(var(--d) * -1em);
+  white-space: pre;
+  /* Short: this is scrubbed continuously, so a long ease would lag the scroll
+     rather than smooth it. Just enough to take the edge off a digit change. */
+  transition: top 0.18s linear;
+}
+.cc-sep { color: #A3B3CA; }
+
+.cc-label {
+  margin: 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: clamp(0.625rem, 1.1vw, 0.75rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+  transition: color 0.4s ease;
+}
+/* Lands on the real figure — the one moment the number means something. */
+.cc-num[data-done='true'] + .cc-label { color: #1B4FD8; }
+
+.cc-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(14px, 3vw, 44px);
+  margin: clamp(18px, 3svh, 34px) 0 0;
+  padding: clamp(14px, 2svh, 20px) 0 0;
+  border-top: 1px solid #CBD5E8;
+  list-style: none;
+}
+.cc-facts li { display: grid; justify-items: center; gap: 5px; }
+.cc-fact-n {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: clamp(1rem, 2vw, 1.375rem);
+  letter-spacing: -0.01em;
+  color: #0C1525;
+  font-variant-numeric: tabular-nums;
+}
+.cc-fact-l {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No climb: the figure, stated once. */
+  .cc { height: auto; }
+  .cc-stage { position: static; height: auto; padding: clamp(48px, 10svh, 96px) 0; }
+  .cc-digit::before { transition: none; }
+}
+
+/* ══ The line — one sentence, resolving as you scroll ══
+   No index label, no rule, no counter. The only section on the page with
+   nothing in it but a sentence, which is what gives it weight. */
+
+.tr {
+  border-top: 1px solid #CBD5E8;
+  padding: clamp(96px, 22svh, 220px) clamp(20px, 6vw, 120px);
+}
+.tr-line {
+  margin: 0;
+  /*
+   * Wide measure, and smaller type to carry it.
+   *
+   * At 24ch the line wrapped after four or five words and stranded the entire
+   * right half of the screen. 46ch keeps the count inside the readable band for
+   * display text while actually using the width — and dropping the ceiling from
+   * 4rem to 2.75rem is what makes a paragraph possible at all rather than four
+   * enormous words.
+   */
+  max-width: 46ch;
+  font-size: clamp(1.375rem, 3.4vw, 2.75rem);
+  font-weight: 700;
+  /* Looser than the old 1.14: at this length the reader needs the leading. */
+  line-height: 1.24;
+  letter-spacing: -0.025em;
+  color: #0C1525;
+}
+/* Each word is animated individually, so it has to be its own box. The gap
+   belongs to the word rather than a space character, which keeps wrapping even
+   however the blur and opacity are mid-flight. */
+.tr .word { display: inline-block; margin-right: 0.28em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tr { padding-block: clamp(64px, 12svh, 130px); }
+  .tr .word { opacity: 1 !important; filter: none !important; }
+}

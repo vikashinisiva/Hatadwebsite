@@ -302,7 +302,7 @@ export function Hero() {
             className="mt-3 sm:mt-4 text-[12px] sm:text-[13.5px] md:text-[14px] text-[#3D5278] leading-[1.55] text-center px-2 mx-auto"
             style={{ maxWidth: 'min(100%, clamp(320px, 56vw, 580px))', textWrap: 'balance' }}
           >
-            We cross-verify <strong className="font-semibold text-[#0C1525]">10+ government records</strong> across six departments — and tell you before you pay.
+            We cross-verify <strong className="font-semibold text-[#0C1525]">30+ government records</strong> across six departments — and tell you before you pay.
           </motion.p>
 
           {/* Stat row */}

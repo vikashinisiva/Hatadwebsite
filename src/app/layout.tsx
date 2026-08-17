@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Playfair_Display, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -6,8 +6,67 @@ import './globals.css'
 import { I18nProvider } from '@/lib/i18n/context'
 import TermlyCMP from '@/components/TermlyCMP'
 import { AuthCallback } from '@/components/AuthCallback'
+import { COMING_SOON, COMPANY, SOCIALS } from '@/lib/constants'
 
 const TERMLY_WEBSITE_UUID = '1df20e0c-32e3-4b9c-9837-de16e39fec01'
+
+/**
+ * Organization schema. While the pre-launch wall is up this must not advertise a
+ * price or a turnaround — the checkout is closed, and structured data is read by
+ * Google and by anyone auditing the site.
+ */
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'HataD',
+  /*
+   * Read from COMPANY, not typed here.
+   *
+   * This said "Hypse Aero Private Limited" and info@hypseaero.in while the
+   * footer of every page said Crest Intelligence and contact@crestintelligence.in
+   * — the site asserted two different operators, and structured data is exactly
+   * what a search engine reads for entity identity. Crest Intelligence operates
+   * hatad.in; sourcing both from one constant means they cannot disagree again.
+   */
+  legalName: COMPANY.legalName,
+  url: 'https://www.hatad.in',
+  logo: 'https://www.hatad.in/icon.png',
+  description: COMING_SOON
+    ? 'Land clearance intelligence platform for Tamil Nadu. Cross-verifies government land records before a property purchase. Launching soon.'
+    : 'Land clearance intelligence platform for Tamil Nadu. Cross-verifies 30+ government land records and delivers risk reports in 3 hours.',
+  telephone: COMPANY.phoneHref,
+  email: COMPANY.email,
+  /*
+   * Locality only, for now.
+   *
+   * The street address and postcode here — 77/C, Vittal Nagar, Ganeshapuram,
+   * 641023 — were entered alongside the Hypse Aero name, so they may be that
+   * company's registered address rather than Crest Intelligence's. Publishing a
+   * registered address we have not confirmed is worse than publishing less, so
+   * the two unverified lines are held back until someone confirms them; the
+   * city, state and country come from COMPANY and are safe.
+   */
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: COMPANY.city,
+    addressRegion: COMPANY.region,
+    addressCountry: 'IN',
+  },
+  /*
+   * sameAs is how search engines tie the brand to its verified profiles — which
+   * makes it an assertion that all these URLs are the same entity.
+   * www.hypseaero.in was listed here; with Crest Intelligence named as the
+   * operator that claim is no longer one we can make, so it is out. The social
+   * profiles are the brand's own and stay.
+   */
+  sameAs: SOCIALS.map((s) => s.href),
+  areaServed: {
+    '@type': 'State',
+    name: 'Tamil Nadu',
+    containedInPlace: { '@type': 'Country', name: 'India' },
+  },
+  ...(COMING_SOON ? {} : { priceRange: '₹3,599' }),
+}
 
 const dmSans = DM_Sans({
   variable: '--font-dm',
@@ -32,8 +91,12 @@ export const metadata: Metadata = {
     default: 'HataD — Land Clearance Intelligence for Tamil Nadu',
     template: '%s | HataD',
   },
-  description:
-    '1 in 3 land deals in Tamil Nadu has a legal defect. HataD cross-verifies 10+ government records and delivers a risk report in 3 hours. ₹3,599.',
+  // Inherited by every page that doesn't set its own — including the policy
+  // pages, which stay public behind the wall. Must not quote a price we aren't
+  // currently charging.
+  description: COMING_SOON
+    ? 'HataD verifies Tamil Nadu land records — survey, patta, FMB, encumbrance, guideline value and master plan — before you buy. Launching soon.'
+    : '1 in 3 land deals in Tamil Nadu has a legal defect. HataD cross-verifies 30+ government records and delivers a risk report in 3 hours. ₹3,599.',
   keywords: [
     'land clearance Tamil Nadu',
     'land verification India',
@@ -57,9 +120,10 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'HataD — Land Clearance Intelligence',
-    description:
-      '1 in 3 land deals in Tamil Nadu has a legal defect. Cross-verify 10+ government records before you pay. Report in 3 hours.',
+    title: COMING_SOON ? 'HataD — Launching soon' : 'HataD — Land Clearance Intelligence',
+    description: COMING_SOON
+      ? 'Land record verification for Tamil Nadu. Join the waitlist and be served first when we open.'
+      : '1 in 3 land deals in Tamil Nadu has a legal defect. Cross-verify 30+ government records before you pay. Report in 3 hours.',
     type: 'website',
     locale: 'en_IN',
     siteName: 'HataD',
@@ -75,14 +139,28 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HataD — Land Clearance Intelligence',
-    description: '1 in 3 land deals in Tamil Nadu has a legal defect. Verify before you buy.',
+    title: COMING_SOON ? 'HataD — Launching soon' : 'HataD — Land Clearance Intelligence',
+    description: COMING_SOON
+      ? 'Land record verification for Tamil Nadu. Launching soon.'
+      : '1 in 3 land deals in Tamil Nadu has a legal defect. Verify before you buy.',
     images: ['/og-image.png'],
   },
   robots: {
     index: true,
     follow: true,
   },
+}
+
+/*
+ * Separate from `metadata` because Next moved themeColor and viewport out of it.
+ *
+ * The colour is #F4F7FC, the launch page's own ground, so the browser chrome on
+ * a phone continues the page instead of framing it in white.
+ */
+export const viewport: Viewport = {
+  themeColor: '#F4F7FC',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -121,34 +199,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://api.mapbox.com" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'HataD',
-              legalName: 'Hypse Aero Private Limited',
-              url: 'https://www.hatad.in',
-              logo: 'https://www.hatad.in/icon.png',
-              description: 'Land clearance intelligence platform for Tamil Nadu. Cross-verifies 10+ government land records and delivers risk reports in 3 hours.',
-              telephone: '+918122642341',
-              email: 'info@hypseaero.in',
-              address: {
-                '@type': 'PostalAddress',
-                streetAddress: '77/C, Vittal Nagar, Ganeshapuram',
-                addressLocality: 'Coimbatore',
-                addressRegion: 'Tamil Nadu',
-                postalCode: '641023',
-                addressCountry: 'IN',
-              },
-              sameAs: ['https://www.hypseaero.in'],
-              areaServed: {
-                '@type': 'State',
-                name: 'Tamil Nadu',
-                containedInPlace: { '@type': 'Country', name: 'India' },
-              },
-              priceRange: '₹3,599',
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-4N3VPT49KZ" />
         <script

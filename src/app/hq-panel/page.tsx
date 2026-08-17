@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Fragment, useMemo } from 'react'
 import { cn } from '@/lib/utils'
+import { WaitlistPanel } from '@/components/admin/WaitlistPanel'
 import {
   Upload, RefreshCw, ChevronDown, ChevronUp, FileText, Download, MapPin,
   Search, LogOut, Filter, Copy, Phone, Trash2, MessageSquare, X,
@@ -106,6 +107,9 @@ export default function AdminPage() {
   const [toast, setToast] = useState<string | null>(null)
 
   // Filters
+  // Which panel is showing. Waitlist lives here rather than at its own route so
+  // there is nothing to find outside the password gate.
+  const [view, setView] = useState<'requests' | 'waitlist'>('requests')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortField, setSortField] = useState<SortField>('created_at')
   const [searchQuery, setSearchQuery] = useState('')
@@ -523,9 +527,25 @@ export default function AdminPage() {
       {/* Header */}
       <div className="bg-[#0D1B2A] py-5 px-6">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-white text-xl font-semibold">HQ Panel</h1>
-            <p className="text-white/40 text-xs mt-0.5">Clearance operations</p>
+          <div className="flex items-baseline gap-6">
+            <div>
+              <h1 className="text-white text-xl font-semibold">HQ Panel</h1>
+              <p className="text-white/40 text-xs mt-0.5">Clearance operations</p>
+            </div>
+            <nav className="flex items-center gap-1">
+              {(['requests', 'waitlist'] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={cn(
+                    'text-xs px-3 py-1.5 rounded-sm capitalize transition-colors cursor-pointer',
+                    view === v ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70',
+                  )}
+                >
+                  {v}
+                </button>
+              ))}
+            </nav>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -554,7 +574,11 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-6 py-5">
+      {view === 'waitlist' && <WaitlistPanel password={storedPassword} />}
+
+      {/* Hidden rather than unmounted: the requests view holds filters, expanded
+          rows and in-flight edits that should survive a glance at the waitlist. */}
+      <div className={cn('max-w-[1600px] mx-auto px-6 py-5', view !== 'requests' && 'hidden')}>
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
           <div className="bg-surface border border-border rounded-sm px-4 py-3">

@@ -211,7 +211,7 @@ export function StepAccount({ onSignedIn }: { onSignedIn: (session: Session) => 
             Your report lands as a PDF link on email and WhatsApp. No app install, no login trails with the registrar.
           </p>
           <div className="ob-stat-row">
-            <div className="ob-stat"><div className="ob-stat-num">10+</div><div className="ob-stat-lab">Gov records cross-checked</div></div>
+            <div className="ob-stat"><div className="ob-stat-num">30+</div><div className="ob-stat-lab">Gov records cross-checked</div></div>
             <div className="ob-stat"><div className="ob-stat-num">&lt;3<span style={{ fontSize: 16, fontWeight: 500 }}>hr</span></div><div className="ob-stat-lab">Delivery time, guaranteed</div></div>
             <div className="ob-stat"><div className="ob-stat-num">₹3,599</div><div className="ob-stat-lab">Flat fee, all in</div></div>
           </div>
@@ -886,7 +886,7 @@ export function StepTracking({ requestId, property, userEmail, onDone }: {
           </h1>
 
           <p className="ob-sub" style={{ maxWidth: 380, margin: '0 auto 20px' }}>
-            Your parcel is being cross-verified against 10+ government record systems. You&apos;ll get an email and WhatsApp when the report is ready — within 3 hours.
+            Your parcel is being cross-verified against 30+ government record systems. You&apos;ll get an email and WhatsApp when the report is ready — within 3 hours.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#FFFFFF', border: '1px solid #CBD5E8', marginBottom: 24, textAlign: 'left' }}>

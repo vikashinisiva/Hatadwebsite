@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
-import { CLEARANCE_PRICE_PAISE } from '@/lib/constants'
+import { CLEARANCE_PRICE_PAISE, COMING_SOON } from '@/lib/constants'
 
 function getRazorpay() {
   return new Razorpay({
@@ -10,6 +10,18 @@ function getRazorpay() {
 }
 
 export async function POST(request: Request) {
+  /*
+   * This is where payments are actually stopped during the pre-launch period.
+   * No order means no checkout can start. Enforced here as well as in
+   * middleware so a matcher change can never quietly re-open the till.
+   */
+  if (COMING_SOON) {
+    return NextResponse.json(
+      { error: 'HataD is not accepting payments yet.' },
+      { status: 503 },
+    )
+  }
+
   try {
     const razorpay = getRazorpay()
     const body = await request.json()

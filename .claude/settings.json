@@ -88,5 +88,20 @@
     "additionalDirectories": [
       "c:\\Users\\visha\\hatadweb\\Hatadwebsite"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let s='';process.stdin.on('data',c=>s+=c).on('end',()=>{try{const d=JSON.parse(s);const f=(d.tool_input&&d.tool_input.file_path)||(d.tool_response&&d.tool_response.filePath)||'';process.exit(/\\.(ts|tsx)$/.test(f)?0:1);}catch(e){process.exit(1);}})\" && (cd 'c:/Users/visha/hatadweb/Hatadwebsite' && npx tsc --noEmit 2>&1 | tail -20) || true",
+            "timeout": 60,
+            "statusMessage": "typecheck"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -25,6 +25,140 @@ export const PHONE_REGEX = /^\d{10}$/
 
 export const CLEARANCE_PRICE_PAISE = 359900
 
+/**
+ * Pre-launch wall. Set COMING_SOON=1 in the environment to replace the product
+ * with the waitlist page and hard-disable the payment routes.
+ *
+ * Server-side only — reads as `false` in client bundles, which is correct:
+ * the wall is enforced in middleware and route handlers, never in the browser.
+ */
+export const COMING_SOON = process.env.COMING_SOON === '1'
+
+/** Target the launch page counts down to. IST. Change here, nowhere else. */
+export const LAUNCH_DATE = '2026-08-31T10:00:00+05:30'
+
+/** Cities the launch-page map flies between, in order. */
+export const LAUNCH_MAP_CITIES = [
+  { name: 'COIMBATORE', c: [76.9558, 11.0168] },
+  { name: 'CHENNAI', c: [80.2707, 13.0827] },
+  { name: 'MADURAI', c: [78.1198, 9.9252] },
+  { name: 'TIRUCHIRAPPALLI', c: [78.7047, 10.7905] },
+  { name: 'SALEM', c: [78.146, 11.6643] },
+] as const
+
+/**
+ * Who the visitor is trusting. Shown beside the waitlist form — a signup page
+ * with no named company behind it is the weakest point on a high-value product.
+ * Single source; never retype these into JSX.
+ */
+export const COMPANY = {
+  legalName: 'Crest Intelligence Private Limited',
+  city: 'Coimbatore',
+  region: 'Tamil Nadu',
+  email: 'contact@crestintelligence.in',
+  phone: '+91 81226 42341',
+  phoneHref: '+918122642341',
+} as const
+
+/**
+ * Dial codes offered on the waitlist. Not a world list — Tamil Nadu land is
+ * bought heavily by the diaspora, so this is India plus the countries that
+ * diaspora actually lives in. India is the default and the fallback.
+ */
+export const DIAL_CODES = [
+  { iso: 'IN', dial: '+91' },
+  { iso: 'AE', dial: '+971' },
+  { iso: 'SG', dial: '+65' },
+  { iso: 'MY', dial: '+60' },
+  { iso: 'US', dial: '+1' },
+  { iso: 'GB', dial: '+44' },
+  { iso: 'AU', dial: '+61' },
+  { iso: 'CA', dial: '+1' },
+  { iso: 'QA', dial: '+974' },
+  { iso: 'SA', dial: '+966' },
+  { iso: 'KW', dial: '+965' },
+  { iso: 'OM', dial: '+968' },
+  { iso: 'LK', dial: '+94' },
+  { iso: 'NZ', dial: '+64' },
+] as const
+
+export const DEFAULT_DIAL = '+91'
+
+/** Timezone → dial code. Cheaper and more reliable than a geo-IP lookup. */
+export const TIMEZONE_DIAL: Record<string, string> = {
+  'Asia/Kolkata': '+91',
+  'Asia/Calcutta': '+91',
+  'Asia/Dubai': '+971',
+  'Asia/Singapore': '+65',
+  'Asia/Kuala_Lumpur': '+60',
+  'Asia/Qatar': '+974',
+  'Asia/Riyadh': '+966',
+  'Asia/Kuwait': '+965',
+  'Asia/Muscat': '+968',
+  'Asia/Colombo': '+94',
+  'Europe/London': '+44',
+  'Pacific/Auckland': '+64',
+}
+
+/**
+ * Public profiles. Also fed to the Organization schema's `sameAs`, which is the
+ * field search engines use to tie a brand to its social accounts.
+ *
+ * The Facebook URL is the canonical `profile.php?id=…` form — the `ref=` and
+ * `#` fragment that come off Facebook's own profile-edit screen are an internal
+ * referrer for that session, not part of the public address.
+ */
+export const SOCIALS = [
+  { label: 'Instagram', href: 'https://www.instagram.com/hatad.in/' },
+  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61592828447718' },
+] as const
+
+/**
+ * Districts covered at launch. Defaults to all of Tamil Nadu, matching what the
+ * rest of the site claims. If the first batch covers less, narrow THIS — never
+ * the copy, which counts from it.
+ */
+export const LAUNCH_DISTRICTS = TN_DISTRICTS
+
+/**
+ * Paths that stay reachable while the wall is up.
+ *
+ * The policy pages are non-negotiable: Razorpay's automated check fetches them
+ * on the registered website, and a 404 there puts live keys at risk. Several do
+ * not exist yet — they are listed so they work the moment they are built.
+ */
+export const PRELAUNCH_PUBLIC_PATHS = [
+  '/coming-soon',
+  /* The Tamil launch page. Without this the wall redirects it to '/', which
+     would serve English and quietly undo the whole point of the second URL. */
+  '/ta',
+  // Razorpay-required policy pages
+  '/terms',
+  '/privacy',
+  '/cookies',
+  '/about',
+  '/contact',
+  '/pricing',
+  '/refunds',
+  '/shipping',
+  // Ops console keeps working through the pre-launch period
+  '/hq-panel',
+  '/api/admin',
+  // Waitlist capture, analytics, and the Vercel cron
+  '/api/waitlist',
+  '/api/track',
+  '/api/cron',
+  /*
+   * Deliberately still reachable. New payments are stopped at order creation
+   * (see /api/razorpay/order), but a payment that was already authorised must
+   * still be able to verify and create its request row — otherwise the money is
+   * taken and no record exists, which is the exact failure the
+   * create_clearance_with_payment RPC exists to prevent.
+   */
+  '/api/razorpay/verify',
+  '/api/clearance',
+]
+
 export const NAV_LINKS = [
   { label: 'Product', href: '#product' },
   { label: "Who It's For", href: '#who' },
