@@ -1935,15 +1935,6 @@ export function LaunchTease({
         }}
       />
 
-      <section className="lt-block">
-        <p className="lt-block-index">
-          <span className="lt-block-index-num">03</span>
-          <span className="lt-block-rule" aria-hidden />
-          <span>{t.coverageIndex}</span>
-        </p>
-
-      </section>
-
       {/*
         The state filling in, pinned until it is whole.
 
@@ -1963,6 +1954,19 @@ export function LaunchTease({
             <DistrictMap label={t.coverageMapLabel} />
           </div>
           <div className="lt-cover-copy">
+            {/*
+              The chapter mark belongs on the stage, not in a block above it.
+
+              Moving the title and the figures onto the stage left this label
+              alone in a bordered section of its own, so the reader met "03 —
+              Coverage", a hairline, an empty screen, and only then the map. A
+              chapter and its content are one thing.
+            */}
+            <p className="lt-block-index">
+              <span className="lt-block-index-num">03</span>
+              <span className="lt-block-rule" aria-hidden />
+              <span>{t.coverageIndex}</span>
+            </p>
             <h2 className="lt-cover-title">{t.coverageTitle}</h2>
             {/*
               The figures live here now, beside the map, rather than in their

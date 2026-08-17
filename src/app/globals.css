@@ -1740,6 +1740,9 @@ body {
      allowed to shrink rather than push each other out of it. */
   min-height: 0;
 }
+/* The chapter mark sits directly above the headline now, so it needs the gap a
+   block would have given it. */
+.lt-cover-copy .lt-block-index { margin: 0 0 clamp(14px, 2svh, 22px); }
 .lt-cover-title {
   margin: 0;
   font-size: clamp(1.75rem, 4.4vw, 3.25rem);
