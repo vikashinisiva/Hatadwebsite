@@ -1679,40 +1679,58 @@ body {
 
 /* Districts: a dense index, not chips */
 /*
- * Tags, not a column list.
+ * ══ The district map ══
  *
- * This was a CSS grid of 38 monospace names, which read like a directory
- * printed out — and worse, its column count was decided by auto-fill against a
- * 150px track, so it fell to a single column of 38 rows on a 360px phone and
- * held two on a 390px one. The same page, a different shape, depending on the
- * handset.
+ * Replaces a list of 38 names. Two earlier attempts — a column grid and a field
+ * of tags — both read as a directory printed out, and the grid's column count
+ * was decided by auto-fill against a fixed track, so it changed shape between
+ * one phone and the next.
  *
- * Wrapped tags solve both. Nothing has to divide evenly, so every width gets
- * the same treatment and simply fits more or fewer per row. And the point of
- * this block is breadth — thirty-eight of them — which a dense field of marks
- * shows at a glance and a tall thin list buries.
+ * A shape has neither problem: it scales to any width without deciding
+ * anything, and it makes the claim (the whole state) in one glance rather than
+ * asking the reader to count names.
  */
-.lt-districts {
-  margin: clamp(22px, 3vw, 30px) 0 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+.lt-map-fig {
+  margin: clamp(24px, 3.5vw, 36px) 0 0;
+  /* Portrait, and Tamil Nadu is tall — so it is held well short of full width
+     or it would run a screen and a half down a phone. */
+  max-width: min(100%, 30rem);
 }
-.lt-districts li {
+.lt-map-fig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.lt-map-fig path {
+  /* Unlit: the outline exists from the start, so the reader sees the shape of
+     the state and then watches it fill, rather than watching it be drawn. */
+  fill: #E4EBF5;
+  stroke: #FFFFFF;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  transition:
+    fill 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lt-map-fig path[data-on='true'] {
+  fill: #1B4FD8;
+}
+/* Every district that is lit shares one opacity, so the finished state is a
+   single flat field rather than 38 slightly different blues. */
+.lt-map-fig svg { opacity: 0.92; }
+
+.lt-map-fig figcaption {
+  margin-top: 16px;
   font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  color: #3D5278;
-  /* Hairline and white, like every other bordered object on the page. */
-  background: #FFFFFF;
-  border: 1px solid #CBD5E8;
-  padding: 6px 9px;
-  /* A district name must never break across lines — it would stop being a
-     single object and start looking like two. */
-  white-space: nowrap;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lt-map-fig path { transition: none; }
 }
 
 /* Questions */

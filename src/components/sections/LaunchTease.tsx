@@ -19,6 +19,7 @@ import {
 import { ScrollReveal } from '@/components/ui/scroll-reveal'
 import { ConvergenceDiagram } from '@/components/sections/ConvergenceDiagram'
 import { CoverageCount } from '@/components/sections/CoverageCount'
+import { DistrictMap } from '@/components/sections/DistrictMap'
 import { DepartmentDescent } from '@/components/sections/DepartmentDescent'
 import type { Coverage } from '@/lib/coverage'
 import { classifyContact, type ContactReject } from '@/lib/waitlist-contact'
@@ -218,6 +219,7 @@ const COPY = {
     sourcesClose: `Miss one, and the other ${SOURCE_COUNT - 1} don’t matter.`,
     sourcesCloseSub: 'We open every one of them before you pay.',
     coverageIndex: 'Coverage',
+    coverageMapLabel: `All ${LAUNCH_DISTRICTS.length} districts · Tamil Nadu`,
     coverageTitle: `All ${LAUNCH_DISTRICTS.length} districts of Tamil Nadu from day one.`,
     questionsIndex: 'Questions',
     questionsTitle: 'The questions worth asking.',
@@ -312,6 +314,7 @@ const COPY = {
     sourcesClose: `ஒன்றைத் தவறவிட்டால், மீதி ${SOURCE_COUNT - 1}-ம் வீண்.`,
     sourcesCloseSub: 'பணம் கொடுப்பதற்கு முன், ஒவ்வொன்றையும் நாங்கள் பார்க்கிறோம்.',
     coverageIndex: 'பரப்பளவு',
+    coverageMapLabel: `அனைத்து ${LAUNCH_DISTRICTS.length} மாவட்டங்களும் · தமிழ்நாடு`,
     coverageTitle: `தமிழ்நாட்டின் அனைத்து ${LAUNCH_DISTRICTS.length} மாவட்டங்களும், முதல் நாளிலிருந்தே.`,
     questionsIndex: 'கேள்விகள்',
     questionsTitle: 'கேட்க வேண்டிய கேள்விகள்.',
@@ -1951,12 +1954,14 @@ export function LaunchTease({
           ]}
         />
 
-        {/* Named in full rather than summarised — the list is the proof. */}
-        <ul className="lt-districts">
-          {LAUNCH_DISTRICTS.map((d) => (
-            <li key={d}>{d}</li>
-          ))}
-        </ul>
+        {/*
+          The state itself, filling in as the section is scrolled.
+          Naming all 38 was the proof before; nobody verified a list of names,
+          and it read as a directory. A shape that completes makes the same
+          claim in one glance — and every district is still there, as a <title>
+          on its own path, for anyone hovering or using a screen reader.
+        */}
+        <DistrictMap label={t.coverageMapLabel} />
       </section>
 
       {/* Unnumbered on purpose — a moment between chapters, not another one. */}
