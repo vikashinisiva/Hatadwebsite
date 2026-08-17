@@ -686,6 +686,27 @@ body {
   color: #0C1525;
 
   /*
+   * No horizontal scroll, ever.
+   *
+   * This page hangs absolutely-positioned overlays off a full-bleed animated
+   * map — the scan card, its leader, the tether — and their geometry is
+   * recomputed every frame from live map projections. Three separate transient
+   * overflows have already come out of that machinery: a card at x=-85 before
+   * the first arrival, a 201px card translated to -101 by desktop keyframes,
+   * and a rotated reveal block widening its own bounding box.
+   *
+   * Each was fixed at source and each was invisible until someone looked at the
+   * right width at the right moment. A fourth is not worth waiting for on a
+   * page whose readers are mostly on phones, where a sideways drag reads as
+   * broken.
+   *
+   * `clip`, not `hidden`: hidden would make this a scroll container and break
+   * the sticky rail in the source descent. clip constrains the paint without
+   * changing scroll behaviour, and leaves overflow-y visible.
+   */
+  overflow-x: clip;
+
+  /*
    * The column scale lives here, not on .lt-panel-text, because the join form
    * is rendered twice — once in the hero and once as the closing call to
    * action after the questions. Custom properties inherit, so both instances
@@ -1657,39 +1678,41 @@ body {
 }
 
 /* Districts: a dense index, not chips */
+/*
+ * Tags, not a column list.
+ *
+ * This was a CSS grid of 38 monospace names, which read like a directory
+ * printed out — and worse, its column count was decided by auto-fill against a
+ * 150px track, so it fell to a single column of 38 rows on a 360px phone and
+ * held two on a 390px one. The same page, a different shape, depending on the
+ * handset.
+ *
+ * Wrapped tags solve both. Nothing has to divide evenly, so every width gets
+ * the same treatment and simply fits more or fewer per row. And the point of
+ * this block is breadth — thirty-eight of them — which a dense field of marks
+ * shows at a glance and a tall thin list buries.
+ */
 .lt-districts {
   margin: clamp(22px, 3vw, 30px) 0 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 6px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 .lt-districts li {
   font-family: var(--font-jetbrains), ui-monospace, monospace;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.02em;
+  line-height: 1;
   color: #3D5278;
-}
-
-/*
- * Two columns on phones, decided rather than negotiated.
- *
- * The base rule is repeat(auto-fill, minmax(150px, 1fr)) with a 24px gap, which
- * needs 324px of content box for a second column. Phone padding leaves 320px at
- * 360px wide and 350px at 390px — so the same page fell to a single column of
- * 38 districts on one handset and held two on the next. That is not responsive,
- * it is a coin toss landing on either side of a threshold.
- *
- * Fixed at two: the longest name, Tiruchirappalli, is ~112px at this size, and
- * two columns give it 154px even on the narrowest phone. Three would give 100px
- * and clip. 38 rows become 19.
- */
-@media (max-width: 640px) {
-  .lt-districts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 7px 12px;
-  }
+  /* Hairline and white, like every other bordered object on the page. */
+  background: #FFFFFF;
+  border: 1px solid #CBD5E8;
+  padding: 6px 9px;
+  /* A district name must never break across lines — it would stop being a
+     single object and start looking like two. */
+  white-space: nowrap;
 }
 
 /* Questions */
