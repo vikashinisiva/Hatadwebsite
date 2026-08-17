@@ -1679,6 +1679,111 @@ body {
 
 /* Districts: a dense index, not chips */
 /*
+ * ══ Coverage stage ══
+ *
+ * A tall track with a sticky stage inside it. The reader scrolls normally; the
+ * stage holds still while the state fills, then releases. Native scrolling the
+ * whole way — nothing intercepts a wheel or a swipe, so it cannot trap anyone,
+ * which is what actual scroll-hijacking does and why it is an accessibility
+ * problem rather than a style choice.
+ *
+ * The track's surplus height IS the animation's duration. 240svh gives 140svh
+ * of scroll to fill 38 districts and hold the finished map.
+ */
+.lt-cover {
+  position: relative;
+  border-top: 1px solid #CBD5E8;
+  height: 240svh;
+}
+.lt-cover-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 72px);
+  padding: clamp(20px, 4svh, 48px) clamp(20px, 4vw, 64px);
+  overflow: hidden;
+}
+.lt-cover-map {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  height: 100%;
+}
+/* Sized off the viewport, not the column: the map must never outgrow the stage
+   it is pinned inside, whatever the window is doing. */
+.lt-cover-map .lt-map-fig { margin: 0; max-width: none; }
+/*
+ * Height drives it, width follows the viewBox.
+ *
+ * This was min(70svh, 100%), and the 100% resolved against an auto-height
+ * parent — which browsers treat as auto — so the whole expression collapsed and
+ * the map rendered at roughly half the size it should. One explicit dimension
+ * is all an SVG with a viewBox needs; preserveAspectRatio does the rest.
+ *
+ * max-width keeps it inside its column if the window is wide and short, where
+ * 76svh of height would otherwise be wider than the space beside the copy.
+ */
+.lt-cover-map .lt-map-fig svg {
+  height: 76svh;
+  width: auto;
+  max-width: 100%;
+}
+.lt-cover-map .lt-map-fig figcaption { text-align: center; }
+
+.lt-cover-copy { max-width: 30rem; }
+.lt-cover-title {
+  margin: 0;
+  font-size: clamp(1.75rem, 4.4vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: #0C1525;
+}
+/* The running count. Tabular figures so the number does not shuffle its own
+   width as it climbs. */
+.lt-cover-tally {
+  margin: clamp(20px, 3svh, 32px) 0 0;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: #1B4FD8;
+}
+.lt-cover-tally span { color: #1B4FD8; }
+.lt-cover-tally em {
+  font-style: normal;
+  font-size: 0.5em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7A8FAD;
+  margin-left: 10px;
+}
+
+/*
+ * Stacked, and shorter.
+ *
+ * Two columns inside 100svh does not survive a phone: the map would get a
+ * half-width column of a narrow screen. Stacked, the map takes the upper half
+ * and the copy sits under it, and the track shortens because there is less to
+ * read while it fills.
+ */
+@media (max-width: 860px) {
+  .lt-cover { height: 200svh; }
+  .lt-cover-stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-content: center;
+    gap: clamp(16px, 3svh, 28px);
+  }
+  .lt-cover-map .lt-map-fig svg { height: 44svh; }
+  .lt-cover-copy { max-width: none; }
+}
+
+/*
  * ══ The district map ══
  *
  * Replaces a list of 38 names. Two earlier attempts — a column grid and a field

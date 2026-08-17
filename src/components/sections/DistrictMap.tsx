@@ -18,7 +18,16 @@ import { TN_DISTRICT_PATHS, TN_MAP_VIEWBOX } from '@/data/tn-districts-map'
  * The fill order is south to north, by real projected centroid, so it reads as
  * the state being covered rather than as a list being ticked off.
  */
-export function DistrictMap({ label }: { label: string }) {
+export function DistrictMap({
+  label,
+  tallyRef,
+}: {
+  label: string
+  /* Optional readout of how many districts are lit. Written straight to the
+     node's text rather than held in state — this changes on scroll frames, and
+     re-rendering the tree to move one number would be absurd. */
+  tallyRef?: React.RefObject<HTMLSpanElement | null>
+}) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -43,6 +52,7 @@ export function DistrictMap({ label }: { label: string }) {
       /* Not nothing: the finished state. The map is information, and withholding
          it from someone who asked for less motion would withhold the point. */
       for (const p of paths) p.dataset.on = 'true'
+      if (tallyRef?.current) tallyRef.current.textContent = String(paths.length)
       return
     }
 
@@ -56,15 +66,26 @@ export function DistrictMap({ label }: { label: string }) {
     let lit = 0
     let frame = 0
 
+    /*
+     * Progress comes from the TRACK, not from this element.
+     *
+     * The stage is sticky, so once it pins its own top stays at zero and its
+     * rect would report no movement at all — the fill would freeze the instant
+     * the section engaged. The track is the tall parent whose height IS the
+     * scroll distance, and measuring it is what makes the pinned fill possible.
+     */
+    const track = wrap.closest<HTMLElement>('[data-cover-track]') ?? wrap
+
     const apply = () => {
       frame = 0
-      const r = wrap.getBoundingClientRect()
-      /* Progress across the window: 0 as the block enters from below, 1 once it
-         has risen through. Independent of the block's own height, so a short
-         viewport does not make it fill instantly. */
-      const span = window.innerHeight + r.height
-      const raw = span <= 0 ? 1 : (window.innerHeight - r.top) / span
-      const p = Math.max(0, Math.min(1, (raw - 0.15) / 0.55))
+      const r = track.getBoundingClientRect()
+      const travel = r.height - window.innerHeight
+      const raw = travel <= 0 ? 1 : Math.max(0, Math.min(1, -r.top / travel))
+      /* Complete at three quarters, so the last quarter of the track holds a
+         finished map. Filling right up to the section boundary would mean the
+         reader never sees the whole state at rest — which is the entire point
+         of pinning it. */
+      const p = Math.max(0, Math.min(1, raw / 0.75))
 
       const want = Math.round(p * paths.length)
       if (want === lit) return
@@ -72,6 +93,7 @@ export function DistrictMap({ label }: { label: string }) {
       else for (let i = lit - 1; i >= want; i--) paths[i].dataset.on = 'false'
       lit = want
       svg.dataset.done = want >= paths.length ? 'true' : 'false'
+      if (tallyRef?.current) tallyRef.current.textContent = String(want)
     }
 
     const onScroll = () => {
@@ -86,7 +108,7 @@ export function DistrictMap({ label }: { label: string }) {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
-  }, [ordered])
+  }, [ordered, tallyRef])
 
   return (
     <figure className="lt-map-fig" ref={wrapRef}>

@@ -645,6 +645,8 @@ export function LaunchTease({
   const referrerRef = useRef<string | null>(null)
   const trapRef = useRef<HTMLInputElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
+  /* The live district count on the coverage stage. */
+  const tallyRef = useRef<HTMLSpanElement>(null)
   /*
    * Analytics latches. Both events are "the first time this happened", not
    * "every time" — a view that fired twice under StrictMode, or a started that
@@ -1941,7 +1943,6 @@ export function LaunchTease({
           <span className="lt-block-rule" aria-hidden />
           <span>{t.coverageIndex}</span>
         </p>
-        <h2 className="lt-block-title">{t.coverageTitle}</h2>
 
         {/* Every figure counted from the SRO table, never typed into copy. */}
         <CoverageCount
@@ -1954,14 +1955,37 @@ export function LaunchTease({
           ]}
         />
 
-        {/*
-          The state itself, filling in as the section is scrolled.
-          Naming all 38 was the proof before; nobody verified a list of names,
-          and it read as a directory. A shape that completes makes the same
-          claim in one glance — and every district is still there, as a <title>
-          on its own path, for anyone hovering or using a screen reader.
-        */}
-        <DistrictMap label={t.coverageMapLabel} />
+      </section>
+
+      {/*
+        The state filling in, pinned until it is whole.
+
+        A tall track with a sticky stage inside it: the reader scrolls normally
+        and the stage holds still while the map fills, then releases. Nothing
+        intercepts a wheel or a swipe — that would be real scroll-hijacking, and
+        it traps anyone navigating by keyboard or assistive tech. The track's
+        surplus height is simply the distance the fill is spread over.
+
+        data-cover-track is what DistrictMap measures. It cannot measure itself:
+        once the stage pins, its own top stays at zero and the fill would freeze
+        the instant the section engaged.
+      */}
+      <section className="lt-cover" data-cover-track>
+        <div className="lt-cover-stage">
+          <div className="lt-cover-map">
+            <DistrictMap label={t.coverageMapLabel} tallyRef={tallyRef} />
+          </div>
+          <div className="lt-cover-copy">
+            <h2 className="lt-cover-title">{t.coverageTitle}</h2>
+            <p className="lt-cover-tally">
+              {/* Climbs with the fill, so the number and the shape say the same
+                  thing at the same moment. */}
+              <span ref={tallyRef}>0</span>
+              <span aria-hidden> / {LAUNCH_DISTRICTS.length}</span>
+              <em>{t.ccDistricts}</em>
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Unnumbered on purpose — a moment between chapters, not another one. */}
