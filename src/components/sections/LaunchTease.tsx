@@ -1380,6 +1380,17 @@ export function LaunchTease({
      * scripted submitter why it failed just helps it try again.
      */
     if (trapRef.current?.value) {
+      /*
+       * Still silent to whoever submitted — telling a scripted submitter why it
+       * failed only helps it try again.
+       *
+       * But no longer silent to us. This branch discards a signup and shows
+       * success, so when it misfired it was invisible from both sides: the
+       * person saw a confirmation, and we saw nothing at all. This event is the
+       * difference between "nobody signed up" and "everybody signed up and we
+       * threw it away".
+       */
+      track('launch_signup_blocked', 'launch-tease', { slot, lang })
       setSubmitted(true)
       return
     }
@@ -1664,9 +1675,29 @@ export function LaunchTease({
               <input
                 ref={trapRef}
                 type="text"
-                name="company"
+                /*
+                 * NOT "company", which is what this was.
+                 *
+                 * `company` is the `organization` token in browser address
+                 * autofill, and Chrome deliberately ignores autocomplete="off"
+                 * for profile fields — as do 1Password and LastPass. So every
+                 * visitor with a saved address had this hidden field filled in
+                 * for them, tripped the honeypot, and was shown "You're in"
+                 * while nothing was saved and no mail was sent.
+                 *
+                 * Four signup_started events, zero signup_completed, and not a
+                 * single browser signup in the table. Any name catches a bot
+                 * that fills every field; it just must not be one a browser
+                 * recognises.
+                 */
+                name="hd_subject"
                 tabIndex={-1}
                 autoComplete="off"
+                /* Password managers ignore autocomplete="off" as well; these
+                   are the opt-outs they do honour. */
+                data-lpignore="true"
+                data-1p-ignore=""
+                data-form-type="other"
                 aria-hidden
                 className="lt-trap"
               />
