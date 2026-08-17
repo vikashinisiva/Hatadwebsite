@@ -1695,10 +1695,22 @@ body {
 }
 .lt-quote blockquote {
   margin: 0;
-  max-width: 44ch;
+  /*
+   * Wider and larger than it was.
+   *
+   * At 44ch and 1.625rem it measured 789px inside a 1312px column, so it sat in
+   * the left half of the band with the right half empty — small, and adrift.
+   * 52ch at this size fills the measure while staying inside the 45-75ch range
+   * that keeps a line readable.
+   *
+   * Still deliberately below the thesis block above it: that is the argument in
+   * the page's voice, this is someone speaking. It should hold the width
+   * without competing for the volume.
+   */
+  max-width: 52ch;
   padding-left: clamp(16px, 2vw, 24px);
   border-left: 2px solid #1B4FD8;
-  font-size: clamp(1.125rem, 2.4vw, 1.625rem);
+  font-size: clamp(1.25rem, 3vw, 2.125rem);
   font-weight: 500;
   line-height: 1.45;
   letter-spacing: -0.015em;
