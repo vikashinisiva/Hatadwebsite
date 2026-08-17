@@ -257,7 +257,7 @@ function readyEmail(opts: ReadyEmailOptions): string {
       </p>
       <p style="margin:0;color:#B8C5DA;font-size:10px;">
         HataD by Hypse Aero &middot; Coimbatore, Tamil Nadu &middot;
-        <a href="${opts.siteUrl}" style="color:#B8C5DA;text-decoration:none;">hypseaero.in</a>
+        <a href="${opts.siteUrl}" style="color:#B8C5DA;text-decoration:none;">hatad.in</a>
       </p>
     </div>
 
@@ -321,7 +321,11 @@ export interface NotificationPayload {
 
 export async function sendNotification(payload: NotificationPayload): Promise<void> {
   const transporter = createTransporter()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hypseaero.in'
+  /* Falls back to hatad.in, not hypseaero.in. That default put a link to
+     another company's parked domain into every customer notification whenever
+     NEXT_PUBLIC_SITE_URL was unset, and the link text said so out loud. One
+     site, one domain. */
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.hatad.in'
 
   if (payload.type === 'submitted') {
     if (!payload.deadline) throw new Error('Deadline required for submitted notification')

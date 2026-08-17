@@ -25,6 +25,19 @@ export const PHONE_REGEX = /^\d{10}$/
 
 export const CLEARANCE_PRICE_PAISE = 359900
 
+/** Rupees, formatted for display. Derived, so no page ever retypes the price. */
+export const CLEARANCE_PRICE_INR = `₹${(CLEARANCE_PRICE_PAISE / 100).toLocaleString('en-IN')}`
+
+/**
+ * Standard turnaround for a report, in hours.
+ *
+ * Applies to the record set that can be read remotely. Anything that has to be
+ * fetched in person from an office — a pre-digitisation deed or EC held only as
+ * a bound volume at the Sub-Registrar Office — cannot be done on this clock,
+ * and the delivery policy says so rather than quietly implying otherwise.
+ */
+export const REPORT_TURNAROUND_HOURS = 3
+
 /**
  * Pre-launch wall. Set COMING_SOON=1 in the environment to replace the product
  * with the waitlist page and hard-disable the payment routes.
@@ -58,6 +71,22 @@ export const COMPANY = {
   email: 'contact@crestintelligence.in',
   phone: '+91 81226 42341',
   phoneHref: '+918122642341',
+  country: 'India',
+  /*
+   * Registered street address. Deliberately empty.
+   *
+   * The address that used to appear in the JSON-LD and still appears on
+   * /terms — 77/C, Vittal Nagar, Ganeshapuram, Coimbatore 641023 — was entered
+   * alongside the Hypse Aero name and belongs to that entity, not to Crest
+   * Intelligence. It has never been reconfirmed for this company, so it is not
+   * carried over.
+   *
+   * The policy pages render the locality line alone while this is empty, which
+   * is true, and fill in the street the moment it is set here. Razorpay expects
+   * a registered address on the contact and refund pages, so this wants filling
+   * before the payment routes reopen at launch.
+   */
+  registeredAddress: '',
 } as const
 
 /**

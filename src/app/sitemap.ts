@@ -19,8 +19,13 @@ const routes = [
      paths, since /ta redirects home once the product site is live. */
   { path: '/ta', changeFrequency: 'weekly' as const, priority: 0.9 },
   { path: '/clearance', changeFrequency: 'monthly' as const, priority: 0.9 },
+  { path: '/about', changeFrequency: 'monthly' as const, priority: 0.5 },
+  { path: '/pricing', changeFrequency: 'monthly' as const, priority: 0.5 },
+  { path: '/contact', changeFrequency: 'monthly' as const, priority: 0.4 },
   { path: '/terms', changeFrequency: 'monthly' as const, priority: 0.3 },
   { path: '/privacy', changeFrequency: 'monthly' as const, priority: 0.3 },
+  { path: '/refunds', changeFrequency: 'monthly' as const, priority: 0.3 },
+  { path: '/shipping', changeFrequency: 'monthly' as const, priority: 0.3 },
   { path: '/cookies', changeFrequency: 'monthly' as const, priority: 0.2 },
 ]
 
