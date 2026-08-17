@@ -219,7 +219,6 @@ const COPY = {
     sourcesClose: `Miss one, and the other ${SOURCE_COUNT - 1} don’t matter.`,
     sourcesCloseSub: 'We open every one of them before you pay.',
     coverageIndex: 'Coverage',
-    coverageMapLabel: `All ${LAUNCH_DISTRICTS.length} districts · Tamil Nadu`,
     coverageTitle: `All ${LAUNCH_DISTRICTS.length} districts of Tamil Nadu from day one.`,
     questionsIndex: 'Questions',
     questionsTitle: 'The questions worth asking.',
@@ -314,7 +313,6 @@ const COPY = {
     sourcesClose: `ஒன்றைத் தவறவிட்டால், மீதி ${SOURCE_COUNT - 1}-ம் வீண்.`,
     sourcesCloseSub: 'பணம் கொடுப்பதற்கு முன், ஒவ்வொன்றையும் நாங்கள் பார்க்கிறோம்.',
     coverageIndex: 'பரப்பளவு',
-    coverageMapLabel: `அனைத்து ${LAUNCH_DISTRICTS.length} மாவட்டங்களும் · தமிழ்நாடு`,
     coverageTitle: `தமிழ்நாட்டின் அனைத்து ${LAUNCH_DISTRICTS.length} மாவட்டங்களும், முதல் நாளிலிருந்தே.`,
     questionsIndex: 'கேள்விகள்',
     questionsTitle: 'கேட்க வேண்டிய கேள்விகள்.',
@@ -1951,7 +1949,7 @@ export function LaunchTease({
       <section className="lt-cover" data-cover-track>
         <div className="lt-cover-stage">
           <div className="lt-cover-map">
-            <DistrictMap label={t.coverageMapLabel} />
+            <DistrictMap />
           </div>
           <div className="lt-cover-copy">
             {/*

@@ -1732,8 +1732,7 @@ body {
   width: auto;
   max-width: 100%;
 }
-.lt-cover-map .lt-map-fig figcaption { text-align: center; }
-
+.lt-cover-map 
 .lt-cover-copy {
   max-width: 30rem;
   /* The stage is a fixed height that cannot scroll, so its columns have to be

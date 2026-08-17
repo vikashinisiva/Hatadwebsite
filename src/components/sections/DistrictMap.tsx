@@ -19,10 +19,8 @@ import { TN_DISTRICT_PATHS, TN_MAP_VIEWBOX } from '@/data/tn-districts-map'
  * the state being covered rather than as a list being ticked off.
  */
 export function DistrictMap({
-  label,
   tallyRef,
 }: {
-  label: string
   /* Optional readout of how many districts are lit. Written straight to the
      node's text rather than held in state — this changes on scroll frames, and
      re-rendering the tree to move one number would be absurd. */
@@ -128,7 +126,6 @@ export function DistrictMap({
           </path>
         ))}
       </svg>
-      <figcaption>{label}</figcaption>
     </figure>
   )
 }
