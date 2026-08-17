@@ -1734,7 +1734,12 @@ body {
 }
 .lt-cover-map .lt-map-fig figcaption { text-align: center; }
 
-.lt-cover-copy { max-width: 30rem; }
+.lt-cover-copy {
+  max-width: 30rem;
+  /* The stage is a fixed height that cannot scroll, so its columns have to be
+     allowed to shrink rather than push each other out of it. */
+  min-height: 0;
+}
 .lt-cover-title {
   margin: 0;
   font-size: clamp(1.75rem, 4.4vw, 3.25rem);
@@ -1818,6 +1823,25 @@ body {
     fill 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
+/*
+ * The odometer, resized for a column.
+ *
+ * .cc-num is clamp(3rem, min(15vw, 22svh), 11rem) — sized to be the only thing
+ * on a full-width block, which is what it used to be. Dropped into half a
+ * pinned stage it rendered at nearly 11rem, pushed the map out of the stage
+ * entirely and overflowed a fixed-height container that cannot scroll.
+ *
+ * Here it is one voice of three, under a headline and beside a map, so it is
+ * sized against the column rather than the page.
+ */
+.lt-cover-copy .cc { margin-top: clamp(20px, 3svh, 34px); }
+.lt-cover-copy .cc-num { font-size: clamp(2.25rem, 6.5vw, 4.25rem); }
+.lt-cover-copy .cc-facts {
+  gap: clamp(12px, 2vw, 28px);
+  margin-top: clamp(14px, 2svh, 22px);
+  padding-top: clamp(10px, 1.5svh, 16px);
+}
+
 .lt-map-fig path[data-on='true'] {
   fill: #1B4FD8;
 }
@@ -2531,6 +2555,22 @@ body {
   align-content: center;
   justify-items: center;
   gap: clamp(10px, 1.6svh, 18px);
+}
+
+/*
+ * Compact: no track, no sticky, no viewport height.
+ *
+ * .cc is normally a 210svh track wrapping a sticky 100svh stage. Inside the
+ * coverage stage that nested a track in a track and blew the fixed-height box
+ * apart. Compact flattens both back to ordinary flow so the figures sit under
+ * the headline and the parent track drives them.
+ */
+.cc-compact { height: auto; position: static; }
+.cc-compact .cc-stage {
+  position: static;
+  height: auto;
+  justify-items: start;
+  align-content: start;
 }
 
 .cc-num {

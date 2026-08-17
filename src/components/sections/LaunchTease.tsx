@@ -645,8 +645,6 @@ export function LaunchTease({
   const referrerRef = useRef<string | null>(null)
   const trapRef = useRef<HTMLInputElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
-  /* The live district count on the coverage stage. */
-  const tallyRef = useRef<HTMLSpanElement>(null)
   /*
    * Analytics latches. Both events are "the first time this happened", not
    * "every time" — a view that fired twice under StrictMode, or a started that
@@ -1944,17 +1942,6 @@ export function LaunchTease({
           <span>{t.coverageIndex}</span>
         </p>
 
-        {/* Every figure counted from the SRO table, never typed into copy. */}
-        <CoverageCount
-          total={coverage.villages}
-          label={t.ccVillages}
-          facts={[
-            { value: String(coverage.sros), label: t.ccSro },
-            { value: String(coverage.districts), label: t.ccDistricts },
-            { value: String(coverage.zones), label: t.ccZones },
-          ]}
-        />
-
       </section>
 
       {/*
@@ -1973,17 +1960,35 @@ export function LaunchTease({
       <section className="lt-cover" data-cover-track>
         <div className="lt-cover-stage">
           <div className="lt-cover-map">
-            <DistrictMap label={t.coverageMapLabel} tallyRef={tallyRef} />
+            <DistrictMap label={t.coverageMapLabel} />
           </div>
           <div className="lt-cover-copy">
             <h2 className="lt-cover-title">{t.coverageTitle}</h2>
-            <p className="lt-cover-tally">
-              {/* Climbs with the fill, so the number and the shape say the same
-                  thing at the same moment. */}
-              <span ref={tallyRef}>0</span>
-              <span aria-hidden> / {LAUNCH_DISTRICTS.length}</span>
-              <em>{t.ccDistricts}</em>
-            </p>
+            {/*
+              The figures live here now, beside the map, rather than in their
+              own block above it.
+
+              Two scroll-scrubbed accumulations back to back read as one idea
+              told twice — a number climbing, then a shape filling, then a
+              second number climbing next to it. The "N of 38" that used to sit
+              here was the worst of it: a counter beside a counter, saying what
+              the odometer's own "revenue districts" fact already said.
+
+              One moment now. The count and the state fill together, which is a
+              composition rather than a repetition, and the section is a screen
+              shorter for it.
+            */}
+            <CoverageCount
+              total={coverage.villages}
+              label={t.ccVillages}
+              facts={[
+                { value: String(coverage.sros), label: t.ccSro },
+                { value: String(coverage.districts), label: t.ccDistricts },
+                { value: String(coverage.zones), label: t.ccZones },
+              ]}
+              trackSelector="[data-cover-track]"
+              compact
+            />
           </div>
         </div>
       </section>

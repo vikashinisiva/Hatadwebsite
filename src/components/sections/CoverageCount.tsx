@@ -26,10 +26,31 @@ export function CoverageCount({
   total,
   label,
   facts,
+  trackSelector,
+  compact,
 }: {
   total: number
   label: string
   facts: CoverageFact[]
+  /*
+   * Where to read scroll progress from, when this is not the thing that moves.
+   *
+   * Inside a sticky stage its own rect stops moving the moment the stage pins,
+   * so it would either finish instantly or never start. Given a selector it
+   * measures that ancestor — the tall track — instead.
+   */
+  trackSelector?: string
+  /*
+   * Drops this component's own track and sticky stage.
+   *
+   * On its own it is a scrollytelling block: a 210svh track with a sticky stage
+   * inside, which is what gives the number room to decelerate. Nested inside
+   * another pinned stage that becomes a track inside a track — 1554px of height
+   * stuffed into a 740px box that cannot scroll, pushing everything else out of
+   * it. Compact renders the same figures as an ordinary block and takes its
+   * progress from `trackSelector` instead.
+   */
+  compact?: boolean
 }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const numRef = useRef<HTMLParagraphElement>(null)
@@ -43,7 +64,8 @@ export function CoverageCount({
   const digitCount = template.replace(/\D/g, '').length
 
   useEffect(() => {
-    const section = sectionRef.current
+    const own = sectionRef.current
+    const section = trackSelector ? (own?.closest<HTMLElement>(trackSelector) ?? own) : own
     const num = numRef.current
     if (!section || !num) return
 
@@ -89,12 +111,12 @@ export function CoverageCount({
       window.removeEventListener('resize', onScroll)
       document.removeEventListener('visibilitychange', onScroll)
     }
-  }, [total, digitCount])
+  }, [total, digitCount, trackSelector])
 
   let seen = -1
 
   return (
-    <div className="cc" ref={sectionRef}>
+    <div className={compact ? 'cc cc-compact' : 'cc'} ref={sectionRef}>
       <div className="cc-stage">
         {/* aria-hidden: a screen reader should be told the figure once, not
             read a number that changes sixty times a second. */}

@@ -31,6 +31,7 @@ export function DistrictMap({
   const wrapRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
+
   /* South first. Larger y is further south in the projected viewBox. */
   const ordered = useMemo(
     () => TN_DISTRICT_PATHS.map((d, i) => ({ ...d, i })).sort((a, b) => b.c[1] - a.c[1]),
@@ -93,6 +94,7 @@ export function DistrictMap({
       else for (let i = lit - 1; i >= want; i--) paths[i].dataset.on = 'false'
       lit = want
       svg.dataset.done = want >= paths.length ? 'true' : 'false'
+
       if (tallyRef?.current) tallyRef.current.textContent = String(want)
     }
 
