@@ -110,7 +110,20 @@ const COPY = {
     closeBody: 'The only question is whether you find out before you pay, or after.',
     offerClose: 'The list goes first.',
     cta: 'Join',
+    /*
+     * Two hints, because the promise is genuinely different.
+     *
+     * "One notice at launch. Nothing else." was true when a signup sent nothing.
+     * It stopped being true for addresses the moment the confirmation mail
+     * shipped — that would be two mails, on a page whose whole argument is that
+     * it tells you what is actually the case.
+     *
+     * A number still gets exactly one message, because there is no SMS or
+     * WhatsApp sender yet and its only receipt is the screen. So the line
+     * follows entryMode rather than overclaiming for both.
+     */
     hint: 'One notice at launch. Nothing else.',
+    hintEmail: 'A confirmation now, then one notice at launch.',
     thanks: "You're in. We'll write once — the day we go live.",
     sending: 'Adding',
     goLive: 'Public launch in',
@@ -249,6 +262,7 @@ const COPY = {
     offerClose: 'பட்டியலில் உள்ளவர்களுக்கு முதல் இடம்.',
     cta: 'இணை',
     hint: 'வெளியீட்டின் போது ஒரு அறிவிப்பு மட்டும்.',
+    hintEmail: 'இப்போது ஒரு உறுதிப்படுத்தல், பிறகு வெளியீட்டின் போது ஒரு அறிவிப்பு.',
     thanks: 'இணைந்துவிட்டீர்கள். வெளியீட்டு நாளில் மட்டும் தொடர்பு கொள்வோம்.',
     sending: 'சேர்க்கிறோம்',
     goLive: 'பொது வெளியீடு',
@@ -1381,6 +1395,8 @@ export function LaunchTease({
           value: result.value,
           dial,
           source: 'launch-tease',
+          /* So the confirmation arrives in the language they read the page in. */
+          lang,
           ref: referrerRef.current ?? undefined,
         }),
       })
@@ -1657,7 +1673,7 @@ export function LaunchTease({
             )}
 
             <p className="lt-note" id={noteId} data-error={!!error} role={error ? 'alert' : undefined}>
-              {error || t.hint}
+              {error || (entryMode === 'email' ? t.hintEmail : t.hint)}
             </p>
           </div>
         )

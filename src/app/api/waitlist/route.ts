@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { classifyContact } from '@/lib/waitlist-contact'
 import { clientKey, rateLimit } from '@/lib/rate-limit'
+import { sendWaitlistConfirmation, type ConfirmationLang } from '@/lib/waitlist-email'
 
 /**
  * Waitlist capture with a referral queue.
@@ -73,6 +74,26 @@ async function queuePosition(row: WaitlistRow): Promise<number> {
  */
 const SIGNUPS_PER_HOUR = 50
 
+/*
+ * Sends the confirmation, if there is anywhere to send it.
+ *
+ * Only email signups get one. A phone number has no inbox and we have no SMS or
+ * WhatsApp sender yet, so a phone signup's only receipt is the confirmation on
+ * screen — which is why the hint under the field says something different
+ * depending on what is being typed.
+ *
+ * Deliberately not awaited. The row is already committed when this runs; a
+ * Resend outage must not turn a captured lead into a 500.
+ */
+function confirm(kind: string, contact: string, lang: ConfirmationLang, code: string | null) {
+  if (kind !== 'email') return
+  sendWaitlistConfirmation({
+    to: contact,
+    lang,
+    shareUrl: code ? `https://www.hatad.in/?r=${code}` : null,
+  })
+}
+
 export async function POST(request: Request) {
   const limited = rateLimit(`waitlist:${clientKey(request)}`, SIGNUPS_PER_HOUR, 60 * 60 * 1000)
   if (!limited.allowed) {
@@ -82,7 +103,14 @@ export async function POST(request: Request) {
     )
   }
 
-  let body: { kind?: string; value?: string; source?: string; ref?: string; dial?: string }
+  let body: {
+    kind?: string
+    value?: string
+    source?: string
+    ref?: string
+    dial?: string
+    lang?: string
+  }
   try {
     body = await request.json()
   } catch {
@@ -106,6 +134,9 @@ export async function POST(request: Request) {
   const kind = result.kind
   const contact = result.value
   const source = typeof body.source === 'string' ? body.source.slice(0, 64) : null
+  /* Which language the page was in. Anything unrecognised falls back to English
+     rather than being trusted into the template lookup. */
+  const lang: ConfirmationLang = body.lang === 'ta' ? 'ta' : 'en'
   /*
    * Shape-checked only — this says the string looks like a code, not that any
    * such code exists. See the 23503 branch below.
@@ -127,6 +158,7 @@ export async function POST(request: Request) {
       .single()
 
     if (!error && data) {
+      confirm(kind, contact, lang, data.referral_code)
       return NextResponse.json({
         ok: true,
         code: data.referral_code,
@@ -142,7 +174,9 @@ export async function POST(request: Request) {
         .eq('contact', contact)
         .maybeSingle()
 
-      // Already signed up — hand back the same link rather than a new one.
+      /* Already signed up — hand back the same link rather than a new one, and
+         send nothing. They were confirmed when they joined, and the field
+         promises exactly one further mail at launch. */
       if (existing) {
         return NextResponse.json({
           ok: true,
@@ -172,7 +206,7 @@ export async function POST(request: Request) {
     }
 
     // Table missing or some other failure — stop retrying and fall through.
-    if (error) return fallback(contact, kind as string, source, referredBy, error.message)
+    if (error) return fallback(contact, kind as string, source, referredBy, lang, error.message)
   }
 
   return NextResponse.json({ ok: true })
@@ -184,6 +218,7 @@ async function fallback(
   kind: string,
   source: string | null,
   referredBy: string | null,
+  lang: ConfirmationLang,
   reason: string,
 ) {
   const { error } = await supabaseAdmin.from('analytics_events').insert({
@@ -202,6 +237,9 @@ async function fallback(
   }
 
   console.warn('Waitlist table unavailable, wrote to analytics_events:', reason)
+  /* They are on the list, just in the wrong table — so they still get their
+     receipt. No referral link, because there is no queue behind it to honour. */
+  confirm(kind, contact, lang, null)
   // No code/position — the UI falls back to the plain confirmation.
   return NextResponse.json({ ok: true })
 }
