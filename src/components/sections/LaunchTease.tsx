@@ -230,7 +230,22 @@ const COPY = {
      * counter directly above it.
      */
     sourcesClose: `Miss one, and the other ${SOURCE_COUNT - 1} don’t matter.`,
-    sourcesCloseSub: 'We open every one of them before you pay.',
+    /*
+     * The second sentence is the moat, and it is placed here on purpose.
+     *
+     * Everything above this line is an argument a competitor could answer with
+     * better software: the sources are public, and reading them together is
+     * work, but it is work a website can do. Not all of them answer a website.
+     * The pre-digitisation registers at a Sub-Registrar Office are bound
+     * volumes indexed by hand, and no portal will ever serve them.
+     *
+     * That is the one claim on this page that cannot be matched by shipping an
+     * update, so it lands at the emotional peak of the descent — straight after
+     * the reader has felt how long the list is — rather than inside a record
+     * row where it would be skimmed at the speed of the 29 rows around it.
+     */
+    sourcesCloseSub:
+      'We open every one of them before you pay. The ones that aren’t online, we open in person.',
     coverageIndex: 'Coverage',
     coverageTitle: `All ${LAUNCH_DISTRICTS.length} districts of Tamil Nadu from day one.`,
     questionsIndex: 'Questions',
@@ -239,6 +254,21 @@ const COPY = {
       {
         q: 'I already have an Encumbrance Certificate.',
         a: 'An EC lists registered transactions for the period you asked for, and nothing else. It will not show a pending civil suit, a forest Section 4 notification, a highway 3A alignment, or land classified as poromboke. Those live in other departments, and that is where deals fail.',
+      },
+      {
+        /*
+         * Follows the EC question deliberately. That one answers breadth — the
+         * other departments an EC never touches. This one answers depth: the
+         * EC's own floor.
+         *
+         * No year is named. Online availability starts at digitisation and that
+         * date is not uniform across offices, so a figure here would be wrong
+         * somewhere in the state and invites an argument about the number
+         * instead of the point. "Where your office was digitised" is true in
+         * every district.
+         */
+        q: 'Can I not just pull the EC online myself?',
+        a: 'You can, and it will start where your Sub-Registrar Office was digitised. Everything before that sits in bound volumes at the office, indexed by hand, and no portal will ever show it to you. That is where a missing parent deed hides. We have people who go to the office and read them. EC or deed, if it is not online we go and get it.',
       },
       {
         q: 'The patta is in the seller’s name.',
@@ -327,7 +357,8 @@ const COPY = {
     sourcesIndex: 'ஆதாரங்கள்',
     sourcesOf: '/',
     sourcesClose: `ஒன்றைத் தவறவிட்டால், மீதி ${SOURCE_COUNT - 1}-ம் வீண்.`,
-    sourcesCloseSub: 'பணம் கொடுப்பதற்கு முன், ஒவ்வொன்றையும் நாங்கள் பார்க்கிறோம்.',
+    sourcesCloseSub:
+      'பணம் கொடுப்பதற்கு முன், ஒவ்வொன்றையும் நாங்கள் பார்க்கிறோம். ஆன்லைனில் இல்லாதவற்றை நேரில் சென்று பார்க்கிறோம்.',
     coverageIndex: 'பரப்பளவு',
     coverageTitle: `தமிழ்நாட்டின் அனைத்து ${LAUNCH_DISTRICTS.length} மாவட்டங்களும், முதல் நாளிலிருந்தே.`,
     questionsIndex: 'கேள்விகள்',
@@ -336,6 +367,10 @@ const COPY = {
       {
         q: 'என்னிடம் ஏற்கனவே EC உள்ளது.',
         a: 'EC என்பது நீங்கள் கேட்ட காலத்தில் பதிவான பரிவர்த்தனைகளை மட்டுமே காட்டும். நிலுவையில் உள்ள வழக்கு, வனத்துறை பிரிவு 4 அறிவிப்பு, நெடுஞ்சாலை 3A வரிசை, அல்லது புறம்போக்கு வகைப்பாடு: இவை வேறு துறைகளில் உள்ளன. பரிவர்த்தனைகள் தோல்வியடைவது அங்குதான்.',
+      },
+      {
+        q: 'EC-யை நானே ஆன்லைனில் எடுக்கலாமே?',
+        a: 'எடுக்கலாம். ஆனால் உங்கள் சார்பதிவாளர் அலுவலகம் கணினிமயமாக்கப்பட்ட ஆண்டிலிருந்துதான் அது தொடங்கும். அதற்கு முந்தையவை அலுவலகத்தில் கையால் எழுதப்பட்ட பதிவேடுகளில் உள்ளன; எந்த இணையதளமும் அவற்றைக் காட்டாது. விடுபட்ட தாய்ப் பத்திரம் ஒளிந்திருப்பது அங்குதான். எங்கள் ஆட்கள் அலுவலகத்திற்கே சென்று அவற்றைப் படிக்கிறார்கள். EC ஆனாலும் பத்திரம் ஆனாலும், ஆன்லைனில் இல்லை என்றால் நேரில் சென்று எடுக்கிறோம்.',
       },
       {
         q: 'பட்டா விற்பவர் பெயரில் உள்ளது.',

@@ -28,9 +28,13 @@ export const SOURCE_CLUSTERS: SourceCluster[] = [
     label: 'Title & encumbrance',
     sources: [
       {
+        /* "Sale deed, parent deed" named two links and implied the chain was
+           those two. It is every instrument that ever moved the parcel —
+           settlement, partition, gift, release, mortgage — and a chain is only
+           as good as the weakest link in it, which is rarely the sale deed. */
         name: 'Registration Department (IGR / TNREGINET)',
         short: 'IGR',
-        records: 'EC, sale deed, parent deed, certified copies, SRO jurisdiction',
+        records: 'EC, every deed in the chain, certified copies, SRO jurisdiction',
       },
       {
         name: 'Legal heir & civil registration (Taluk, Municipal)',
