@@ -1672,6 +1672,26 @@ body {
   color: #3D5278;
 }
 
+/*
+ * Two columns on phones, decided rather than negotiated.
+ *
+ * The base rule is repeat(auto-fill, minmax(150px, 1fr)) with a 24px gap, which
+ * needs 324px of content box for a second column. Phone padding leaves 320px at
+ * 360px wide and 350px at 390px — so the same page fell to a single column of
+ * 38 districts on one handset and held two on the next. That is not responsive,
+ * it is a coin toss landing on either side of a threshold.
+ *
+ * Fixed at two: the longest name, Tiruchirappalli, is ~112px at this size, and
+ * two columns give it 154px even on the narrowest phone. Three would give 100px
+ * and clip. 38 rows become 19.
+ */
+@media (max-width: 640px) {
+  .lt-districts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px 12px;
+  }
+}
+
 /* Questions */
 /* Two columns: the answers are capped at a readable measure, so the only way to
    use the full width is a second column rather than longer lines. */
