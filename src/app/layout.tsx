@@ -6,7 +6,14 @@ import './globals.css'
 import { I18nProvider } from '@/lib/i18n/context'
 import TermlyCMP from '@/components/TermlyCMP'
 import { AuthCallback } from '@/components/AuthCallback'
-import { COMING_SOON, COMPANY, SOCIALS } from '@/lib/constants'
+import {
+  COMING_SOON,
+  COMPANY,
+  SOCIALS,
+  CLEARANCE_PRICE_INR,
+  REPORT_TURNAROUND_HOURS,
+} from '@/lib/constants'
+import { SOURCE_CLAIM } from '@/lib/departments'
 
 const TERMLY_WEBSITE_UUID = '1df20e0c-32e3-4b9c-9837-de16e39fec01'
 
@@ -88,29 +95,15 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'HataD — Land Clearance Intelligence for Tamil Nadu',
+    default: 'HataD: Land Clearance Intelligence for Tamil Nadu',
     template: '%s | HataD',
   },
   // Inherited by every page that doesn't set its own — including the policy
   // pages, which stay public behind the wall. Must not quote a price we aren't
   // currently charging.
   description: COMING_SOON
-    ? 'HataD verifies Tamil Nadu land records — survey, patta, FMB, encumbrance, guideline value and master plan — before you buy. Launching soon.'
-    : '1 in 3 land deals in Tamil Nadu has a legal defect. HataD cross-verifies 30+ government records and delivers a risk report in 3 hours. ₹3,599.',
-  keywords: [
-    'land clearance Tamil Nadu',
-    'land verification India',
-    'property due diligence',
-    'land document verification',
-    'encumbrance certificate check',
-    'patta verification',
-    'land fraud detection',
-    'property risk report',
-    'HataD',
-    'Hypse Aero',
-    'land records Tamil Nadu',
-    'EC verification',
-  ],
+    ? 'HataD verifies Tamil Nadu land records before you buy: survey, patta, FMB, encumbrance, guideline value and master plan. Launching soon.'
+    : `HataD cross-verifies ${SOURCE_CLAIM} Tamil Nadu government departments and courts and delivers a risk report in ${REPORT_TURNAROUND_HOURS} hours. ${CLEARANCE_PRICE_INR}.`,
   metadataBase: new URL('https://www.hatad.in'),
   icons: {
     icon: '/icon.png',
@@ -120,10 +113,10 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: COMING_SOON ? 'HataD — Launching soon' : 'HataD — Land Clearance Intelligence',
+    title: COMING_SOON ? 'HataD, launching soon' : 'HataD: Land Clearance Intelligence',
     description: COMING_SOON
       ? 'Land record verification for Tamil Nadu. Join the waitlist and be served first when we open.'
-      : '1 in 3 land deals in Tamil Nadu has a legal defect. Cross-verify 30+ government records before you pay. Report in 3 hours.',
+      : `Cross-verify ${SOURCE_CLAIM} government departments and courts before you pay. Report in ${REPORT_TURNAROUND_HOURS} hours.`,
     type: 'website',
     locale: 'en_IN',
     siteName: 'HataD',
@@ -133,16 +126,16 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'HataD — Land Clearance Intelligence for Tamil Nadu',
+        alt: 'HataD: Land Clearance Intelligence for Tamil Nadu',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: COMING_SOON ? 'HataD — Launching soon' : 'HataD — Land Clearance Intelligence',
+    title: COMING_SOON ? 'HataD, launching soon' : 'HataD: Land Clearance Intelligence',
     description: COMING_SOON
       ? 'Land record verification for Tamil Nadu. Launching soon.'
-      : '1 in 3 land deals in Tamil Nadu has a legal defect. Verify before you buy.',
+      : 'Verify Tamil Nadu land records before you buy.',
     images: ['/og-image.png'],
   },
   robots: {

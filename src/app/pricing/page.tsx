@@ -4,7 +4,9 @@ import { CLEARANCE_PRICE_INR, REPORT_TURNAROUND_HOURS, TN_DISTRICTS, COMPANY } f
 import { SOURCE_CLAIM } from '@/lib/departments'
 
 export const metadata: Metadata = {
-  title: 'Pricing',
+  /* Carries the query, not just the section name. The layout appends
+     "| HataD", so the title must not spend its words on the brand. */
+  title: 'Land Clearance Report Pricing',
   description: `HataD land clearance report pricing. ${CLEARANCE_PRICE_INR} per parcel, inclusive of taxes, delivered within ${REPORT_TURNAROUND_HOURS} hours.`,
   alternates: { canonical: '/pricing' },
 }

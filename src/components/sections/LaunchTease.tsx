@@ -2152,6 +2152,38 @@ export function LaunchTease({
             </div>
           ))}
         </div>
+
+        {/*
+         * FAQPage structured data.
+         *
+         * Seven real questions were already on the page with nothing telling a
+         * crawler what they were. Marked up, they are eligible to render as
+         * expandable questions under the result, which is the cheapest way this
+         * page can take more of the screen than the one blue link it currently
+         * gets.
+         *
+         * Built from the same `t.faq` the section renders, so the markup cannot
+         * describe questions the page does not show. Google treats that
+         * mismatch as a manual-action offence, and hand-maintained duplicate
+         * copy is exactly how it happens. `inLanguage` follows the toggle, so
+         * /ta declares its answers as Tamil rather than passing them off as the
+         * English ones.
+         */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              inLanguage: lang === 'ta' ? 'ta-IN' : 'en-IN',
+              mainEntity: t.faq.map((item) => ({
+                '@type': 'Question',
+                name: item.q,
+                acceptedAnswer: { '@type': 'Answer', text: item.a },
+              })),
+            }),
+          }}
+        />
       </section>
 
       {/* Who the visitor is handing their details to. */}
