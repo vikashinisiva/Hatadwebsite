@@ -170,6 +170,10 @@ export const PRELAUNCH_PUBLIC_PATHS = [
   '/pricing',
   '/refunds',
   '/shipping',
+  /* The journal. Reachable before launch on purpose: search discovery is the
+     slowest thing on the roadmap, so the clock should start now rather than on
+     31 August. Prefix match covers every post. */
+  '/journal',
   // Ops console keeps working through the pre-launch period
   '/hq-panel',
   '/api/admin',

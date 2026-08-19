@@ -10,6 +10,7 @@ import {
   CheckCircle, Navigation, Landmark, FileCheck, Mountain, Layers, Map as MapIcon, TreePine,
 } from 'lucide-react'
 import { track } from '@/lib/track'
+import { SOURCE_CLAIM } from '@/lib/departments'
 import type { ClientLookupResult } from '@/lib/tngis-client'
 
 const PlotMap = dynamic(() => import('@/components/ui/PlotMap').then(m => ({ default: m.PlotMap })), { ssr: false })
@@ -198,7 +199,7 @@ export function RiskCheck() {
               Enter your survey number or share your location. See what our system finds.
             </motion.p>
             <motion.div variants={fadeInUp} className="flex flex-wrap items-center justify-center gap-3 mt-8">
-              {['6 government sources checked', 'Cross-referenced in under 3 hours', 'Tamil Nadu\u2019s most thorough check'].map((text) => (
+              {[`${SOURCE_CLAIM} government sources checked`, 'Cross-referenced in under 3 hours', 'Tamil Nadu\u2019s most thorough check'].map((text) => (
                 <span key={text} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0D1B2A]/[0.04] border border-[#0D1B2A]/[0.08] text-[11px] text-text-muted font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent-blue" />{text}
                 </span>
@@ -314,7 +315,7 @@ export function RiskCheck() {
                     <div className="w-full h-[3px] rounded-full bg-surface-raised overflow-hidden">
                       <motion.div initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 5.2, ease: 'easeInOut' }} className="h-full rounded-full bg-accent-blue" />
                     </div>
-                    <p className="text-[11px] text-text-muted mt-3 text-center">Querying 6 government sources...</p>
+                    <p className="text-[11px] text-text-muted mt-3 text-center">Querying {SOURCE_CLAIM} government sources...</p>
                   </div>
                 </motion.div>
               )}

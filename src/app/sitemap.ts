@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { COMING_SOON } from '@/lib/constants'
+import { POSTS } from '@/lib/journal'
 
 /*
  * One domain.
@@ -19,6 +20,10 @@ const routes = [
      paths, since /ta redirects home once the product site is live. */
   { path: '/ta', changeFrequency: 'weekly' as const, priority: 0.9 },
   { path: '/clearance', changeFrequency: 'monthly' as const, priority: 0.9 },
+  { path: '/journal', changeFrequency: 'weekly' as const, priority: 0.7 },
+  /* Every post, derived. A hand-listed sitemap and a growing journal disagree
+     the first time someone forgets to add a line here. */
+  ...POSTS.map(p => ({ path: `/journal/${p.slug}`, changeFrequency: 'monthly' as const, priority: 0.6 })),
   { path: '/about', changeFrequency: 'monthly' as const, priority: 0.5 },
   { path: '/pricing', changeFrequency: 'monthly' as const, priority: 0.5 },
   { path: '/contact', changeFrequency: 'monthly' as const, priority: 0.4 },
