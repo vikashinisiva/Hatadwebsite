@@ -266,7 +266,7 @@ function AuthPageInner() {
         </div>
 
         <p className="text-center text-[11px] text-text-muted mt-6">
-          HataD by Hypse Aero · Coimbatore, Tamil Nadu
+          HataD by Crest Intelligence · Coimbatore, Tamil Nadu
         </p>
       </div>
       </div>

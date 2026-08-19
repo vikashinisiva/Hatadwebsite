@@ -1,8 +1,10 @@
 import { Metadata } from 'next'
+import { CompanyAddress } from '@/components/layout/PolicyPage'
+import { COMPANY } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Privacy Notice',
-  description: 'How HataD by Hypse Aero Private Limited collects, uses, and protects your personal information when using our land clearance services.',
+  description: `How HataD by ${COMPANY.legalName} collects, uses, and protects your personal information when using our land clearance services.`,
   alternates: { canonical: '/privacy' },
 }
 
@@ -13,7 +15,7 @@ export default function PrivacyPage() {
         <div className="max-w-3xl mx-auto">
           <p className="text-[#C9A84C] text-xs font-medium tracking-[0.15em] uppercase mb-2">HataD &mdash; Land Clearance Intelligence</p>
           <h1 className="text-white text-2xl font-bold tracking-tight">Privacy Notice</h1>
-          <p className="text-white/40 text-xs mt-1">Last updated: April 06, 2026</p>
+          <p className="text-white/40 text-xs mt-1">Last updated: August 18, 2026</p>
         </div>
       </div>
 
@@ -21,7 +23,7 @@ export default function PrivacyPage() {
         <div className="space-y-6 text-sm text-text-secondary leading-relaxed">
 
           <p>
-            This Privacy Notice for Hypse Aero Private Limited (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) describes how and why we
+            This Privacy Notice for {COMPANY.legalName} (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) describes how and why we
             might access, collect, store, use, and/or share (&ldquo;process&rdquo;) your personal information when you use our services (&ldquo;Services&rdquo;),
             including when you visit our website at <a href="https://www.hatad.in" className="text-accent-blue underline">https://www.hatad.in</a>,
             upload land documents for verification, or contact us.
@@ -30,7 +32,7 @@ export default function PrivacyPage() {
             Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for
             making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not
             use our Services. If you still have questions, please contact us at{' '}
-            <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>.
+            <a href={`mailto:${COMPANY.email}`} className="text-accent-blue underline">{COMPANY.email}</a>.
           </p>
 
           <section>
@@ -132,7 +134,7 @@ export default function PrivacyPage() {
               We do not knowingly collect data from or market to children under 18 years of age. By using the Services, you represent that you are
               at least 18. If we learn that personal information from users less than 18 has been collected, we will deactivate the account and
               promptly delete such data. If you become aware of any such data, please contact us at{' '}
-              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>.
+              <a href={`mailto:${COMPANY.email}`} className="text-accent-blue underline">{COMPANY.email}</a>.
             </p>
           </section>
 
@@ -144,7 +146,7 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-3">
               To exercise any of these rights, contact us at{' '}
-              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>. We will respond in accordance with
+              <a href={`mailto:${COMPANY.email}`} className="text-accent-blue underline">{COMPANY.email}</a>. We will respond in accordance with
               applicable data protection laws.
             </p>
             <p className="mt-3">
@@ -174,14 +176,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-semibold text-text-primary mb-2">11. How Can You Contact Us?</h2>
             <p>If you have questions or comments about this Notice, contact us by post or email:</p>
-            <p className="mt-3">
-              Hypse Aero Private Limited<br />
-              77/C, Vittal Nagar, Ganeshapuram<br />
-              Coimbatore, Tamil Nadu 641023<br />
-              India<br />
-              Phone: +91 81226 42341<br />
-              Email: <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>
-            </p>
+            <CompanyAddress />
           </section>
 
           <section>
@@ -189,7 +184,7 @@ export default function PrivacyPage() {
             <p>
               You may have the right to request access to the personal information we hold about you, correct inaccuracies, or request deletion.
               To make such a request, please email us at{' '}
-              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a> with your request and we will respond
+              <a href={`mailto:${COMPANY.email}`} className="text-accent-blue underline">{COMPANY.email}</a> with your request and we will respond
               as required by applicable law.
             </p>
           </section>

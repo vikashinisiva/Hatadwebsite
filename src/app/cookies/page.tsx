@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { CompanyAddress } from '@/components/layout/PolicyPage'
+import { COMPANY } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Cookie Policy',
@@ -13,7 +15,7 @@ export default function CookiesPage() {
         <div className="max-w-3xl mx-auto">
           <p className="text-[#C9A84C] text-xs font-medium tracking-[0.15em] uppercase mb-2">HataD &mdash; Land Clearance Intelligence</p>
           <h1 className="text-white text-2xl font-bold tracking-tight">Cookie Policy</h1>
-          <p className="text-white/40 text-xs mt-1">Last updated: April 06, 2026</p>
+          <p className="text-white/40 text-xs mt-1">Last updated: August 18, 2026</p>
         </div>
       </div>
 
@@ -21,7 +23,7 @@ export default function CookiesPage() {
         <div className="space-y-6 text-sm text-text-secondary leading-relaxed">
 
           <p>
-            This Cookie Policy explains how Hypse Aero Private Limited (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; and &ldquo;our&rdquo;) uses cookies
+            This Cookie Policy explains how {COMPANY.legalName} (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; and &ldquo;our&rdquo;) uses cookies
             and similar technologies to recognize you when you visit our website at{' '}
             <a href="https://www.hatad.in" className="text-accent-blue underline">https://www.hatad.in</a> (&ldquo;Website&rdquo;).
             It explains what these technologies are and why we use them, as well as your rights to control our use of them.
@@ -39,7 +41,7 @@ export default function CookiesPage() {
               as well as to provide reporting information.
             </p>
             <p className="mt-3">
-              Cookies set by the website owner (in this case, Hypse Aero Private Limited) are called &ldquo;first-party cookies.&rdquo;
+              Cookies set by the website owner (in this case, {COMPANY.legalName}) are called &ldquo;first-party cookies.&rdquo;
               Cookies set by parties other than the website owner are called &ldquo;third-party cookies.&rdquo; Third-party cookies
               enable third-party features or functionality to be provided on or through the website (e.g., advertising,
               interactive content, and analytics).
@@ -119,14 +121,9 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-base font-semibold text-text-primary mb-2">Contact</h2>
             <p>If you have questions about our use of cookies, email us at{' '}
-              <a className="text-accent-blue underline" href="mailto:info@hypseaero.in">info@hypseaero.in</a> or write to:
+              <a className="text-accent-blue underline" href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a> or write to:
             </p>
-            <p className="mt-3">
-              Hypse Aero Private Limited<br />
-              Coimbatore, Tamil Nadu 641023<br />
-              India<br />
-              Phone: +91 81226 42341
-            </p>
+            <CompanyAddress />
           </section>
 
         </div>

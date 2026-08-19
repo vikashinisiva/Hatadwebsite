@@ -1,4 +1,4 @@
-import { SITE_NAME, SITE_TAGLINE, SITE_LOCATION } from '@/lib/constants'
+import { SITE_NAME, SITE_TAGLINE, SITE_LOCATION, COMPANY } from '@/lib/constants'
 import { Phone, Mail } from 'lucide-react'
 
 export function Footer() {
@@ -28,11 +28,8 @@ export function Footer() {
         <div>
           <p className="text-[10px] tracking-[0.15em] uppercase text-text-muted mb-2">Email</p>
           <div className="flex flex-col gap-1">
-            <a href="mailto:hypseaero@gmail.com" className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-accent-blue transition-colors">
-              <Mail size={13} strokeWidth={1.5} /> hypseaero@gmail.com
-            </a>
-            <a href="mailto:info@hypseaero.in" className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-accent-blue transition-colors">
-              <Mail size={13} strokeWidth={1.5} /> info@hypseaero.in
+            <a href={`mailto:${COMPANY.email}`} className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-accent-blue transition-colors">
+              <Mail size={13} strokeWidth={1.5} /> {COMPANY.email}
             </a>
           </div>
         </div>
@@ -41,7 +38,7 @@ export function Footer() {
       <div className="h-px bg-border mb-6" />
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         <p className="text-xs text-text-muted">
-          © {new Date().getFullYear()} Hypse Aero Pvt Ltd. All rights reserved.
+          © {new Date().getFullYear()} {COMPANY.legalName}. All rights reserved.
         </p>
         <div className="flex items-center gap-4">
           <a href="/terms" className="text-xs text-text-muted hover:text-text-secondary transition-colors">

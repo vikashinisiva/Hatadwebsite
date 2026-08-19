@@ -1,8 +1,10 @@
 import { Metadata } from 'next'
+import { CompanyAddress } from '@/components/layout/PolicyPage'
+import { COMPANY } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions',
-  description: 'Terms and conditions for using HataD land clearance intelligence services by Hypse Aero Private Limited, Coimbatore, Tamil Nadu.',
+  description: `Terms and conditions for using HataD land clearance intelligence services by ${COMPANY.legalName}, Coimbatore, Tamil Nadu.`,
   alternates: { canonical: '/terms' },
 }
 
@@ -13,7 +15,7 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto">
           <p className="text-[#C9A84C] text-xs font-medium tracking-[0.15em] uppercase mb-2">HataD &mdash; Land Clearance Intelligence</p>
           <h1 className="text-white text-2xl font-bold tracking-tight">Terms &amp; Conditions</h1>
-          <p className="text-white/40 text-xs mt-1">Last updated: April 06, 2026</p>
+          <p className="text-white/40 text-xs mt-1">Last updated: August 18, 2026</p>
         </div>
       </div>
 
@@ -23,8 +25,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-text-primary mb-2">Agreement to Our Legal Terms</h2>
             <p>
-              We are Hypse Aero Private Limited, doing business as HataD (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; &ldquo;our&rdquo;),
-              a company registered in India at 77/C, Vittal Nagar, Ganeshapuram, Coimbatore, Tamil Nadu 641023.
+              We are {COMPANY.legalName}, doing business as HataD (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; &ldquo;our&rdquo;),
+              a company registered in India at {COMPANY.city}, {COMPANY.region}, {COMPANY.country}.
             </p>
             <p className="mt-3">
               We operate the website <a href="https://www.hatad.in" className="text-accent-blue underline">https://www.hatad.in</a> (the &ldquo;Site&rdquo;),
@@ -38,18 +40,18 @@ export default function TermsPage() {
             </p>
             <p className="mt-3">
               You can contact us by phone at +91 81226 42341, email at{' '}
-              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>, or by mail to
-              77/C, Vittal Nagar, Ganeshapuram, Coimbatore, Tamil Nadu 641023, India.
+              <a href={`mailto:${COMPANY.email}`} className="text-accent-blue underline">{COMPANY.email}</a>, or by post at our registered office in
+              {COMPANY.city}, {COMPANY.region}, {COMPANY.country}.
             </p>
             <p className="mt-3">
               These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity (&ldquo;you&rdquo;),
-              and Hypse Aero Private Limited, concerning your access to and use of the Services. You agree that by accessing the Services, you have read,
+              and {COMPANY.legalName}, concerning your access to and use of the Services. You agree that by accessing the Services, you have read,
               understood, and agreed to be bound by all of these Legal Terms.{' '}
               <strong>IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.</strong>
             </p>
             <p className="mt-3">
               We will provide you with prior notice of any scheduled changes to the Services you are using. The modified Legal Terms will become effective
-              upon posting or notifying you at info@hypseaero.in. By continuing to use the Services after the effective date of any changes, you agree to be
+              upon posting or notifying you at {COMPANY.email}. By continuing to use the Services after the effective date of any changes, you agree to be
               bound by the modified terms.
             </p>
             <p className="mt-3">
@@ -81,7 +83,7 @@ export default function TermsPage() {
             <p className="mt-3">
               Except as expressly set out, no part of the Services, Content, or Marks may be copied, reproduced, republished, sold, licensed, or otherwise
               exploited for any commercial purpose without our prior written permission. For permissions, contact{' '}
-              <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>.
+              <a href={`mailto:${COMPANY.email}`} className="text-accent-blue underline">{COMPANY.email}</a>.
             </p>
             <p className="mt-3">
               <strong>Your submissions:</strong> Any questions, comments, suggestions, feedback, or other information you send us (&ldquo;Submissions&rdquo;)
@@ -128,7 +130,7 @@ export default function TermsPage() {
             </p>
             <p className="mt-3">
               <strong>Refunds:</strong> Due to the nature of the service (manual verification and report generation), payments are generally non-refundable
-              once work has commenced. If you believe a refund is warranted, contact us at info@hypseaero.in within 7 days of payment.
+              once work has commenced. If you believe a refund is warranted, contact us at {COMPANY.email} within 7 days of payment.
             </p>
           </section>
 
@@ -189,7 +191,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-text-primary mb-2">11. Governing Law</h2>
             <p>
-              These Legal Terms are governed by and construed in accordance with the laws of India. Hypse Aero Private Limited and yourself irrevocably consent
+              These Legal Terms are governed by and construed in accordance with the laws of India. {COMPANY.legalName} and yourself irrevocably consent
               that the courts of Coimbatore, Tamil Nadu, shall have exclusive jurisdiction to resolve any dispute arising in connection with these Legal Terms.
             </p>
           </section>
@@ -271,14 +273,7 @@ export default function TermsPage() {
             <p>
               To resolve a complaint regarding the Services or to receive further information, please contact us at:
             </p>
-            <p className="mt-3">
-              Hypse Aero Private Limited<br />
-              77/C, Vittal Nagar, Ganeshapuram<br />
-              Coimbatore, Tamil Nadu 641023<br />
-              India<br />
-              Phone: +91 81226 42341<br />
-              Email: <a href="mailto:info@hypseaero.in" className="text-accent-blue underline">info@hypseaero.in</a>
-            </p>
+            <CompanyAddress />
           </section>
 
         </div>

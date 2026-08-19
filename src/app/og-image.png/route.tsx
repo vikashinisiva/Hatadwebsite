@@ -48,7 +48,7 @@ function comingSoonCard() {
             letterSpacing: '0.1em',
           }}
         >
-          hatad.in · Hypse Aero Private Limited
+          hatad.in · Crest Intelligence Private Limited
         </div>
       </div>
     ),

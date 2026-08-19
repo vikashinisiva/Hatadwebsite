@@ -246,7 +246,7 @@ export default function ProfilePage() {
         </div>
 
         <p className="text-center text-[11px] text-text-muted mt-8">
-          HataD by Hypse Aero · Coimbatore, Tamil Nadu
+          HataD by Crest Intelligence · Coimbatore, Tamil Nadu
         </p>
       </div>
     </div>

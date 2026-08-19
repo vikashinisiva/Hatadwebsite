@@ -56,7 +56,7 @@ export function FinalCTA() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors">
                 <Phone size={16} /> {t('cta.call')}
               </a>
-              <a href="mailto:info@hypseaero.in"
+              <a href="mailto:contact@crestintelligence.in"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border border-border bg-white text-sm font-medium text-text-primary hover:border-accent-blue hover:text-accent-blue transition-colors">
                 <Mail size={16} /> {t('cta.email')}
               </a>

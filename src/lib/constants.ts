@@ -1,5 +1,5 @@
 export const SITE_NAME = 'HataD'
-export const SITE_TAGLINE = 'Hypse Aero Pvt Ltd'
+export const SITE_TAGLINE = 'Crest Intelligence Private Limited'
 export const SITE_LOCATION = 'Tamil Nadu, India'
 
 export const STORAGE_KEYS = {

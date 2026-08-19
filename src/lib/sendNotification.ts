@@ -110,7 +110,7 @@ function submittedEmail(opts: SubmittedEmailOptions): string {
       </a>
     </div>
     <div style="padding:20px 32px;border-top:1px solid #E5E7EB;">
-      <p style="margin:0;color:#7A8FAD;font-size:11px;">HataD by Hypse Aero &middot; Coimbatore, Tamil Nadu</p>
+      <p style="margin:0;color:#7A8FAD;font-size:11px;">HataD by Crest Intelligence &middot; Coimbatore, Tamil Nadu</p>
     </div>
   </div>
 </body>
@@ -256,7 +256,7 @@ function readyEmail(opts: ReadyEmailOptions): string {
         This report does not constitute legal advice. We recommend reviewing it with a qualified advocate for high-value transactions.
       </p>
       <p style="margin:0;color:#B8C5DA;font-size:10px;">
-        HataD by Hypse Aero &middot; Coimbatore, Tamil Nadu &middot;
+        HataD by Crest Intelligence &middot; Coimbatore, Tamil Nadu &middot;
         <a href="${opts.siteUrl}" style="color:#B8C5DA;text-decoration:none;">hatad.in</a>
       </p>
     </div>
@@ -295,7 +295,7 @@ function delayedEmail(id: string, siteUrl: string): string {
       </a>
     </div>
     <div style="padding:20px 32px;border-top:1px solid #E5E7EB;">
-      <p style="margin:0;color:#7A8FAD;font-size:11px;">HataD by Hypse Aero &middot; Coimbatore, Tamil Nadu</p>
+      <p style="margin:0;color:#7A8FAD;font-size:11px;">HataD by Crest Intelligence &middot; Coimbatore, Tamil Nadu</p>
     </div>
   </div>
 </body>

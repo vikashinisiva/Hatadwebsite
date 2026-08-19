@@ -449,7 +449,7 @@ export async function searchPlace(query: string): Promise<Array<{ display_name: 
   // Fallback to public Nominatim
   const fallback = await apiCall<Array<{ display_name: string; lat: string; lon: string }>>('GET', 'https://nominatim.openstreetmap.org/search', {
     params: { format: 'json', countrycodes: 'IN', addressdetails: '1', q: query },
-    headers: { 'User-Agent': 'HataD/1.0 (info@hypseaero.in)' },
+    headers: { 'User-Agent': 'HataD/1.0 (contact@crestintelligence.in)' },
     timeout: 10000,
   })
   return fallback.ok && Array.isArray(fallback.data) ? fallback.data.slice(0, 5) : []
