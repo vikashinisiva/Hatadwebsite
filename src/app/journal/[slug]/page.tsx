@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { POSTS, getPost, tableOfContents, type Block } from '@/lib/journal'
 import { COMPANY } from '@/lib/constants'
 
@@ -90,6 +91,27 @@ function BlockView({ block }: { block: Block }) {
           ))}
         </ul>
       )
+    case 'figure':
+      return (
+        <figure className="my-9">
+          {/* Both source images are tall plates. Cropped to a band with
+              object-cover rather than shown whole, which at this column width
+              would be several screens of map. */}
+          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-sm border border-border bg-white">
+            <Image
+              src={block.src}
+              alt={block.alt}
+              fill
+              sizes="(min-width: 1024px) 36rem, 100vw"
+              className="object-cover object-center"
+            />
+          </div>
+          <figcaption className="mt-3 text-[13px] leading-relaxed text-text-muted">
+            {block.caption}
+            <span className="block mt-1 text-[11.5px]">{block.credit}</span>
+          </figcaption>
+        </figure>
+      )
     case 'cite':
       return (
         <p className="text-[13px] leading-relaxed text-text-muted border-l-2 border-border pl-4 my-6">
@@ -162,7 +184,7 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
 
       {/* masthead */}
       <div className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-mono text-sm tracking-[0.14em] text-text-primary">
             HATAD
           </Link>
@@ -175,7 +197,7 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 pt-10 pb-20">
+      <div className="max-w-5xl mx-auto px-6 pt-10 pb-20">
         <nav className="text-[11px] tracking-[0.09em] uppercase text-text-muted mb-5">
           <Link href="/journal" className="hover:text-accent-blue">
             Journal
@@ -184,7 +206,7 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
           <span>{post.title}</span>
         </nav>
 
-        <header className="max-w-3xl">
+        <header className="max-w-[36rem]">
           <h1 className="text-[2rem] md:text-[2.6rem] font-bold tracking-[-0.02em] leading-[1.1] text-text-primary text-balance">
             {post.title}
           </h1>
@@ -194,8 +216,8 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
         </header>
 
         {/* article + rail */}
-        <div className="mt-12 grid lg:grid-cols-[minmax(0,1fr)_15rem] gap-12 lg:gap-16 items-start">
-          <article className="max-w-[42rem] min-w-0">
+        <div className="mt-12 grid lg:grid-cols-[minmax(0,1fr)_13rem] gap-10 lg:gap-12 items-start">
+          <article className="max-w-[36rem] min-w-0">
             {post.body.map((b, i) => (
               <BlockView key={i} block={b} />
             ))}

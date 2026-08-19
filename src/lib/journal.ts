@@ -21,6 +21,12 @@ export type Block =
   | { t: 'ul'; items: string[] }
   /** Small-print source line, set apart from the prose. */
   | { t: 'cite'; text: string }
+  /**
+   * An image. `credit` is not optional: every picture in the journal is
+   * someone else's work under a licence, and the licence is only honoured if
+   * the attribution actually ships with the page.
+   */
+  | { t: 'figure'; src: string; alt: string; caption: string; credit: string }
 
 export type Post = {
   slug: string
@@ -66,6 +72,15 @@ export const POSTS: Post[] = [
         text: 'This is the part of Indian land ownership that catches people. The risk is rarely a document that is missing. It is two documents that exist, are genuine, and cannot both be true.',
       },
 
+      {
+        t: 'figure',
+        src: '/journal/survey-office-madras-1894.jpg',
+        alt: 'A survey map of the Arcot, Vellore and Chittoor country printed by the Survey Office, Madras, in 1894, showing taluk boundaries, railway lines and village names.',
+        caption:
+          'Survey Office, Madras, 1894. The survey department has been describing this land, in its own terms and for its own purposes, for a very long time. None of it was drawn to agree with the registration record.',
+        credit: 'Madras District Manuals, The British Library. No known copyright restrictions.',
+      },
+
       { t: 'h2', id: 'does-patta-prove-ownership', text: 'Does a patta prove ownership?' },
       {
         t: 'p',
@@ -108,6 +123,15 @@ export const POSTS: Post[] = [
         text: 'A title chain that stops at the digitisation year is not a chain. It is the visible half of one. A link quietly left out below that line is invisible to every online check ever run on the parcel, which is precisely what makes it worth leaving out. Where a parcel’s history runs back past that date, the register has to be read in person, at the office that holds it.',
       },
 
+      {
+        t: 'figure',
+        src: '/journal/south-india-1759.jpg',
+        alt: 'A 1759 French map of the Coromandel Coast showing Madras, Kanjevaram, Tanjaor, Tiru Chira-Palli and Madure, engraved by Le Rouge in Paris.',
+        caption:
+          'The Coromandel Coast, mapped in Paris in 1759. Land in Tamil Nadu has been recorded, transferred and disputed for far longer than any register has been searchable, and a chain that matters can begin well before the earliest page a portal will return.',
+        credit: 'Le Rouge, Paris, 1759, via Gallica. Public domain.',
+      },
+
       { t: 'h2', id: 'reading-records-against-each-other', text: 'How the records are read against each other' },
       {
         t: 'p',
@@ -115,11 +139,11 @@ export const POSTS: Post[] = [
       },
       {
         t: 'p',
-        text: `For each investigation we draw on ${SOURCE_CLAIM} government departments and courts — revenue, registration, survey, the tahsildar’s office, the local body and land records among them — and read them against one another rather than in sequence. Which of them apply is decided by the parcel: a coastal plot and an inland one are not checked against the same list. Where the accounts diverge, that divergence is the finding. It is written up with the specific record that establishes it, so that the buyer, and the buyer’s advocate, can go and verify it independently.`,
+        text: `For each investigation we draw on ${SOURCE_CLAIM} government departments and courts. Revenue, registration, survey, the tahsildar’s office, the local body and land records are among them. We read them against one another rather than in sequence. Which of them apply is decided by the parcel: a coastal plot and an inland one are not checked against the same list. Where the accounts diverge, that divergence is the finding. It is written up with the specific record that establishes it, so that the buyer, and the buyer’s advocate, can go and verify it independently.`,
       },
       {
         t: 'p',
-        text: 'Every investigation ends in a verdict. Sometimes that verdict is that the parcel is sound. Sometimes it is that the transaction should not proceed, and why, and on which grounds. You can read [what a report covers and what it costs](/pricing), or [more about who we are](/about).',
+        text: 'Every investigation ends in a verdict. Sometimes that verdict is that the parcel is sound. Sometimes it is that the transaction should not proceed, and why, and on which grounds. You can read [more about who we are and how we work](/about).',
       },
 
       { t: 'h2', id: 'on-being-written-about', text: 'On being written about' },

@@ -27,7 +27,7 @@ export default function JournalIndex() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-mono text-sm tracking-[0.14em] text-text-primary">
             HATAD
           </Link>
@@ -40,7 +40,7 @@ export default function JournalIndex() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 pt-14 pb-24">
+      <div className="max-w-5xl mx-auto px-6 pt-14 pb-24">
         <h1 className="text-[2rem] md:text-[2.6rem] font-bold tracking-[-0.02em] leading-[1.1] text-text-primary">
           Journal
         </h1>
