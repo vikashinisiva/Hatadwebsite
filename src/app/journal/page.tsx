@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteFooter } from '@/components/layout/PolicyPage'
+import { NavCTA } from '@/components/layout/ClearanceCTA'
 import { POSTS } from '@/lib/journal'
 
 export const metadata: Metadata = {
@@ -32,12 +33,7 @@ export default function JournalIndex() {
           <Link href="/" className="font-mono text-sm tracking-[0.14em] text-text-primary">
             HATAD
           </Link>
-          <Link
-            href="/"
-            className="text-xs font-medium text-accent-blue border border-border rounded-sm px-3 py-1.5 bg-white"
-          >
-            Join the waitlist
-          </Link>
+          <NavCTA />
         </div>
       </div>
 

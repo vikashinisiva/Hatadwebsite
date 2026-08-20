@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { SiteFooter } from '@/components/layout/PolicyPage'
+import { ClearanceCTA, NavCTA } from '@/components/layout/ClearanceCTA'
 import { POSTS, getPost, tableOfContents, type Block } from '@/lib/journal'
 import { COMPANY } from '@/lib/constants'
 
@@ -189,12 +190,7 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
           <Link href="/" className="font-mono text-sm tracking-[0.14em] text-text-primary">
             HATAD
           </Link>
-          <Link
-            href="/"
-            className="text-xs font-medium text-accent-blue border border-border rounded-sm px-3 py-1.5 bg-white"
-          >
-            Join the waitlist
-          </Link>
+          <NavCTA />
         </div>
       </div>
 
@@ -237,19 +233,7 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
               </div>
             </section>
 
-            <aside className="mt-12 bg-[#0C1525] text-white p-7 rounded-sm">
-              <p className="text-lg font-semibold mb-1.5">Check a survey number before you pay</p>
-              <p className="text-sm text-[#B8C5DA] max-w-[46ch]">
-                One report, with the source named for every finding, so your advocate can verify it
-                independently.
-              </p>
-              <Link
-                href="/"
-                className="inline-block mt-5 bg-[#C9A84C] text-[#0C1525] font-bold text-sm px-5 py-2.5 rounded-sm"
-              >
-                Join the waitlist
-              </Link>
-            </aside>
+            <ClearanceCTA />
 
             <p className="mt-10 text-[13px] leading-relaxed text-text-muted">
               HataD conducts land clearance investigations across Tamil Nadu. Reports are issued with
