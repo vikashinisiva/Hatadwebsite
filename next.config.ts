@@ -33,18 +33,6 @@ const nextConfig: NextConfig = {
   /* Free fingerprinting for anyone scanning for framework-specific exploits. */
   poweredByHeader: false,
 
-  /*
-   * /pricing is withdrawn while the price is being reworked, not retired.
-   *
-   * Deliberately a TEMPORARY redirect. A permanent one tells search engines to
-   * forget the URL, which is wrong for a page that is coming back to the same
-   * address. This also means the route is never a 404 for anyone holding the
-   * link, including Razorpay.
-   */
-  async redirects() {
-    return [{ source: '/pricing', destination: '/', permanent: false }]
-  },
-
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },

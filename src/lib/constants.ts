@@ -165,6 +165,11 @@ export const PRELAUNCH_PUBLIC_PATHS = [
   '/cookies',
   '/about',
   '/contact',
+  /* Not a page. /pricing is a route handler that answers 410 Gone, so a
+     crawler holding the old indexed entry is told the resource is gone rather
+     than being redirected, which would keep it in the index. Allowlisted so
+     the wall does not 307 it before that handler runs. */
+  '/pricing',
   '/refunds',
   '/shipping',
   /* The journal. Reachable before launch on purpose: search discovery is the
