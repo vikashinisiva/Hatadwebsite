@@ -29,6 +29,29 @@ export async function generateMetadata({
     title: `Land Record Verification in ${name}`,
     description: `${p.activeSROs.length} Sub-Registrar Offices serve ${p.villageCount} villages in ${name}. Which office holds your parcel, how far back its register goes, and the statutory checks that apply here.`,
     alternates: { canonical: `/tamil-nadu/${districtSlug(name)}` },
+    /* Its own share card, so a district link posted to a group previews as
+       that district rather than as a generic HataD tile. */
+    openGraph: {
+      title: `${name} land records`,
+      description: `${p.activeSROs.length} Sub-Registrar Offices and ${p.villageCount.toLocaleString('en-IN')} villages in ${name}, and the statutory checks that apply there.`,
+      type: 'website',
+      locale: 'en_IN',
+      siteName: 'HataD',
+      url: `https://www.hatad.in/tamil-nadu/${districtSlug(name)}`,
+      images: [
+        {
+          url: `/og-image.png?district=${districtSlug(name)}`,
+          width: 1200,
+          height: 630,
+          alt: `${name}, Tamil Nadu`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${name} land records`,
+      images: [`/og-image.png?district=${districtSlug(name)}`],
+    },
   }
 }
 
