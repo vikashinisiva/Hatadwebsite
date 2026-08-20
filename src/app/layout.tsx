@@ -156,7 +156,18 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    /*
+     * Font variables go on <html>, not <body>.
+     *
+     * The Tailwind @theme block lands its tokens on :root, and a custom
+     * property substitutes where it is DECLARED, not where it is used. With
+     * --font-playfair set on body, a token like
+     * `--font-serif: var(--font-playfair)` resolved at :root against an
+     * undefined variable, became invalid at computed-value time, and every
+     * `font-serif` heading silently inherited the body sans instead. Declaring
+     * them at :root makes the theme tokens resolvable.
+     */
+    <html lang="en" className={`${dmSans.variable} ${playfair.variable} ${jetbrains.variable}`}>
       <head>
         {/* Pre-hydration OAuth overlay — hides page instantly when tokens are in the URL hash.
             Runs before React renders, so no flash of landing page during Google redirect flow. */}
@@ -204,7 +215,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${dmSans.variable} ${playfair.variable} ${jetbrains.variable} antialiased`}>
+      <body className="antialiased">
         <TermlyCMP websiteUUID={TERMLY_WEBSITE_UUID} autoBlock />
         <AuthCallback />
         <I18nProvider>

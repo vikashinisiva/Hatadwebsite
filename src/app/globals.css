@@ -19,6 +19,10 @@
   /* Fonts */
   --font-sans: var(--font-dm), system-ui, sans-serif;
   --font-display: var(--font-dm), system-ui, sans-serif;
+  /* Playfair was loaded on every page and referenced by nothing. Exposing it as
+     the serif token gives the editorial pages a display face and stops the
+     download being dead weight. */
+  --font-serif: var(--font-playfair), Georgia, serif;
 }
 
 /* Base */
