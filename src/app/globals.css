@@ -2741,3 +2741,13 @@ body {
   .tr { padding-block: clamp(64px, 12svh, 130px); }
   .tr .word { opacity: 1 !important; filter: none !important; }
 }
+
+/* Footer navigation. Sits with the legal line rather than in its own band:
+   the launch page is one narrative and a full site footer would interrupt it,
+   but the links have to exist and have to be crawlable. */
+.lt-foot-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+}

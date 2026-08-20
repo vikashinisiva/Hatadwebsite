@@ -656,6 +656,37 @@ function clockParts(msRemaining: number) {
   }
 }
 
+
+/**
+ * The site's internal link graph, in both languages.
+ *
+ * Ordered by what a reader is most likely to want, not alphabetically: the
+ * journal first because it is the only place with something to read, then who
+ * we are and how to reach us, then the statutory pages.
+ */
+const FOOTER_LINKS = {
+  en: [
+    { href: '/journal', label: 'Journal' },
+    { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' },
+    { href: '/terms', label: 'Terms' },
+    { href: '/privacy', label: 'Privacy' },
+    { href: '/cookies', label: 'Cookies' },
+    { href: '/refunds', label: 'Refunds' },
+    { href: '/shipping', label: 'Delivery' },
+  ],
+  ta: [
+    { href: '/journal', label: 'இதழ்' },
+    { href: '/about', label: 'எங்களைப் பற்றி' },
+    { href: '/contact', label: 'தொடர்பு' },
+    { href: '/terms', label: 'விதிமுறைகள்' },
+    { href: '/privacy', label: 'தனியுரிமை' },
+    { href: '/cookies', label: 'குக்கீகள்' },
+    { href: '/refunds', label: 'பணத்திரும்பம்' },
+    { href: '/shipping', label: 'வழங்கல்' },
+  ],
+} as const
+
 export function LaunchTease({
   coverage,
   initialLang = 'en',
@@ -2221,9 +2252,25 @@ export function LaunchTease({
 
       {/* The countdown lives in the hero — this is just the legal footer. */}
       <footer className="lt-foot">
+        {/*
+          * Every other page on the site hangs off this footer.
+          *
+          * Before it existed the launch page linked to /terms, /privacy and
+          * /ta and nothing else, so /journal, /about, /contact, /cookies,
+          * /refunds and /shipping were reachable only from the sitemap. Search
+          * Console reported them "Discovered, currently not indexed" with
+          * "Referring page: none detected" — a page the site itself does not
+          * link to reads as orphaned, and a new domain gets no benefit of the
+          * doubt. A sitemap says a URL exists; a link says it matters.
+          */}
+        <span className="lt-foot-nav">
+          {FOOTER_LINKS[lang].map((l) => (
+            <a key={l.href} href={l.href}>
+              {l.label}
+            </a>
+          ))}
+        </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <a href="/terms">Terms</a>
-          <a href="/privacy">Privacy</a>
           <span>
             ©{' '}
             <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener noreferrer">

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { SiteFooter } from '@/components/layout/PolicyPage'
 import { POSTS, getPost, tableOfContents, type Block } from '@/lib/journal'
 import { COMPANY } from '@/lib/constants'
 
@@ -300,6 +301,7 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
             </div>
           </aside>
         </div>
+        <SiteFooter />
       </div>
     </div>
   )

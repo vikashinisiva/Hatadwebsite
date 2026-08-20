@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { SiteFooter } from '@/components/layout/PolicyPage'
 import { POSTS } from '@/lib/journal'
 
 export const metadata: Metadata = {
@@ -74,6 +75,7 @@ export default function JournalIndex() {
             </article>
           ))}
         </div>
+        <SiteFooter />
       </div>
     </div>
   )

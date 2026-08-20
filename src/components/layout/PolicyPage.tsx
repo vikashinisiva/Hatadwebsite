@@ -37,6 +37,7 @@ export function PolicyPage({
 
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="space-y-6 text-sm text-text-secondary leading-relaxed">{children}</div>
+        <SiteFooter />
       </div>
     </div>
   )
@@ -90,5 +91,41 @@ export function CompanyAddress() {
         {COMPANY.email}
       </a>
     </p>
+  )
+}
+
+/**
+ * The same link set the launch page carries, so the graph is connected in both
+ * directions rather than radiating out of the home page only. Cheap to render
+ * and it is what stops any of these reading as orphaned.
+ */
+const SITE_LINKS = [
+  { href: '/journal', label: 'Journal' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/terms', label: 'Terms' },
+  { href: '/privacy', label: 'Privacy' },
+  { href: '/cookies', label: 'Cookies' },
+  { href: '/refunds', label: 'Refunds' },
+  { href: '/shipping', label: 'Delivery' },
+]
+
+export function SiteFooter() {
+  return (
+    <footer className="border-t border-border mt-16 pt-6 pb-10">
+      <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-muted">
+        <a href="/" className="hover:text-accent-blue">
+          Home
+        </a>
+        {SITE_LINKS.map((l) => (
+          <a key={l.href} href={l.href} className="hover:text-accent-blue">
+            {l.label}
+          </a>
+        ))}
+      </nav>
+      <p className="mt-4 text-[11px] text-text-muted">
+        HataD is operated by {COMPANY.legalName}, {COMPANY.city}, {COMPANY.region}.
+      </p>
+    </footer>
   )
 }
