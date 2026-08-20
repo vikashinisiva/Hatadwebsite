@@ -2755,3 +2755,14 @@ body {
   gap: 8px 16px;
   flex-wrap: wrap;
 }
+
+/* District links inside the coverage section. Body-level and contextual, as
+   opposed to the footer nav, which Search Console showed Google discounts. */
+.lt-cover-browse {
+  margin: 14px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: #5A6B85;
+  max-width: 46ch;
+}
+.lt-cover-browse a { color: #1B4FD8; text-underline-offset: 2px; text-decoration: underline; }

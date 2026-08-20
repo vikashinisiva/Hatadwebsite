@@ -247,6 +247,8 @@ const COPY = {
     sourcesCloseSub:
       'We open every one of them before you pay. The ones that aren’t online, we open in person.',
     coverageIndex: 'Coverage',
+    coverageBrowse: 'Every district, office by office:',
+    coverageBrowseAll: 'all 38 districts',
     coverageTitle: `All ${LAUNCH_DISTRICTS.length} districts of Tamil Nadu from day one.`,
     questionsIndex: 'Questions',
     questionsTitle: 'The questions worth asking.',
@@ -360,6 +362,8 @@ const COPY = {
     sourcesCloseSub:
       'பணம் கொடுப்பதற்கு முன், ஒவ்வொன்றையும் நாங்கள் பார்க்கிறோம். ஆன்லைனில் இல்லாதவற்றை நேரில் சென்று பார்க்கிறோம்.',
     coverageIndex: 'பரப்பளவு',
+    coverageBrowse: 'ஒவ்வொரு மாவட்டமும், அலுவலகம் வாரியாக:',
+    coverageBrowseAll: 'அனைத்து 38 மாவட்டங்களும்',
     coverageTitle: `தமிழ்நாட்டின் அனைத்து ${LAUNCH_DISTRICTS.length} மாவட்டங்களும், முதல் நாளிலிருந்தே.`,
     questionsIndex: 'கேள்விகள்',
     questionsTitle: 'கேட்க வேண்டிய கேள்விகள்.',
@@ -2050,6 +2054,27 @@ export function LaunchTease({
               <span>{t.coverageIndex}</span>
             </p>
             <h2 className="lt-cover-title">{t.coverageTitle}</h2>
+            {/*
+              District links in the body, not only in the footer.
+
+              They were reachable from the footer alone, and Search Console
+              showed what that is worth: /journal is indexed, and the referring
+              page Google cites is a child article, not the home page, despite
+              the footer having linked it for days. Site-wide boilerplate is
+              discounted for discovery. A link inside the section that is
+              already about districts is a link with context around it.
+            */}
+            <p className="lt-cover-browse">
+              {t.coverageBrowse}{' '}
+              {['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem'].map((d, i) => (
+                <span key={d}>
+                  {i > 0 && ', '}
+                  <a href={`/tamil-nadu/${d.toLowerCase()}`}>{d}</a>
+                </span>
+              ))}
+              {', '}
+              <a href="/tamil-nadu">{t.coverageBrowseAll}</a>.
+            </p>
             {/*
               The figures live here now, beside the map, rather than in their
               own block above it.

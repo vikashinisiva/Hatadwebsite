@@ -8,7 +8,7 @@ import {
   districtSlug,
   DISTRICT_DATA_SOURCE,
 } from '@/lib/districts'
-import { SCAN_STEPS_BASE, LOCAL_SCAN_STEPS, SOURCE_CLAIM, BUYER_FACTS } from '@/lib/departments'
+import { SCAN_STEPS_BASE, LOCAL_SCAN_STEPS, SOURCE_CLAIM } from '@/lib/departments'
 import { DistrictShape } from '@/components/sections/DistrictShape'
 import { SiteFooter } from '@/components/layout/PolicyPage'
 import { ClearanceCTA, NavCTA } from '@/components/layout/ClearanceCTA'
@@ -301,46 +301,30 @@ export default async function DistrictPage({
           </p>
         </section>
 
-        {/* The practical half. The statutory checks above are what no
-            competitor can write; this is what every buyer actually searches
-            for, and both belong on the page. Emitted as FAQPage schema from
-            the same source it renders from. */}
+        {/*
+          * The buyer facts used to be rendered here, on all 38 pages.
+          *
+          * That is ~350 identical words per page, and it pulled the
+          * district-specific share of a page down to 58%, just under the
+          * threshold at which a generated cluster starts reading as templated.
+          * It lives on one page now and every district links to it, which is
+          * both better for the reader and the difference between a cluster
+          * that survives review and one that does not.
+          */}
         <section className="mt-16 border-t border-border pt-10">
-          <p className="font-mono text-[11px] tracking-[0.14em] uppercase text-text-muted mb-2">
-            Before you buy
-          </p>
-          <h2 className="font-serif text-[1.7rem] md:text-[2.1rem] font-semibold tracking-tight text-text-primary mb-6">
-            What it costs, and what it does not settle
+          <h2 className="font-serif text-[1.7rem] md:text-[2.1rem] font-semibold tracking-tight text-text-primary mb-3">
+            What it costs to register
           </h2>
-          <div className="space-y-6">
-            {BUYER_FACTS.items.map((f) => (
-              <div key={f.q}>
-                <p className="text-[15px] font-semibold text-text-primary mb-1">{f.q}</p>
-                <p className="text-[15px] leading-relaxed text-text-secondary max-w-[60ch]">{f.a}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-6 text-[12px] text-text-muted">
-            Rates verified {BUYER_FACTS.verified}. Check against the Registration Department before a
-            transaction.
+          <p className="text-[15px] leading-relaxed text-text-secondary max-w-[58ch]">
+            Stamp duty and the registration fee come to 11 per cent of value, charged on whichever is
+            higher, your price or the guideline value. Registering the sale deed also does not
+            transfer the patta, which is a separate application at the Taluk office.{' '}
+            <Link href="/guides/buying-land-in-tamil-nadu" className="text-accent-blue underline underline-offset-2">
+              What buying land in Tamil Nadu costs, in full
+            </Link>
+            .
           </p>
         </section>
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'FAQPage',
-              inLanguage: 'en-IN',
-              mainEntity: BUYER_FACTS.items.map((f) => ({
-                '@type': 'Question',
-                name: f.q,
-                acceptedAnswer: { '@type': 'Answer', text: f.a },
-              })),
-            }),
-          }}
-        />
 
         <ClearanceCTA district={name} />
 

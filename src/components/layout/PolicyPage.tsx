@@ -101,6 +101,7 @@ export function CompanyAddress() {
  */
 const SITE_LINKS = [
   { href: '/tamil-nadu', label: 'Districts' },
+  { href: '/guides/buying-land-in-tamil-nadu', label: 'Buying land' },
   { href: '/journal', label: 'Journal' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },

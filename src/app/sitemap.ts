@@ -28,6 +28,7 @@ const routes = [
   ...publishableDistricts(LOCAL_SCAN_STEPS).map(d => ({
     path: `/tamil-nadu/${districtSlug(d)}`, changeFrequency: 'monthly' as const, priority: 0.7,
   })),
+  { path: '/guides/buying-land-in-tamil-nadu', changeFrequency: 'monthly' as const, priority: 0.8 },
   { path: '/journal', changeFrequency: 'weekly' as const, priority: 0.7 },
   /* Every post, derived. A hand-listed sitemap and a growing journal disagree
      the first time someone forgets to add a line here. */
