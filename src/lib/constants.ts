@@ -167,7 +167,6 @@ export const PRELAUNCH_PUBLIC_PATHS = [
   '/cookies',
   '/about',
   '/contact',
-  '/pricing',
   '/refunds',
   '/shipping',
   /* The journal. Reachable before launch on purpose: search discovery is the

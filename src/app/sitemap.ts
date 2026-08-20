@@ -25,7 +25,6 @@ const routes = [
      the first time someone forgets to add a line here. */
   ...POSTS.map(p => ({ path: `/journal/${p.slug}`, changeFrequency: 'monthly' as const, priority: 0.6 })),
   { path: '/about', changeFrequency: 'monthly' as const, priority: 0.5 },
-  { path: '/pricing', changeFrequency: 'monthly' as const, priority: 0.5 },
   { path: '/contact', changeFrequency: 'monthly' as const, priority: 0.4 },
   { path: '/terms', changeFrequency: 'monthly' as const, priority: 0.3 },
   { path: '/privacy', changeFrequency: 'monthly' as const, priority: 0.3 },
