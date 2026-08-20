@@ -66,6 +66,17 @@ export default function DistrictIndex() {
           goes.
         </p>
 
+        <p className="mt-5 text-[15px] leading-relaxed text-text-secondary max-w-[52ch]">
+          Registration costs 11 per cent of value and does not transfer the patta.{' '}
+          <Link
+            href="/guides/buying-land-in-tamil-nadu"
+            className="text-accent-blue underline underline-offset-2"
+          >
+            What buying land in Tamil Nadu actually costs
+          </Link>
+          .
+        </p>
+
         <div className="mt-14 space-y-10">
           {zones.map(([zone, list]) => (
             <section key={zone}>

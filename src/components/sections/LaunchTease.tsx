@@ -249,6 +249,7 @@ const COPY = {
     coverageIndex: 'Coverage',
     coverageBrowse: 'Every district, office by office:',
     coverageBrowseAll: 'all 38 districts',
+    coverageCost: 'What registration costs, and what it does not settle',
     coverageTitle: `All ${LAUNCH_DISTRICTS.length} districts of Tamil Nadu from day one.`,
     questionsIndex: 'Questions',
     questionsTitle: 'The questions worth asking.',
@@ -364,6 +365,7 @@ const COPY = {
     coverageIndex: 'பரப்பளவு',
     coverageBrowse: 'ஒவ்வொரு மாவட்டமும், அலுவலகம் வாரியாக:',
     coverageBrowseAll: 'அனைத்து 38 மாவட்டங்களும்',
+    coverageCost: 'பதிவுக் கட்டணம் என்ன, அது எதைத் தீர்க்காது',
     coverageTitle: `தமிழ்நாட்டின் அனைத்து ${LAUNCH_DISTRICTS.length} மாவட்டங்களும், முதல் நாளிலிருந்தே.`,
     questionsIndex: 'கேள்விகள்',
     questionsTitle: 'கேட்க வேண்டிய கேள்விகள்.',
@@ -2074,6 +2076,8 @@ export function LaunchTease({
               ))}
               {', '}
               <a href="/tamil-nadu">{t.coverageBrowseAll}</a>.
+              {' '}
+              <a href="/guides/buying-land-in-tamil-nadu">{t.coverageCost}</a>.
             </p>
             {/*
               The figures live here now, beside the map, rather than in their
