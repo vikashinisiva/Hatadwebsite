@@ -172,6 +172,9 @@ export const PRELAUNCH_PUBLIC_PATHS = [
   '/pricing',
   '/refunds',
   '/shipping',
+  /* District pages. All 38 routes resolve; only the finished ones are put in
+     the sitemap. Prefix match covers every district. */
+  '/tamil-nadu',
   /* The journal. Reachable before launch on purpose: search discovery is the
      slowest thing on the roadmap, so the clock should start now rather than on
      31 August. Prefix match covers every post. */

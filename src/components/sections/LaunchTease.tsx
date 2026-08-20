@@ -666,6 +666,7 @@ function clockParts(msRemaining: number) {
  */
 const FOOTER_LINKS = {
   en: [
+    { href: '/tamil-nadu', label: 'Districts' },
     { href: '/journal', label: 'Journal' },
     { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
@@ -676,6 +677,7 @@ const FOOTER_LINKS = {
     { href: '/shipping', label: 'Delivery' },
   ],
   ta: [
+    { href: '/tamil-nadu', label: 'மாவட்டங்கள்' },
     { href: '/journal', label: 'இதழ்' },
     { href: '/about', label: 'எங்களைப் பற்றி' },
     { href: '/contact', label: 'தொடர்பு' },

@@ -5,6 +5,7 @@
  */
 
 import sroData from '@/data/sro_cache.json'
+import { sameDistrict } from './district-map'
 
 export interface SROEntry {
   zone: string
@@ -14,6 +15,10 @@ export interface SROEntry {
 }
 
 const cache = sroData as Record<string, SROEntry>
+
+/* Exposed so districts.ts can roll the 56 registration districts up into the
+   38 revenue ones. Read-only by convention; nothing mutates it. */
+export const SRO_CACHE = cache
 
 // ---------------------------------------------------------------------------
 // Tamil transliteration normalization
@@ -118,8 +123,10 @@ export function lookupSRO(villageName: string, district?: string): SROEntry | nu
   if (normMatches?.length) {
     // If district provided, prefer match in same district
     if (district) {
-      const districtNorm = district.toLowerCase()
-      const districtMatch = normMatches.find((k) => cache[k].district.toLowerCase() === districtNorm)
+      /* Compare on the revenue district, so a caller passing "Chennai" still
+         narrows to the Chennai North/South/Central rows rather than matching
+         nothing and falling through to the first candidate in the state. */
+      const districtMatch = normMatches.find((k) => sameDistrict(cache[k].district, district))
       if (districtMatch) return cache[districtMatch]
     }
     return cache[normMatches[0]]
@@ -127,14 +134,11 @@ export function lookupSRO(villageName: string, district?: string): SROEntry | nu
 
   // 3. Fuzzy match (only if district provided to narrow scope)
   if (district) {
-    const districtNorm = district.toLowerCase()
     let bestKey: string | null = null
     let bestDist = Infinity
 
     for (const [k, entry] of Object.entries(cache)) {
-      // Partial district match — "Coimbatore" matches "Coimbatore South", "Coimbatore North"
-      const entryDist = entry.district.toLowerCase()
-      if (entryDist !== districtNorm && !entryDist.startsWith(districtNorm) && !districtNorm.startsWith(entryDist)) continue
+      if (!sameDistrict(entry.district, district)) continue
       const d = levenshtein(norm, normalize(k))
       if (d < bestDist && d <= 3) {
         bestDist = d
@@ -167,6 +171,14 @@ export function lookupSRO(villageName: string, district?: string): SROEntry | nu
 /**
  * Get all unique villages for a district.
  */
+/**
+ * @deprecated Matches the raw registration district only.
+ *
+ * `sro_cache.json` is keyed on the Registration Department's 56 districts, so
+ * an exact match against a revenue district name silently returns nothing for
+ * Chennai, Coimbatore, Madurai, Salem, Tiruchirappalli and Tiruppur. Use
+ * `districtProfile()` from `@/lib/districts`, which reconciles the two.
+ */
 export function getVillagesForDistrict(district: string): string[] {
   const districtLower = district.toLowerCase()
   const villages: string[] = []
@@ -181,6 +193,7 @@ export function getVillagesForDistrict(district: string): string[] {
 /**
  * Get all unique SRO offices for a district.
  */
+/** @deprecated Same trap as {@link getVillagesForDistrict}. Use `districtProfile()`. */
 export function getSROsForDistrict(district: string): string[] {
   const districtLower = district.toLowerCase()
   const sros: string[] = []

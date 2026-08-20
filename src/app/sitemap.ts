@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { COMING_SOON } from '@/lib/constants'
 import { POSTS } from '@/lib/journal'
+import { publishableDistricts, districtSlug } from '@/lib/districts'
+import { LOCAL_SCAN_STEPS } from '@/lib/departments'
 
 /*
  * One domain.
@@ -20,6 +22,12 @@ const routes = [
      paths, since /ta redirects home once the product site is live. */
   { path: '/ta', changeFrequency: 'weekly' as const, priority: 0.9 },
   { path: '/clearance', changeFrequency: 'monthly' as const, priority: 0.9 },
+  { path: '/tamil-nadu', changeFrequency: 'monthly' as const, priority: 0.8 },
+  /* Only districts with verified local checks. Listing the other 33 would be
+     asking Google to index pages we already know are thin. */
+  ...publishableDistricts(LOCAL_SCAN_STEPS).map(d => ({
+    path: `/tamil-nadu/${districtSlug(d)}`, changeFrequency: 'monthly' as const, priority: 0.7,
+  })),
   { path: '/journal', changeFrequency: 'weekly' as const, priority: 0.7 },
   /* Every post, derived. A hand-listed sitemap and a growing journal disagree
      the first time someone forgets to add a line here. */

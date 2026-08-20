@@ -100,6 +100,7 @@ export function CompanyAddress() {
  * and it is what stops any of these reading as orphaned.
  */
 const SITE_LINKS = [
+  { href: '/tamil-nadu', label: 'Districts' },
   { href: '/journal', label: 'Journal' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
