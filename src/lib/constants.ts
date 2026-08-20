@@ -25,8 +25,6 @@ export const PHONE_REGEX = /^\d{10}$/
 
 export const CLEARANCE_PRICE_PAISE = 359900
 
-/** Rupees, formatted for display. Derived, so no page ever retypes the price. */
-export const CLEARANCE_PRICE_INR = `₹${(CLEARANCE_PRICE_PAISE / 100).toLocaleString('en-IN')}`
 
 /**
  * Standard turnaround for a report, in hours.

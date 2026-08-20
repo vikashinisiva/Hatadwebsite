@@ -113,7 +113,7 @@ function ClearancePageInner() {
         >
           <div className="text-left">
             <div className="text-[15px] sm:text-[16px] font-semibold">Start a new verification</div>
-            <div className="text-[12px] sm:text-[13px] text-[#B8C5DA] mt-0.5">Flat ₹3,599 · delivered in under 3 hours</div>
+            <div className="text-[12px] sm:text-[13px] text-[#B8C5DA] mt-0.5">Delivered in under 3 hours</div>
           </div>
           <div className="w-10 h-10 rounded-full bg-[#C9A84C] text-[#0C1525] flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
             <ArrowRight size={18} strokeWidth={2.4} />

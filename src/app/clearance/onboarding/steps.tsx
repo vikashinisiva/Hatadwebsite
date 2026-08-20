@@ -4,6 +4,14 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { STORAGE_KEYS, TN_DISTRICTS, EMAIL_REGEX, PHONE_REGEX, CLEARANCE_PRICE_PAISE } from '@/lib/constants'
+import { SOURCE_CLAIM } from '@/lib/departments'
+
+/*
+ * No amount is displayed anywhere in this flow. The price has not been set,
+ * and a checkout showing a figure nobody agreed to is worse than one showing
+ * none. CLEARANCE_PRICE_PAISE stays imported for the server-side amount guard
+ * only; when a price exists, the amount comes back to this screen.
+ */
 import { OBIcon, Coach, GoogleLogo } from './shared'
 
 // ═══════════════════════════════════════════════════════
@@ -151,7 +159,7 @@ export function StepAccount({ onSignedIn }: { onSignedIn: (session: Session) => 
             </button>
             <div className="ob-legal">
               By continuing you agree to our <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.
-              GST inclusive · Delivered in under 3 hours.
+              Delivered in under 3 hours.
             </div>
           </>
         )}
@@ -211,9 +219,9 @@ export function StepAccount({ onSignedIn }: { onSignedIn: (session: Session) => 
             Your report lands as a PDF link on email and WhatsApp. No app install, no login trails with the registrar.
           </p>
           <div className="ob-stat-row">
-            <div className="ob-stat"><div className="ob-stat-num">30+</div><div className="ob-stat-lab">Gov records cross-checked</div></div>
+            <div className="ob-stat"><div className="ob-stat-num">{SOURCE_CLAIM}</div><div className="ob-stat-lab">Gov records cross-checked</div></div>
             <div className="ob-stat"><div className="ob-stat-num">&lt;3<span style={{ fontSize: 16, fontWeight: 500 }}>hr</span></div><div className="ob-stat-lab">Delivery time, guaranteed</div></div>
-            <div className="ob-stat"><div className="ob-stat-num">₹3,599</div><div className="ob-stat-lab">Flat fee, all in</div></div>
+            <div className="ob-stat"><div className="ob-stat-num">100%</div><div className="ob-stat-lab">Findings cited to source</div></div>
           </div>
           <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: '#7A8FAD', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
             <OBIcon name="shield" size={14} style={{ color: '#059669' }}/>
@@ -620,23 +628,14 @@ function BillSummary({ property }: { property: PropertyData }) {
         ORDER SUMMARY
       </div>
 
-      <BillRow label="Land Clearance Report" value="₹ 3,049.15"/>
-      <BillRow label="GST @ 18%" value="₹ 549.85"/>
+      <BillRow label="Land Clearance Report" value="Parcel"/>
 
       <div style={{ fontSize: 10, color: MUTED, padding: '6px 0', fontFamily: MONO }}>
         Parcel {parcelLabel}
       </div>
 
-      <div style={{ borderTop: `1px solid ${INK}`, marginTop: 10, paddingTop: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontFamily: MONO, fontWeight: 700 }}>
-          <span style={{ fontSize: 10, letterSpacing: '0.16em', color: INK }}>TOTAL PAYABLE</span>
-          <span style={{ flex: 1, borderBottom: '1px dotted #CBD5E8', transform: 'translateY(-3px)' }}/>
-          <span style={{ fontSize: 20, color: INK }}>₹ 3,599</span>
-        </div>
-      </div>
-
       <div style={{ marginTop: 14, fontSize: 10.5, color: MUTED, textAlign: 'center', lineHeight: 1.6, fontFamily: MONO }}>
-        GST inclusive · Delivered &lt; 3 hours
+        Delivered &lt; 3 hours
         <br/>
         100% refund if we miss the window
       </div>
@@ -828,7 +827,7 @@ export function StepPay({
 
       <div className="ob-panel-right">
         <div style={{ marginBottom: 16, padding: '14px 16px', background: '#0C1525', color: '#FDFDFB', borderLeft: '3px solid #C9A84C' }}>
-          <div style={{ fontSize: 10, letterSpacing: '0.18em', color: '#C9A84C', fontWeight: 600, textTransform: 'uppercase', marginBottom: 6 }}>Why this is worth ₹3,599</div>
+          <div style={{ fontSize: 10, letterSpacing: '0.18em', color: '#C9A84C', fontWeight: 600, textTransform: 'uppercase', marginBottom: 6 }}>Why this check exists</div>
           <div style={{ fontSize: 13, lineHeight: 1.55, fontWeight: 300 }}>
             Median land fraud loss in Tamil Nadu: <b style={{ fontWeight: 600, color: '#fff' }}>₹14.2 lakh</b>.
             Median legal recovery time: <b style={{ fontWeight: 600, color: '#fff' }}>7 years</b>.
@@ -956,11 +955,7 @@ export function StepTracking({ requestId, property, userEmail, onDone }: {
             <span className="v ob-summary-v-text">{etaLabel}</span>
           </div>
 
-          <div className="ob-summary-total">
-            <span className="k">Paid</span>
-            <span className="v">₹3,599</span>
-          </div>
-          <div className="ob-summary-foot">Inclusive of GST · 100% refund if delivery misses 3 hours</div>
+          <div className="ob-summary-foot">100% refund if delivery misses 3 hours</div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid #CBD5E8' }}>
             <span className="ob-time-badge"><OBIcon name="clock" size={12} stroke={2}/> &lt; 3 HRS</span>

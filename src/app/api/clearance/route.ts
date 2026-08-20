@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       }
       if (msg.includes('amount_mismatch')) {
         return NextResponse.json(
-          { error: `Payment amount mismatch. Expected ₹${CLEARANCE_PRICE_PAISE / 100}.` },
+          { error: 'Payment amount does not match the amount on record for this order.' },
           { status: 402 },
         )
       }

@@ -120,7 +120,7 @@ export async function GET() {
             letterSpacing: '0.1em',
           }}
         >
-          hatad.in · ₹3,599 · Report in 3 hours
+          hatad.in · Land record verification for Tamil Nadu
         </div>
       </div>
     ),

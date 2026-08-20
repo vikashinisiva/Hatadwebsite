@@ -146,11 +146,8 @@ export function Solution() {
             <p className="text-sm text-text-secondary font-medium mb-1">
               {t('solution.priceContext')}
             </p>
-            <p className="text-lg font-semibold text-text-primary">
-              ₹3,599
-            </p>
             <p className="text-xs text-text-muted">
-              GST inclusive · Delivered in under 3 hours
+              Delivered in under 3 hours
             </p>
           </div>
         </motion.div>

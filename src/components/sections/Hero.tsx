@@ -314,9 +314,7 @@ export function Hero() {
           >
             <span className="font-semibold text-[#0C1525]">3 hrs</span>
             <span className="opacity-40">·</span>
-            <span className="font-semibold text-[#0C1525]">₹3,599</span>
-            <span className="opacity-40">·</span>
-            <span>GST inclusive</span>
+            <span>Every finding cited to its record</span>
           </motion.div>
 
           {/* Survey input + Verify CTA */}

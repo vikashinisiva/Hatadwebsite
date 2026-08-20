@@ -606,11 +606,11 @@ export function RiskCheck() {
                         onClick={() => track('cta_click', 'risk_check', { surveyNo, district, hasRealData })}
                       >
                         <button className="w-full py-4 rounded-sm text-sm font-semibold bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238] transition-colors cursor-pointer">
-                          Unlock Your Full Report — {'\u20B9'}3,599
+                          Unlock Your Full Report
                         </button>
                       </a>
                       <p className="text-center text-[10px] text-text-muted mt-3">
-                        GST inclusive · Ready within 3 hours of payment · All 6 sources checked
+                        Ready within 3 hours · Every finding cited to its record
                       </p>
                       <button onClick={handleReset} className="block mx-auto mt-4 text-xs text-text-muted hover:text-accent-blue transition-colors cursor-pointer">
                         Check a different property

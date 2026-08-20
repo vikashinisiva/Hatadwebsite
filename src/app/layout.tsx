@@ -10,7 +10,6 @@ import {
   COMING_SOON,
   COMPANY,
   SOCIALS,
-  CLEARANCE_PRICE_INR,
   REPORT_TURNAROUND_HOURS,
 } from '@/lib/constants'
 import { SOURCE_CLAIM } from '@/lib/departments'
@@ -72,7 +71,6 @@ const organizationSchema = {
     name: 'Tamil Nadu',
     containedInPlace: { '@type': 'Country', name: 'India' },
   },
-  ...(COMING_SOON ? {} : { priceRange: '₹3,599' }),
 }
 
 const dmSans = DM_Sans({
@@ -103,7 +101,7 @@ export const metadata: Metadata = {
   // currently charging.
   description: COMING_SOON
     ? 'HataD verifies Tamil Nadu land records before you buy: survey, patta, FMB, encumbrance, guideline value and master plan. Launching soon.'
-    : `HataD cross-verifies ${SOURCE_CLAIM} Tamil Nadu government departments and courts and delivers a risk report in ${REPORT_TURNAROUND_HOURS} hours. ${CLEARANCE_PRICE_INR}.`,
+    : `HataD cross-verifies ${SOURCE_CLAIM} Tamil Nadu government departments and courts and delivers a risk report in ${REPORT_TURNAROUND_HOURS} hours.`,
   metadataBase: new URL('https://www.hatad.in'),
   icons: {
     icon: '/icon.png',
