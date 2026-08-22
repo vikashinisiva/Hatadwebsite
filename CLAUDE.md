@@ -48,7 +48,13 @@ Next.js 16 App Router · React 19 (React Compiler on via `next.config.ts`) · Ta
 
 ### The product in one paragraph
 
-A buyer in Tamil Nadu enters a survey number (or lets the browser geolocate them). The app hits Tamil Nadu government GIS APIs for a free "risk preview", then sells a ₹3,599 human-verified land clearance report delivered within 3 hours. Reports are produced manually by ops and uploaded through an admin panel.
+A buyer in Tamil Nadu enters a survey number (or lets the browser geolocate them). The app hits Tamil Nadu government GIS APIs for a free "risk preview", then sells a human-verified land clearance report. Reports are produced manually by ops and uploaded through an admin panel.
+
+**Turnaround is a 48-hour MINIMUM** — `REPORT_TURNAROUND_HOURS` in `src/lib/constants.ts`. It was 3, which described a remote-only read and never covered the part of the job that is the actual moat: a pre-digitisation deed or EC held only as a bound volume at a Sub-Registrar Office, which someone has to travel to and read by hand. Phrase it "within 48 hours", never "under" — that reads as a ceiling on something that is a floor.
+
+**Never retype the number, or the price, into copy.** When the turnaround changed there were roughly twenty hardcoded `3 hours` strings around the site that the constant knew nothing about; most are still there, in the landing sections and the clearance flow, which are unreachable behind the pre-launch wall. They must be swept before that wall comes down — `grep -rniE "3[ -]?hours?|under 3"` finds them.
+
+**The launch page carries neither the turnaround nor the price.** Not an oversight: both are decided elsewhere, both have already changed once, and a launch page that names them goes stale silently. The FAQ answers "what will it cost?" with "confirmed at launch" and that is the whole answer.
 
 ### The money path (touch with care)
 

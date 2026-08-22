@@ -111,8 +111,11 @@ body {
 /* Glassmorphism card */
 .glass-card {
   background: rgba(255, 255, 255, 0.6);
+  /* Standard property only — the build adds prefixes from its own targets. A
+     hand-written -webkit- twin makes the minifier collapse the pair and keep
+     the prefixed one, which current Chrome does not support, so the blur
+     disappears in production while looking correct in dev. */
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(203, 213, 232, 0.4);
 }
 
@@ -190,8 +193,8 @@ body {
 
 .pill-nav-wrapper[data-scrolled="true"] {
   background: rgba(244, 247, 252, 0.88);
+  /* Standard property only — see the note on .glass-card. */
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-bottom-color: var(--color-border);
 }
 
@@ -2082,8 +2085,8 @@ body {
   /* A text-shadow was not enough over 3D buildings — the labels need a surface. */
   background: rgba(244, 247, 252, 0.94);
   border: 1px solid #CBD5E8;
+  /* Standard property only — see the note on .glass-card. */
   backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
   animation: lt-card-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
 }
 
@@ -2212,7 +2215,9 @@ body {
 .lt-scan-row[data-state='active'] { color: #0C1525; font-weight: 500; }
 .lt-scan-row[data-state='done'] { color: #3D5278; }
 .lt-scan-mark { font-size: 0.625rem; }
-.lt-scan-row[data-state='done'] .lt-scan-mark { color: #10B981; }
+/* No colour of its own: the mark inherits the row, so a completed source reads
+   as mid-tone like its label rather than announcing a result. This was #10B981
+   — a green tick, the one green on the page, on a search nobody ran. */
 .lt-scan-row[data-state='active'] .lt-scan-mark {
   color: #C9A84C;
   animation: lt-pulse 0.9s ease-in-out infinite;
@@ -2766,3 +2771,757 @@ body {
   max-width: 46ch;
 }
 .lt-cover-browse a { color: #1B4FD8; text-underline-offset: 2px; text-decoration: underline; }
+
+/* ────────────────────────────────────────────────────────────────
+   THE COMPANION
+   One position: the bottom-right corner, always.
+
+   He used to have two — an offset over the map while the hero owned
+   the screen, then the corner — with the map offset measured at
+   runtime into --lc-map-bottom. That handoff depended on an
+   IntersectionObserver flipping at the right moment and on a
+   measurement taken at the right moment, and when either missed he
+   sat stranded between the two, well above the corner, with his
+   caption suppressed. Two positions bought a small entrance and
+   cost a reliable resting place, which is a bad trade.
+
+   Chrome follows .lt-fix, the map readout, because that is the same
+   object: a small mono statement of what is being looked at right
+   now. Hairline, square, white, no shadow — the house rule for this
+   page is no border-radius, no glass, no pills.
+──────────────────────────────────────────────────────────────── */
+.lc {
+  position: fixed;
+  /*
+   * Tight into the corner.
+   *
+   * This was clamp(18px, 3vw, 40px), which resolves to a correct-but-wrong
+   * 40px on any wide screen: measured, the drawn body sat exactly 40px off
+   * both edges, and it still did not read as cornered. The dev overlay badge
+   * a few hundred pixels away sits at about 20 and looks properly parked,
+   * which is the comparison the eye actually makes. 3vw was also the wrong
+   * scale — it hit the ceiling by 1,340px, so every desktop got the maximum.
+   */
+  right: clamp(12px, 1.4vw, 22px);
+  bottom: clamp(12px, 1.4vw, 22px);
+  z-index: 40;
+  /*
+   * The caption is a sibling of the companion now, not a child of it, so the
+   * row it used to sit in has to be rebuilt here. Reversed: he stays pinned in
+   * the corner and the sentence grows leftward away from the edge. The panel
+   * and the hit target are both absolute, so neither is a flex item and both
+   * stay anchored to his right edge regardless of how wide he is talking.
+   */
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.6rem;
+  /* Only he takes the pointer; the caption beside him must never sit over the
+     page swallowing clicks meant for the copy underneath. */
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lc[data-shown='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* The binding renders [bot][caption]; reversed so the caption reads INTO him
+   rather than trailing off the right edge of the window. */
+.lc-bot {
+  flex-direction: row-reverse;
+}
+.lc-bot > div[aria-hidden] {
+  pointer-events: auto;
+}
+
+.lc-cap {
+  margin: 0;
+  padding: 9px 13px;
+  background: #ffffff;
+  border: 1px solid #cbd5e8;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  color: #0c1525;
+  white-space: nowrap;
+  /* Long enough for "Reading · Collectorate", short enough that it can never
+     become a paragraph in a corner. */
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * When he volunteers, he needs a sentence's worth of room.
+ *
+ * The caption is normally a status — two or three words — and 26ch with an
+ * ellipsis is right for that. A volunteered line is a whole sentence, and the
+ * same rule truncated "Miss one, and the other 29 don't matter." to "Miss one,
+ * and the …", which is worse than not speaking. Widened and allowed to wrap
+ * only while he is saying something, so the status captions keep their tight
+ * single line.
+ */
+.lc[data-said='true'] .lc-cap {
+  max-width: 32ch;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.65;
+}
+
+/*
+ * Each sentence is now revealed a word at a time by `.lc-w`, keyed on a
+ * counter in the component so a new line is a new subtree.
+ *
+ * This replaced a pair of identically-shaped keyframes that were alternated
+ * per sentence: the caption lived in the vendored component's own span, which
+ * could not be re-keyed, so flipping which rule matched was the only way to
+ * restart an animation. Owning the element removes the need for the trick, and
+ * the whole-box fade with it — a box fading in is decoration, a line arriving
+ * word by word is someone speaking.
+ */
+
+/* The hit target, laid over the silhouette. Transparent, but a real control —
+   focusable, and it reports open/closed. */
+.lc-hit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 84px;
+  height: 84px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  border-radius: 50%;
+  z-index: 1;
+}
+.lc-hit:focus-visible {
+  outline: 2px solid #1b4fd8;
+  outline-offset: 4px;
+}
+
+/* Opens UP and LEFT of him, never over the copy column or the join field —
+   his brief is explicit that he may cover neither. */
+/*
+ * The surface he speaks from.
+ *
+ * Two things make this read as a panel opening rather than a div appearing.
+ *
+ * First, it grows from HIM. `transform-origin` is the bottom-right corner,
+ * which is where he stands, so the panel emerges from the thing that was
+ * pressed instead of scaling about its own middle — and it collapses back into
+ * him on the way out, along the identical path.
+ *
+ * Second, it materialises rather than fading: the backdrop blur is animated
+ * from 0, so the glass thickens as it arrives. A surface that fades in is a
+ * picture of a surface; one whose blur builds is the material itself forming.
+ *
+ * Everything animated here is a TRANSITION, never a keyframe. A keyframe
+ * restarts from its own first frame, so a panel grabbed halfway out snaps back
+ * to open before closing again; a transition re-targets from whatever is
+ * currently on screen. That is the whole reason the component tracks `settled`
+ * separately from `mounted`.
+ */
+.lc-panel {
+  position: absolute;
+  right: 0;
+  bottom: 96px;
+  width: 300px;
+  max-width: calc(100vw - 44px);
+  pointer-events: auto;
+  padding: 15px 17px 13px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  transform-origin: 100% 100%;
+
+  /* Closed state. Every property here has its open counterpart below. */
+  opacity: 0;
+  transform: translateY(10px) scale(0.955);
+  background: rgba(255, 255, 255, 0.4);
+  /*
+   * 2px, not 0px, and no hand-written -webkit- twin. Both matter, and the
+   * production build is the only place either shows up.
+   *
+   * `blur(0px) saturate(100%)` was minified to `blur()saturate()` — empty
+   * arguments, invalid, discarded by the parser. And writing the -webkit-
+   * prefix by hand made the minifier treat the pair as one property and keep
+   * only the prefixed one, which current Chrome does not support at all
+   * (`CSS.supports('-webkit-backdrop-filter', …)` is false), so the glass
+   * silently stopped existing. The toolchain adds whatever prefix its targets
+   * need; writing them by hand is what broke it.
+   *
+   * The rule is that NO value here may be an identity value. `blur(0px)` folds
+   * to `blur()` and `saturate(100%)` folds to `saturate()` — both empty, both
+   * invalid, both silently dropped. So the closed state uses 2px and 105%,
+   * which are no-ops to the eye on a panel that is fully transparent at that
+   * moment, but are not no-ops to the minifier. Keeping the same two functions
+   * in both states also guarantees the two lists interpolate rather than
+   * falling back to a discrete swap.
+   */
+  backdrop-filter: blur(2px) saturate(105%);
+  border: 1px solid rgba(203, 213, 232, 0.55);
+  /* A bright top edge is light catching the leading face of the material; the
+     long soft drop is what tells you a 300px surface is thicker than a chip. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0),
+    0 2px 6px -4px rgba(12, 21, 37, 0);
+  transition:
+    opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.34s ease,
+    backdrop-filter 0.34s ease,
+    border-color 0.34s ease,
+    box-shadow 0.4s ease;
+}
+.lc-panel[data-settled='true'] {
+  opacity: 1;
+  transform: none;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(22px) saturate(180%);
+  border-color: rgba(203, 213, 232, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 20px 44px -20px rgba(12, 21, 37, 0.3);
+}
+
+/*
+ * "Ask" — the tap hint, phone only, until he has been opened once.
+ *
+ * Set in the same tiny monospace caps the rest of the page labels things with
+ * (FOLLOW ALONG, 02 SOURCES, HIDE PIP) so it reads as part of the furniture
+ * rather than as a tooltip bolted on. Deliberately not a bubble, not a pointer,
+ * not a pulse: it is a label, and the thing it labels is right next to it.
+ *
+ * It breathes once every few seconds rather than sitting inert, because a
+ * static word beside a character is easy to read as part of the character. The
+ * movement is small enough to notice only in peripheral vision, which is where
+ * the corner of a screen actually is while someone is reading.
+ */
+.lc-tap {
+  flex: none;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7a8fad;
+  white-space: nowrap;
+  animation: lc-tap-in 0.5s ease-out both, lc-tap-breathe 3.4s ease-in-out 0.9s infinite;
+}
+@keyframes lc-tap-in {
+  from { opacity: 0; transform: translateX(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lc-tap-breathe {
+  0%, 70%, 100% { opacity: 1; }
+  85% { opacity: 0.45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The label stays — it is the information. Only the breathing goes. */
+  .lc-tap { animation: none; }
+}
+
+/*
+ * The panel on a phone: nearly the full width, still standing above him.
+ *
+ * Not a bottom sheet, though that is the reflex, and for two reasons — the
+ * second being the one that decides it.
+ *
+ * A sheet flush to the bottom edge covers him, and every frame of the entry
+ * animation is built on growing out of his corner (`transform-origin: 100%
+ * 100%`). Take the corner away and the motion stops referring to anything.
+ *
+ * And it could not be `position: fixed` regardless: `.lc` carries a transform
+ * while he fades in, and a transformed ancestor becomes the containing block
+ * for fixed descendants — so a "fixed" sheet would be anchored to him, and
+ * would slide as he arrived. Absolute and wide reaches the same place with
+ * none of that.
+ */
+.lc[data-narrow='true'] .lc-panel {
+  width: calc(100vw - 24px);
+  max-width: none;
+}
+/*
+ * The thread is what gives up height on a short screen.
+ *
+ * Everything else in the panel is a fixed number of lines — name, one line,
+ * three openers, the ask row — so the conversation is the only part that can
+ * yield, and capping it in `svh` keeps the whole panel on screen in landscape
+ * where the viewport is barely taller than the panel was designed to be.
+ */
+.lc[data-narrow='true'] .lc-thread {
+  max-height: min(244px, 32svh);
+}
+
+/*
+ * A light travelling the panel's border while he searches.
+ *
+ * Registering the custom property is the whole trick: an unregistered custom
+ * property has no type, so the browser cannot interpolate it and a keyframe on
+ * it does nothing. Declared as an <angle> it animates, which is what lets a
+ * conic gradient be spun in pure CSS with no JS and no rAF.
+ */
+@property --lc-beam-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@property --lc-beam-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+/*
+ * The ring is a conic gradient masked down to the border itself.
+ *
+ * Two masks over the same box — one covering the whole element, one only the
+ * content box — composited with `exclude`, which subtracts the inside and
+ * leaves exactly the 1px of padding. That is the border, and the gradient
+ * shows through only there.
+ *
+ * The reference implementation this is taken from beams white light around a
+ * black card. Inverted here, because on a white panel light reads as nothing:
+ * ours is ink. Gold leads because gold is already this page's colour for work
+ * in progress — it is what the map's CHECKING dot uses — with the brand blue
+ * as the hot core of the arc so the head of the beam is legible against it.
+ *
+ * Only while he is actually searching. A border that is always alive is
+ * decoration and stops being read within a minute; one that appears when a
+ * question is sent is status, and it is the honest kind — something really is
+ * being looked up while it runs.
+ */
+.lc-beam {
+  position: absolute;
+  /*
+   * Negative by exactly the panel's border width, not zero.
+   *
+   * An absolutely positioned child is laid out against its containing block's
+   * PADDING box, so `inset: 0` sizes the beam to 298px inside a 300px panel and
+   * the ring lands just within the border rather than on it — a second hairline
+   * a pixel in from the first. Pulling it out by 1px makes the beam's box the
+   * panel's border box, so its 1px padding ring and the border coincide.
+   */
+  inset: -1px;
+  /*
+   * 2px, not the 1px of the border it sits on.
+   *
+   * At 1px and half alpha the arc was technically present and visually absent —
+   * a coloured smudge you had to be told about. The reference gets away with a
+   * hairline because it blooms white light against black; on a white panel
+   * there is no bloom to borrow, so the ring itself has to carry the effect.
+   * The extra pixel laps just inside the border, which reads as glow.
+   */
+  padding: 2px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--lc-beam-angle),
+    transparent 0%,
+    transparent 52%,
+    rgba(201, 168, 76, 0.22) 59%,
+    rgba(201, 168, 76, 0.75) 66%,
+    rgba(27, 79, 216, 1) 72%,
+    rgba(201, 168, 76, 0.75) 78%,
+    rgba(201, 168, 76, 0.22) 85%,
+    transparent 92%,
+    transparent 100%
+  );
+  /*
+   * Content box first, then the whole box; excluding one from the other is
+   * what hollows out the middle and leaves the 1px ring.
+   *
+   * Longhands, deliberately, never the `mask` shorthand. Written as a shorthand
+   * the minifier is free to reorder it after `mask-composite` — and because the
+   * shorthand resets composite back to `add`, the standard property was being
+   * dropped from the built stylesheet entirely. The mask then subtracted
+   * nothing and the gradient filled the whole panel. Longhands cannot reset a
+   * sibling, so the order stops mattering.
+   */
+  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-clip: content-box, border-box;
+  mask-composite: exclude;
+  /* Enough to soften the arc into a travelling light, not enough to smear it.
+     The original blurs 8px to bloom against black; past about 3px on white the
+     colour spreads thin and the whole thing greys out. */
+  filter: blur(2.5px) saturate(1.4);
+  opacity: var(--lc-beam-opacity);
+  animation:
+    lc-beam-spin 2.4s linear infinite,
+    lc-beam-in 0.5s ease-out forwards;
+}
+@keyframes lc-beam-spin {
+  to { --lc-beam-angle: 360deg; }
+}
+/* It arrives rather than snapping on, so sending a question does not flash. */
+@keyframes lc-beam-in {
+  to { --lc-beam-opacity: 1; }
+}
+
+/*
+ * The opening: his name, one line, three ways in.
+ *
+ * Contents arrive a beat behind the surface and cascade, because that is the
+ * order real things arrive in — the drawer, then what is in it. Keyframes are
+ * correct here and transitions are not: this content mounts once with the
+ * panel and is never grabbed, so there is nothing to interrupt.
+ */
+.lc-open-h {
+  margin: 0;
+  font-size: 0.6875rem;
+  /* Tighter than the small caps below it. Tracking is size-specific: the same
+     0.18em that makes a 9px label legible makes a name at 11px look loose. */
+  letter-spacing: 0.02em;
+  color: #0c1525;
+  animation: lc-rise 0.44s cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
+}
+.lc-open-l {
+  margin: 5px 0 13px;
+  font-size: 0.625rem;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+  color: #7a8fad;
+  /* The line runs a couple of characters past the column, so left to itself it
+     breaks with "you." alone on the second row. Balanced, it splits evenly and
+     the orphan cannot happen at any width. */
+  text-wrap: balance;
+  animation: lc-rise 0.44s cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+.lc-chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lc-chip {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  border-top: 1px solid rgba(203, 213, 232, 0.6);
+  background: none;
+  font-family: inherit;
+  font-size: 0.625rem;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  text-align: left;
+  color: #0c1525;
+  cursor: pointer;
+  animation: lc-rise 0.44s cubic-bezier(0.22, 1, 0.36, 1) calc(170ms + var(--i) * 60ms) both;
+}
+.lc-chip-t {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Parked, and pointing where it will go. The arrow is the whole affordance —
+   there is no fill, no border, nothing that would make this a pill. */
+.lc-chip-go {
+  flex: none;
+  color: #a3b3ca;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.28s ease;
+}
+.lc-chip:hover .lc-chip-t,
+.lc-chip:focus-visible .lc-chip-t {
+  transform: translateX(3px);
+}
+.lc-chip:hover .lc-chip-go,
+.lc-chip:focus-visible .lc-chip-go {
+  opacity: 1;
+  transform: none;
+  color: #0c1525;
+}
+/* On press, not on release — the feedback has to beat the network. */
+.lc-chip:active .lc-chip-t {
+  transform: translateX(1px);
+}
+.lc-chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.lc-chip:focus-visible {
+  outline: 2px solid #1b4fd8;
+  outline-offset: 2px;
+}
+@keyframes lc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+/* ── Asking him things ──
+   Deliberately not a chat widget. No bubbles, no avatars, no rounded corners,
+   no colour: his side is ink, yours is muted and indented, and the rule between
+   turns is the same hairline the rest of the page is built from. A trust-heavy
+   page is the wrong place to borrow the visual language of a support popup. */
+/* Content fades where it meets the panel's edge instead of being guillotined
+   by a hard clip — the same reason a floating toolbar gets a fade rather than
+   a 1px rule underneath it. */
+.lc-thread {
+  max-height: 244px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 7px,
+    #000 calc(100% - 7px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 7px,
+    #000 calc(100% - 7px),
+    transparent 100%
+  );
+}
+.lc-msg {
+  margin: 0 0 8px;
+  font-size: 0.625rem;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  white-space: pre-wrap;
+}
+.lc-msg[data-from='user'] {
+  color: #7a8fad;
+  padding-left: 12px;
+  border-left: 1px solid #cbd5e8;
+}
+.lc-msg[data-from='assistant'] {
+  color: #0c1525;
+}
+/*
+ * Words arriving out of blur, as he says them.
+ *
+ * Deliberately the same gesture as the page's own ScrollReveal, which brings
+ * its lines in from `filter: blur(8px)` — so his speech animates in the
+ * language the page already speaks rather than importing a chat-widget
+ * typewriter. Softer here (5px, 0.34s) because this fires per word during a
+ * live stream, and the reveal line fires once on a whole paragraph.
+ *
+ * Runs on mount only. Each word is its own span, React inserts just the new
+ * ones, and `both` holds the end state so nothing re-animates on re-render.
+ * There is no ticker and no rAF anywhere in this.
+ */
+.lc-w {
+  display: inline-block;
+  /* --d staggers across the words that just arrived, so a released sentence
+     cascades instead of landing all at once. Set per word in the component;
+     0ms for everything already on screen. */
+  animation: lc-word 0.34s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms) both;
+}
+@keyframes lc-word {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+/*
+ * A light passing over the word while he reads.
+ *
+ * This replaced three cycling dots. Dots report that a timer is running, which
+ * is the least interesting true thing available; a sweep across the word
+ * "Reading" says something is being read, which is what is actually happening
+ * — he is comparing sources — and it is the one moment on this page where a
+ * wait is worth dramatising rather than hiding.
+ *
+ * A clipped gradient, one keyframe, no library. `-webkit-text-fill-color` has
+ * to be transparent too, or Safari paints the solid colour straight over it.
+ */
+.lc-think {
+  background: linear-gradient(
+    100deg,
+    #93a5bd 0%,
+    #93a5bd 38%,
+    #0c1525 50%,
+    #93a5bd 62%,
+    #93a5bd 100%
+  );
+  background-size: 280% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: lc-think 1.6s linear infinite;
+}
+@keyframes lc-think {
+  from { background-position: 140% 0; }
+  to { background-position: -40% 0; }
+}
+
+.lc-ask {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  border-top: 1px solid #cbd5e8;
+  padding-top: 10px;
+}
+.lc-ask-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  color: #0c1525;
+  outline: none;
+}
+.lc-ask-input::placeholder { color: #a3b3ca; }
+.lc-ask-input:disabled { opacity: 0.5; }
+/*
+ * The send arrow arrives when there is something to send.
+ *
+ * It used to sit there permanently, greyed out — a control advertising that it
+ * cannot be used, which is the least useful thing a control can say. Now it is
+ * absent until the field has content and then slides in from the left, exactly
+ * the treatment the opener chips already use for their arrows, so the two
+ * affordances in this panel behave alike.
+ *
+ * Taken from a gooey/metaball demo where the submit button buds off the input
+ * as a droplet. The idea there is the timing, not the liquid: the affordance
+ * appearing at the moment it becomes real. That part is worth having; the
+ * filter it was rendered with needs pill-shaped solids to merge and would have
+ * meant restyling this page's most important input into something it is not.
+ */
+.lc-ask-go {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #0c1525;
+  cursor: pointer;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.24s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lc-ask-go:disabled {
+  color: #cbd5e8;
+  cursor: default;
+  opacity: 0;
+  transform: translateX(-5px);
+  /* Still in the layout, so the input does not resize as it comes and goes —
+     it is invisible, not gone. */
+  pointer-events: none;
+}
+.lc-ask-go:focus-visible,
+.lc-ask-input:focus-visible { outline: 2px solid #1b4fd8; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* The sweep stops, but the state must not disappear with it — a stalled
+     gradient reads as nothing happening, which is the opposite of true. It
+     falls back to plain muted text plus the ellipsis it replaced. */
+  .lc-think {
+    animation: none;
+    background: none;
+    color: #7a8fad;
+    -webkit-text-fill-color: currentColor;
+  }
+  .lc-think::after { content: '…'; }
+  /* Words still arrive; they just arrive already legible. */
+  .lc-w { animation: none; }
+}
+
+.lc-dismiss {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7a8fad;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.lc-dismiss:hover { color: #0c1525; }
+.lc-dismiss:focus-visible { outline: 2px solid #1b4fd8; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* He still arrives — that he is there at all is information. Only the
+     travel goes. */
+  .lc {
+    transition: opacity 0.55s ease;
+    transform: none;
+  }
+  /*
+   * The panel still opens and closes — a surface appearing with no transition
+   * at all is a jump cut, which is its own kind of jarring. It just stops
+   * travelling and stops scaling: opacity only, and the glass is simply there
+   * rather than thickening into place.
+   */
+  .lc-panel {
+    transform: none;
+    backdrop-filter: blur(22px) saturate(180%);
+    transition: opacity 0.2s ease;
+  }
+  .lc-panel[data-settled='true'] { transform: none; }
+  .lc-open-h,
+  .lc-open-l,
+  .lc-chip { animation: none; }
+  /* The beam goes entirely rather than sitting frozen as a stray coloured arc
+     on one corner. Nothing is lost: the state is still said in words, and
+     `.lc-think` above keeps its own reduced-motion fallback. */
+  .lc-beam { display: none; }
+  .lc-chip-t,
+  .lc-chip-go { transition: opacity 0.2s ease; transform: none; }
+}
+
+/*
+ * Translucency is a preference, and some people have turned it off.
+ *
+ * The panel carries small monospace text over whatever the page is scrolling
+ * underneath it, so when the blur goes the background has to become opaque in
+ * the same breath — a 0.82 alpha with no blur behind it is the one combination
+ * that is genuinely hard to read.
+ */
+@media (prefers-reduced-transparency: reduce) {
+  .lc-panel,
+  .lc-panel[data-settled='true'] {
+    background: #ffffff;
+    backdrop-filter: none;
+  }
+}
+@media (prefers-contrast: more) {
+  .lc-panel,
+  .lc-panel[data-settled='true'] {
+    background: #ffffff;
+    backdrop-filter: none;
+    border-color: #0c1525;
+  }
+  .lc-chip { border-top-color: #7a8fad; }
+  .lc-open-l { color: #4a5c78; }
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 // Bundled locally on purpose. Injecting the CDN <link> (as Hero.tsx does) fails
 // here because Termly runs with autoBlock and holds third-party resources until
 // consent — the stylesheet never arrives and the map canvas renders unsized.
@@ -30,6 +31,16 @@ import {
   SOURCE_COUNT,
   scanStepsFor,
 } from '@/lib/departments'
+
+/*
+ * The companion. Client-only and lazily fetched — he mounts nothing below
+ * 900px and shows nothing until the hero is behind you, so there is no version
+ * of this page where loading him early would have paid for itself.
+ */
+const LaunchCompanion = dynamic(
+  () => import('@/components/companion/LaunchCompanion').then((m) => m.LaunchCompanion),
+  { ssr: false },
+)
 
 type Lang = 'en' | 'ta'
 
@@ -81,9 +92,19 @@ const COPY = {
      * buy land here knows the records lag the deal; saying so first establishes
      * that we are inside the problem, and only then mentions the date. The
      * offer is credibility, which is the only thing a report is ever bought on.
+     *
+     * It used to end "the day you stand on it", which was a same-day promise.
+     * Turnaround is now a 48-hour minimum, so that sentence became false — and
+     * a page whose whole argument is that we check what is actually on record
+     * cannot be the thing on the page that is not. "Before you sign" is the
+     * real value and stays true at any turnaround.
+     *
+     * No turnaround and no price appear anywhere on this page, deliberately.
+     * Both are decided elsewhere and both have already changed once; a launch
+     * page that names them is a launch page that goes stale silently.
      */
     offerLead: 'Deals move faster than records do.',
-    offerBody: (day: string) => `From ${day} you can check a plot the day you stand on it.`,
+    offerBody: (day: string) => `From ${day} you can have a plot checked before you sign.`,
     /*
      * Shown once LAUNCH_DATE has passed.
      *
@@ -93,7 +114,7 @@ const COPY = {
      * "we have launched" would be a lie for however long that gap lasts. Saying
      * less is the only thing that is true at every point on that timeline.
      */
-    offerBodyLive: 'You can check a plot the day you stand on it.',
+    offerBodyLive: 'You can have a plot checked before you sign.',
     /*
      * The closing ask, after the questions. Different words to the hero on
      * purpose: at the top the reader is deciding whether to keep reading, and
@@ -302,8 +323,8 @@ const COPY = {
     placeholder: 'மின்னஞ்சல் அல்லது கைபேசி எண்',
     offerLead: 'பத்திரப் பதிவுகளை விட வேகமாக நகர்வது பேரம்.',
     offerBody: (day: string) =>
-      `${day} முதல், நீங்கள் நிலத்தில் நிற்கும் அன்றே அதைச் சரிபார்க்கலாம்.`,
-    offerBodyLive: 'நீங்கள் நிலத்தில் நிற்கும் அன்றே அதைச் சரிபார்க்கலாம்.',
+      `${day} முதல், கையெழுத்திடும் முன் நிலத்தைச் சரிபார்த்துக் கொள்ளலாம்.`,
+    offerBodyLive: 'கையெழுத்திடும் முன் நிலத்தைச் சரிபார்த்துக் கொள்ளலாம்.',
     closeLead: 'எப்படியும் ஒரு நாள் தெரிய வரும்.',
     closeBody: 'பணம் கொடுப்பதற்கு முன்பா, கொடுத்த பின்பா? அதுதான் ஒரே கேள்வி.',
     offerClose: 'பட்டியலில் உள்ளவர்களுக்கு முதல் இடம்.',
@@ -461,6 +482,22 @@ const SOCIAL_ICONS: Record<string, (props: MarkProps) => React.JSX.Element> = {
 const ACQUIRE_MS = 6000 // opening descent onto the first city
 const TRAVEL_MS = 7500 // city to city — slow enough for tiles to keep up
 const INSPECT_MS = 7000 // slow rotation over the buildings
+/*
+ * Stillness before the next city.
+ *
+ * The cycle used to be flyTo(7500) -> easeTo(7000) -> next leg after 300ms,
+ * which means the camera is in motion essentially 100% of the time the hero is
+ * on screen. Mapbox renders a frame for every one of those, with 3D extrusions,
+ * terrain and MSAA — and the launch page measured 25.7 SECONDS of main-thread
+ * work in the mapbox chunk, with 4,780ms of total blocking time. The cost is
+ * not booting the library; it is that nothing ever stops.
+ *
+ * A real hold gives the thread genuine idle windows, which is precisely what
+ * blocking-time and interactivity metrics measure. It also reads better: the
+ * scan card finishes its checks during the sweep and then had about a third of
+ * a second before the camera left, so the completed list was never legible.
+ */
+const HOLD_MS = 3200 // rest on the plot once the readout has finished
 const INSPECT_ARC_DEG = 38 // how far the camera swings while inspecting
 const CITY_ZOOM = 16.1 // buildings still read; every step down is cheaper to load
 /*
@@ -1116,6 +1153,32 @@ export function LaunchTease({
         let lastLead = NaN
 
         /*
+         * The card's own size, measured rather than read every frame.
+         *
+         * `positionOverlay` is bound to `render` as well as `move`, so it runs
+         * on every frame the map draws — and the camera on this page is never
+         * still, so that is every frame, forever. Both paths below wanted
+         * `card.offsetWidth/offsetHeight`, and an offset* read inside a
+         * callback that also writes inline styles forces a synchronous layout
+         * on each one: the browser has to flush the writes from the previous
+         * frame before it can answer. Sixty times a second, for a box whose
+         * size changes only when its contents change.
+         *
+         * Its contents change on exactly two occasions — a new arrival re-keys
+         * the card, and a resize reflows it — so it is measured on those, and
+         * the frame loop reads two numbers.
+         */
+        let cardEl: HTMLElement | null = null
+        let cardW = 0
+        let cardH = 0
+        const measureCard = () => {
+          const el = scanOverlayRef.current
+          cardEl = el?.querySelector<HTMLElement>('.lt-scan-inner') ?? null
+          cardW = cardEl?.offsetWidth ?? 0
+          cardH = cardEl?.offsetHeight ?? 0
+        }
+
+        /*
          * Which of the two layouts is live.
          *
          * Must agree exactly with the breakpoint in globals.css that pins the
@@ -1166,8 +1229,7 @@ export function LaunchTease({
         const drawTether = (el: HTMLElement, p: { x: number; y: number }, onScreen: boolean) => {
           const tether = el.querySelector<HTMLElement>('.lt-scan-tether')
           const tip = el.querySelector<HTMLElement>('.lt-scan-tip')
-          const card = el.querySelector<HTMLElement>('.lt-scan-inner')
-          if (!tether || !tip || !card) return
+          if (!tether || !tip || !cardEl) return
 
           const hide = () => {
             if (tether.style.opacity !== '0') tether.style.opacity = '0'
@@ -1198,8 +1260,8 @@ export function LaunchTease({
             p.y < canvasRect.height - margin
           if (!inPanel) return hide()
 
-          const cw = card.offsetWidth
-          const ch = card.offsetHeight
+          const cw = cardW
+          const ch = cardH
 
           /* Nothing to join when the plot has drifted under the card — a line
              with both ends inside the same box is just a smudge. */
@@ -1294,15 +1356,16 @@ export function LaunchTease({
            * from the plot, which is the one thing the leader exists to prevent —
            * so the line gives way, not the anchor.
            */
-          const card = el.querySelector<HTMLElement>('.lt-scan-inner')
-          if (!card) return
-          const room = p.y - card.offsetHeight - 12
+          if (!cardEl) return
+          const room = p.y - cardH - 12
           const lead = Math.round(Math.max(26, Math.min(104, room)))
           if (lead !== lastLead) {
             el.style.setProperty('--lead', `${lead}px`)
             lastLead = lead
           }
         }
+        measureCard()
+        window.addEventListener('resize', measureCard)
         map.on('move', positionOverlay)
         map.on('render', positionOverlay)
 
@@ -1352,6 +1415,9 @@ export function LaunchTease({
             setArrival((a) => a + 1)
             setMoving(false)
             parcelCentreRef.current = [...LAUNCH_MAP_CITIES[index].c] as [number, number]
+            /* The card is keyed on `arrival`, so this is a different element
+               with different contents than the one measured a moment ago. */
+            measureCard()
             positionOverlay()
             // Now drop the previous plot — off-frame, so nothing is seen to go.
             clearParcel(map)
@@ -1380,7 +1446,7 @@ export function LaunchTease({
             legTimer = setTimeout(() => {
               index = (index + 1) % LAUNCH_MAP_CITIES.length
               runLeg(TRAVEL_MS)
-            }, INSPECT_MS + 300)
+            }, INSPECT_MS + HOLD_MS)
           }, travelMs)
         }
 
@@ -1434,6 +1500,7 @@ export function LaunchTease({
         releaseVisibility = () => {
           io.disconnect()
           document.removeEventListener('visibilitychange', sync)
+          window.removeEventListener('resize', measureCard)
         }
       })
     })
@@ -1934,9 +2001,25 @@ export function LaunchTease({
                     className="lt-scan-row"
                     data-state={i < scanStep ? 'done' : i === scanStep ? 'active' : 'pending'}
                   >
-                    <span className="lt-scan-mark">
-                      {i < scanStep ? '✓' : i === scanStep ? '·' : ''}
-                    </span>
+                    {/*
+                      * A mark that says "opened", never "clear".
+                      *
+                      * This was a green tick on every completed row. A tick is
+                      * a verdict, and no search has run — the card is a
+                      * demonstration over a fictional parcel. N-3 makes
+                      * rendering a blank result as a clean one a prohibited
+                      * failure, and C-4 requires "searched and found nothing",
+                      * "not covered by this source" and "search failed" to
+                      * render differently from each other; one green tick
+                      * collapses all three into the reassuring one.
+                      *
+                      * The row already carries its state in colour — muted
+                      * pending, ink and bold while active, mid-tone once
+                      * opened — so the mark only ever has to say that the
+                      * source was reached. The same dot does that for both
+                      * live states; the active one is bold and animated.
+                      */}
+                    <span className="lt-scan-mark">{i <= scanStep ? '·' : ''}</span>
                     <span>
                       {step.label}
                       {step.why && <em className="lt-scan-why">{step.why}</em>}
@@ -2314,6 +2397,13 @@ export function LaunchTease({
           </span>
         </span>
       </footer>
+
+      {/* Alongside, never in the hero. Lazy and client-only on purpose: the
+          hero already boots Mapbox on idle, and a second engine competing for
+          that same first second is the one thing this page cannot afford. He
+          is not visible until the hero has scrolled away regardless, so there
+          is nothing to gain by having him earlier. */}
+      <LaunchCompanion joined={submitted} errored={!!error} />
     </div>
   )
 }
