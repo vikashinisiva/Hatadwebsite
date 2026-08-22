@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
+// Bundled, not injected from the CDN at runtime. See the note on the removed
+// <link> in the map effect below.
+import 'mapbox-gl/dist/mapbox-gl.css'
 import { track } from '@/lib/track'
 
 /* ── Config ─────────────────────────────────────────────── */
@@ -37,13 +40,23 @@ export function Hero() {
     import('mapbox-gl').then((mapboxgl) => {
       if (cancelled || !mapContainerRef.current) return
 
-      if (!document.querySelector('link[href*="mapbox-gl"]')) {
-        const link = document.createElement('link')
-        link.rel = 'stylesheet'
-        link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css'
-        document.head.appendChild(link)
-      }
-
+      /*
+       * The stylesheet used to be injected here as a CDN <link> to
+       * mapbox-gl-js/v3.3.0. Two things were wrong with that.
+       *
+       * It was the wrong version: the bundle installs mapbox-gl 3.21.0, so a
+       * release eighteen minor versions older was styling it. The class names
+       * are stable enough that it mostly worked, which is why it survived.
+       *
+       * And it is a third-party request, which Termly's autoBlock holds until
+       * someone accepts the cookie banner — so the stylesheet may simply never
+       * arrive and the canvas renders unsized. LaunchTease already hit exactly
+       * this and switched to the bundled import; the note at the top of that
+       * file is what pointed here.
+       *
+       * Imported at module scope instead, so it is matched to the installed
+       * version, present before first paint, and not blockable.
+       */
       mapboxgl.default.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''
 
       const map = new mapboxgl.default.Map({

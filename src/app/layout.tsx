@@ -39,7 +39,7 @@ const organizationSchema = {
   logo: 'https://www.hatad.in/icon.png',
   description: COMING_SOON
     ? 'Land clearance intelligence platform for Tamil Nadu. Cross-verifies government land records before a property purchase. Launching soon.'
-    : 'Land clearance intelligence platform for Tamil Nadu. Cross-verifies 30+ government land records and delivers risk reports in 3 hours.',
+    : `Land clearance intelligence platform for Tamil Nadu. Cross-verifies ${SOURCE_CLAIM} government land records and delivers risk reports within ${REPORT_TURNAROUND_HOURS} hours.`,
   telephone: COMPANY.phoneHref,
   email: COMPANY.email,
   /*
@@ -101,7 +101,7 @@ export const metadata: Metadata = {
   // currently charging.
   description: COMING_SOON
     ? 'HataD verifies Tamil Nadu land records before you buy: survey, patta, FMB, encumbrance, guideline value and master plan. Launching soon.'
-    : `HataD cross-verifies ${SOURCE_CLAIM} Tamil Nadu government departments and courts and delivers a risk report in ${REPORT_TURNAROUND_HOURS} hours.`,
+    : `HataD cross-verifies ${SOURCE_CLAIM} Tamil Nadu government departments and courts and delivers a risk report within ${REPORT_TURNAROUND_HOURS} hours.`,
   metadataBase: new URL('https://www.hatad.in'),
   icons: {
     icon: '/icon.png',
@@ -114,7 +114,7 @@ export const metadata: Metadata = {
     title: COMING_SOON ? 'HataD, launching soon' : 'HataD: Land Clearance Intelligence',
     description: COMING_SOON
       ? 'Land record verification for Tamil Nadu. Join the waitlist and be served first when we open.'
-      : `Cross-verify ${SOURCE_CLAIM} government departments and courts before you pay. Report in ${REPORT_TURNAROUND_HOURS} hours.`,
+      : `Cross-verify ${SOURCE_CLAIM} government departments and courts before you pay. Report within ${REPORT_TURNAROUND_HOURS} hours.`,
     type: 'website',
     locale: 'en_IN',
     siteName: 'HataD',
@@ -194,8 +194,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
-        {/* Preload Mapbox for hero — starts fetching before JS executes */}
-        <link rel="preload" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" as="style" />
+        {/*
+          * Tiles and telemetry only. The stylesheet preload that used to sit
+          * here is gone: it named mapbox-gl-js/v3.3.0 while the bundle installs
+          * 3.21.0, and both pages that draw a map now import the CSS from the
+          * package instead, so nothing ever consumed it. React hoisted it as a
+          * float hint as well, so it rendered TWICE — two requests to a third
+          * party, on the critical path, for a file no page applied.
+          */}
         <link rel="preconnect" href="https://api.mapbox.com" />
         <link rel="preconnect" href="https://events.mapbox.com" />
         <link rel="dns-prefetch" href="https://api.mapbox.com" />
