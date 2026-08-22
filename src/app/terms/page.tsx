@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { CompanyAddress } from '@/components/layout/PolicyPage'
-import { COMPANY } from '@/lib/constants'
+import { COMPANY, REPORT_TURNAROUND_HOURS } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions',
@@ -36,7 +36,7 @@ export default function TermsPage() {
               HataD is a land intelligence platform that verifies property documents for buyers, lawyers, and financial institutions in Tamil Nadu.
               Users upload land records &mdash; including Encumbrance Certificates, Patta, FMB, Sale Deeds, and related documents &mdash; and receive
               a detailed clearance report identifying contradictions, ownership gaps, encumbrances, and legal risks across the full document set.
-              Reports are delivered within 3 hours and are accessible via our website at hatad.in.
+              Reports are delivered within {REPORT_TURNAROUND_HOURS} hours and are accessible via our website at hatad.in.
             </p>
             <p className="mt-3">
               You can contact us by phone at +91 81226 42341, email at{' '}

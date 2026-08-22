@@ -27,14 +27,21 @@ export const CLEARANCE_PRICE_PAISE = 359900
 
 
 /**
- * Standard turnaround for a report, in hours.
+ * Standard turnaround for a report, in hours. A MINIMUM, not a ceiling.
  *
- * Applies to the record set that can be read remotely. Anything that has to be
- * fetched in person from an office — a pre-digitisation deed or EC held only as
- * a bound volume at the Sub-Registrar Office — cannot be done on this clock,
- * and the delivery policy says so rather than quietly implying otherwise.
+ * Was 3. The three-hour figure described a remote-only read and never survived
+ * contact with the part of the job that is the actual moat — a pre-digitisation
+ * deed or EC held only as a bound volume at the Sub-Registrar Office, which
+ * someone has to travel to and read by hand. 48 is the real floor.
+ *
+ * Phrase it as "within", never "under". "Under 48 hours" reads as a ceiling on
+ * something that is a floor, which is the wrong promise in the wrong direction.
+ *
+ * Single source: never retype the number into copy. It has already changed
+ * once, and at the time it did there were about twenty hardcoded "3 hours"
+ * around the site that this constant knew nothing about.
  */
-export const REPORT_TURNAROUND_HOURS = 3
+export const REPORT_TURNAROUND_HOURS = 48
 
 /**
  * Pre-launch wall. Set COMING_SOON=1 in the environment to replace the product
@@ -187,6 +194,11 @@ export const PRELAUNCH_PUBLIC_PATHS = [
   '/api/waitlist',
   '/api/track',
   '/api/cron',
+  /* The companion answers questions on the launch page, so his route has to
+     survive the wall the launch page lives behind. It is rate limited per IP
+     and returns 503 when no key is configured, so allowlisting it does not open
+     anything that costs money by default. */
+  '/api/companion',
   /*
    * Deliberately still reachable. New payments are stopped at order creation
    * (see /api/razorpay/order), but a payment that was already authorised must
