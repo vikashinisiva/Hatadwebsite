@@ -41,6 +41,15 @@ export type Post = {
   description: string
   /** Shown under the headline. */
   standfirst: string
+  /**
+   * The named writer, where there is one.
+   *
+   * Optional, and absent means the piece is the company's rather than a
+   * person's — which is what the first post is. Land purchase is a subject
+   * search engines hold to a higher bar, so a named author is worth stating
+   * when one exists; inventing one when it does not is worse than neither.
+   */
+  author?: string
   published: string
   /** ISO, for the Article schema and the <time> element. */
   publishedISO: string
@@ -183,6 +192,133 @@ export const POSTS: Post[] = [
       {
         q: 'Why do land records contradict each other?',
         a: 'Because they are maintained by separate authorities under separate rules, and none is obliged to reconcile itself against the others. The revenue department is not told when a civil court passes a decree, and the registration department is not told either.',
+      },
+    ],
+  },
+
+  {
+    slug: 'chennai-homebuyer-due-diligence',
+    title: 'Navigating the Chennai Real Estate Market: A First-Time Homebuyer’s Due Diligence Guide',
+    seoTitle: 'Chennai Property Due Diligence Checklist for First-Time Buyers',
+    description:
+      'What to verify before buying an apartment in Chennai: the title chain and encumbrance certificate, CMDA or DTCP sanction, TNRERA registration, land classification, undivided share, completion certificate and the promoter’s record.',
+    standfirst:
+      'A brochure is written to be believed. The records are written to be checked. This is what to check, and which office keeps it.',
+    author: 'Swedha Anadhakrishan',
+    published: '24 August 2026',
+    publishedISO: '2026-08-24',
+    /* 1,225 words at the 200 wpm the first post is calibrated to. Counted, not
+       estimated — a stated reading time that is twice the real one is a small
+       lie on a page whose argument is that figures should be checked. */
+    readingMinutes: 6,
+    body: [
+      {
+        t: 'p',
+        text: 'For a first-time homebuyer, the market is a maze of legal jargon, zoning rules and regulatory risk that is not visible from the site. A life-changing financial commitment requires looking well past the brochure, to establish that what is being sold is legally sound, structurally durable and actually approved.',
+      },
+
+      { t: 'h2', id: 'title', text: 'Title and ownership chain' },
+      {
+        t: 'ul',
+        items: [
+          'Parent documents (thai pathiram) — trace the unbroken chain of ownership for at least 30 to 40 years, so that transfers, partitions, release deeds and legal heir settlements are all accounted for.',
+          'Encumbrance certificate — pull a 30-to-40-year digital EC from the [TNREGINET portal](https://tnreginet.gov.in). For transactions before 1975 or 1987, depending on when that Sub-Registrar Office was digitised, a physical ledger search (villangam) at the office itself is the only way to see unrecorded mortgages or court attachments.',
+          'Patta and revenue records — check the Town Survey Land Record for urban municipal areas, or the patta and chitta for revenue villages, through the [Tamil Nadu e-Services portal](https://eservices.tn.gov.in). The survey number, subdivision and current owner or promoter must match the title deeds exactly.',
+          'Joint development agreement and power of attorney — for joint developments, inspect the registered JDA and the registered general power of attorney. Confirm the PoA has not been revoked, and that it explicitly authorises the promoter to convey undivided land shares to buyers.',
+        ],
+      },
+
+      { t: 'h2', id: 'approvals', text: 'Statutory and planning approvals' },
+      {
+        t: 'ul',
+        items: [
+          'CMDA and DTCP sanctioned plans — planning permission comes from the Chennai Metropolitan Development Authority within CMA limits, and from the Directorate of Town and Country Planning outside them, under the Tamil Nadu Combined Development and Building Rules, 2019. Cross-check the sanctioned number of floors, height, floor space index and setbacks against what has actually been built.',
+          'TNRERA registration — verify the project on [tnrera.in](https://tnrera.in). Registration is mandatory for projects over 500 square metres or more than eight apartments. Cross-reference the declared completion deadline, the sanctioned layout and the quarterly financial and construction disclosures.',
+          'Statutory clearances — Tamil Nadu Fire and Rescue Services, Airports Authority of India height clearance, and environmental clearance from SEIAA or TNPCB for built-up areas over 20,000 square metres.',
+        ],
+      },
+
+      { t: 'h2', id: 'classification', text: 'Land classification and zoning risk' },
+      {
+        t: 'ul',
+        items: [
+          'Revenue classification — the A-register and chitta show whether the land is grama natham, or punjai converted with layout regularisation. Sub-registrars are barred from registering properties on poramboke, on eri, kulam or kuttai (water bodies), or on vaikkal (drainage channels).',
+          'HR&CE and Wakf — cross-check the survey numbers against records of the Hindu Religious and Charitable Endowments department, temple inam trusts, and the Tamil Nadu Wakf Board, where alienation may be barred.',
+          'Wetlands and coastal buffers — confirm the parcel is outside the buffer zones of the Pallikaranai marshland, designated flood basins, and the Coastal Regulation Zones along the ECR and OMR corridors.',
+        ],
+      },
+
+      { t: 'h2', id: 'completion', text: 'Physical clearances and handover' },
+      {
+        t: 'ul',
+        items: [
+          'Completion certificate — in Chennai a CC from the CMDA or the Greater Chennai Corporation is mandatory for multi-unit developments, excluding non-high-rise residential buildings up to 12 metres with no more than three dwelling units or 750 square metres. Permanent TANGEDCO electricity and CMWSSB water and sewerage connections legally require a valid CC.',
+          'Deviation audit — check that the promoter has not encroached on the mandatory open space reservation, exceeded the sanctioned FSI, converted stilt parking into commercial units, or added unapproved floors.',
+        ],
+      },
+
+      { t: 'h2', id: 'uds', text: 'Undivided share, parking and utilities' },
+      {
+        t: 'ul',
+        items: [
+          'Undivided share of land — verify the exact UDS percentage allocated to your apartment in the registered sale and construction agreements. The shares distributed across all buyers must total the whole site, and no more.',
+          'Car parking — parking cannot be sold under an independent title deed. Your stilt or covered bay should be designated and numbered in an allotment letter and a layout annexure.',
+          'Utilities — CMWSSB water and drainage connectivity, groundwater potability, working rainwater harvesting, and the operating capacity of the sewage and water treatment plants.',
+        ],
+      },
+
+      { t: 'h2', id: 'site-visit', text: 'What the promoter’s older projects show' },
+      {
+        t: 'p',
+        text: 'The most useful thing a buyer can do costs nothing but a morning. Visit what this builder finished two to five years ago, because a completed building answers questions a brochure cannot.',
+      },
+      {
+        t: 'ul',
+        items: [
+          'Monsoon behaviour — see the older projects in the flood-prone corridors, Velachery, Perumbakkam, Mogappair and OMR, during the monsoon rather than after it. Look at basement drainage, lift pits and how ground-level runoff actually moves.',
+          'Ageing and seepage — inspect facades, expansion joints and terrace waterproofing. Efflorescence, spalling concrete or recurring bathroom leaks this early indicate the materials, not the maintenance.',
+          'Promised against delivered — compare the marketing brochure with what is operating. Clubhouses, piped gas, generators and lifts are the items most often specified and then quietly reduced.',
+        ],
+      },
+
+      { t: 'h2', id: 'handover', text: 'Handover and the residents’ association' },
+      {
+        t: 'ul',
+        items: [
+          'Corpus fund and maintenance — ask the residents’ association of an earlier project whether the builder transferred the corpus fund, the maintenance deposits, and the complete as-built architectural and services drawings.',
+          'Defect liability — promoters are obliged to rectify structural defects and workmanship flaws notified within five years of possession, at no cost, within thirty days. Ask an earlier association whether that obligation was honoured in practice.',
+          'Meters — confirm earlier buyers received permanent individual domestic TANGEDCO connections, rather than being left on commercial or temporary bulk meters.',
+        ],
+      },
+
+      { t: 'h2', id: 'record', text: 'The promoter’s legal and financial record' },
+      {
+        t: 'ul',
+        items: [
+          'TNRERA orders — search the promoter and its associated companies under the orders and judgments tab on tnrera.in, for recurring disputes over handover delays, layout alterations or refunds.',
+          'Litigation — search the e-Courts portal and the Madras High Court records for pending civil suits, acquisition challenges, and consumer complaints before the NCDRC.',
+          'Insolvency — check the National Company Law Tribunal cause lists and registry for insolvency proceedings initiated against the firm by financial or operational creditors.',
+          'Delivery record — compare the committed possession dates in the RERA filings against the architect’s handover certificates actually filed. Repeated extensions usually indicate a capital problem rather than a construction one.',
+        ],
+      },
+
+      {
+        t: 'p',
+        text: 'If the land classifications, the historical title chain, the municipal sanctions and the statutory filings are more than you want to take on alone, this is the work we do. What you get back is an account of what each record says, with the office and the document named for every finding, and a plain statement of anything we could not reach and what it would take to reach it.',
+      },
+    ],
+    faq: [
+      {
+        q: 'Is a completion certificate mandatory for apartments in Chennai?',
+        a: 'For multi-unit developments, yes. A completion certificate from the CMDA or the Greater Chennai Corporation is required, excluding non-high-rise residential buildings up to 12 metres with no more than three dwelling units or 750 square metres. Permanent TANGEDCO electricity and CMWSSB water and sewerage connections legally require one.',
+      },
+      {
+        q: 'Which projects must be registered with TNRERA?',
+        a: 'Projects on more than 500 square metres, or with more than eight apartments. Registration on tnrera.in carries the sanctioned layout, the declared completion deadline, and quarterly financial and construction disclosures, all of which can be compared against what the promoter is telling you.',
+      },
+      {
+        q: 'Why is an online encumbrance certificate not enough in Chennai?',
+        a: 'An online EC reaches back only as far as that Sub-Registrar Office was digitised. Anything earlier exists only in the bound ledgers at the office itself, which is where an unrecorded mortgage or a court attachment from before digitisation would still be sitting.',
       },
     ],
   },

@@ -147,7 +147,12 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
       datePublished: post.publishedISO,
       dateModified: post.publishedISO,
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-      author: { '@type': 'Organization', name: 'HataD', url: 'https://www.hatad.in' },
+      /* A Person where the piece is signed, the Organization where it is not.
+         The byline on the page and the byline in the markup are read from the
+         same field, so they cannot come to disagree. */
+      author: post.author
+        ? { '@type': 'Person', name: post.author }
+        : { '@type': 'Organization', name: 'HataD', url: 'https://www.hatad.in' },
       publisher: {
         '@type': 'Organization',
         name: 'HataD',
@@ -280,7 +285,10 @@ export default async function JournalPost({ params }: { params: Promise<{ slug: 
                 <p className="text-[11px] tracking-[0.09em] uppercase text-text-muted mb-1">
                   Written by
                 </p>
-                <p className="text-[13px] text-text-secondary">Team HataD</p>
+                {/* A named writer where the post has one; the house byline
+                    otherwise. Falling back rather than requiring an author
+                    keeps the pieces nobody signed honest about that. */}
+                <p className="text-[13px] text-text-secondary">{post.author ?? 'Team HataD'}</p>
               </div>
             </div>
           </aside>
