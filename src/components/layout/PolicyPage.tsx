@@ -63,8 +63,9 @@ export function PolicySection({
  * The registered-entity block, identical everywhere it appears.
  *
  * Renders the street line only when COMPANY.registeredAddress is set. While it
- * is empty the address reads city, region, country, which is true. An invented
- * street on a page a payment processor reads is worse than a short one.
+ * was empty the address read city, region, country, which was true — an
+ * invented street on a page a payment processor reads is worse than a short
+ * one. It is now set, from the MCA record, so the full address renders.
  */
 export function CompanyAddress() {
   return (
@@ -77,7 +78,7 @@ export function CompanyAddress() {
           <br />
         </>
       )}
-      {COMPANY.city}, {COMPANY.region}
+      {COMPANY.city}, {COMPANY.region} {COMPANY.postalCode}
       <br />
       {COMPANY.country}
       <br />

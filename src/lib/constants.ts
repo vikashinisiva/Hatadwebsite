@@ -78,20 +78,25 @@ export const COMPANY = {
   phoneHref: '+918122642341',
   country: 'India',
   /*
-   * Registered street address. Deliberately empty.
+   * Registered office of Crest Intelligence Private Limited, street portion.
    *
-   * The address that used to appear in the JSON-LD and still appears on
-   * /terms — 77/C, Vittal Nagar, Ganeshapuram, Coimbatore 641023 — was entered
-   * alongside the Hypse Aero name and belongs to that entity, not to Crest
-   * Intelligence. It has never been reconfirmed for this company, so it is not
-   * carried over.
+   * Confirmed against the MCA record for CIN U62010TZ2026PTC040065 —
+   * incorporated 23 July 2026, RoC-Coimbatore — and against the registered-
+   * entity block on crestintelligence.in. Both agree.
    *
-   * The policy pages render the locality line alone while this is empty, which
-   * is true, and fill in the street the moment it is set here. Razorpay expects
-   * a registered address on the contact and refund pages, so this wants filling
-   * before the payment routes reopen at launch.
+   * This replaces 77/C, Vittal Nagar, Ganeshapuram, Coimbatore 641023, which
+   * was never this company's. That address belongs with Hypse Aero Private
+   * Limited, CIN U26515TZ2025PTC036025 — a separate company sharing a director,
+   * which is exactly how it came to be sitting under the Crest Intelligence
+   * name. Different locality, and a different pincode.
+   *
+   * Street only: CompanyAddress renders city, region, postcode and country from
+   * their own fields, so repeating them here would print them twice.
    */
-  registeredAddress: '',
+  registeredAddress: '5/130, 179/1, Kovai Police Enclave, Vellanaipatti, Coimbatore North',
+  /** Part of the locality line, not the street. Kept separate for the same
+      reason city and region are — a postal address has fields, not one blob. */
+  postalCode: '641048',
 } as const
 
 /**
