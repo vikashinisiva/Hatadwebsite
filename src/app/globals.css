@@ -2667,7 +2667,9 @@ body {
      rather than smooth it. Just enough to take the edge off a digit change. */
   transition: top 0.18s linear;
 }
-.cc-sep { color: #A3B3CA; }
+/* A monospace comma takes a whole digit's cell, so "24,729" read as "24 , 729": the glyph is a
+   fifth of the cell, centred. Pull the cell in on both sides to the glyph's own width. */
+.cc-sep { color: #A3B3CA; margin-inline: -0.17em; }
 
 .cc-label {
   margin: 0;
@@ -2741,10 +2743,10 @@ body {
   letter-spacing: -0.025em;
   color: #0C1525;
 }
-/* Each word is animated individually, so it has to be its own box. The gap
-   belongs to the word rather than a space character, which keeps wrapping even
-   however the blur and opacity are mid-flight. */
-.tr .word { display: inline-block; margin-right: 0.28em; }
+/* Each word is animated individually, so it has to be its own box. No margin:
+   ScrollReveal keeps the real spaces between the word spans (they are what the
+   line wraps on), so a margin as well made every gap double, about 0.53em. */
+.tr .word { display: inline-block; }
 
 @media (prefers-reduced-motion: reduce) {
   .tr { padding-block: clamp(64px, 12svh, 130px); }

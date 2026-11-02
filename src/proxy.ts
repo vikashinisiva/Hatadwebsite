@@ -52,7 +52,12 @@ export const config = {
     /*
      * Everything except Next internals and static assets. Metadata routes are
      * excluded by name so crawlers can still read them with the wall up.
+     *
+     * figures/ holds the record room's drawing, script and styles (.html, .js,
+     * .css), which the extension list does not cover. Without it the wall would
+     * redirect them to the waitlist and the section on the waitlist page itself
+     * would load without its drawing.
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|apple-icon\\.png|og-image\\.png|robots\\.txt|sitemap\\.xml|sample-report\\.pdf|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|woff2?)$).*)',
+    '/((?!_next/static|_next/image|figures/|favicon\\.ico|icon\\.png|apple-icon\\.png|og-image\\.png|robots\\.txt|sitemap\\.xml|sample-report\\.pdf|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|woff2?)$).*)',
   ],
 }

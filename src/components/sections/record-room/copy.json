@@ -1,0 +1,260 @@
+{
+  "bundles": 123,
+  "beats": [
+    {
+      "tag": "The room",
+      "words": [
+        {
+          "w": "The",
+          "em": false
+        },
+        {
+          "w": "record",
+          "em": false
+        },
+        {
+          "w": "you",
+          "em": false
+        },
+        {
+          "w": "need",
+          "em": false
+        },
+        {
+          "w": "is",
+          "em": false
+        },
+        {
+          "w": "somewhere",
+          "em": true
+        },
+        {
+          "w": "in",
+          "em": true
+        },
+        {
+          "w": "here.",
+          "em": true
+        }
+      ],
+      "sub": "123 bundles, bound registers and loose sheets. No index. No order."
+    },
+    {
+      "tag": "Enter",
+      "words": [
+        {
+          "w": "Then",
+          "em": false
+        },
+        {
+          "w": "HataD",
+          "em": false
+        },
+        {
+          "w": "gets",
+          "em": true
+        },
+        {
+          "w": "to",
+          "em": true
+        },
+        {
+          "w": "work.",
+          "em": true
+        }
+      ],
+      "sub": "Built to work through the mess, not around it."
+    },
+    {
+      "tag": "Search",
+      "words": [
+        {
+          "w": "It",
+          "em": false
+        },
+        {
+          "w": "knows",
+          "em": false
+        },
+        {
+          "w": "exactly",
+          "em": true
+        },
+        {
+          "w": "what",
+          "em": true
+        },
+        {
+          "w": "to",
+          "em": true
+        },
+        {
+          "w": "look",
+          "em": true
+        },
+        {
+          "w": "for.",
+          "em": true
+        }
+      ],
+      "sub": "Pile by pile it reads the room, until the bundle for your survey number turns up."
+    },
+    {
+      "tag": "Sort",
+      "words": [
+        {
+          "w": "Every",
+          "em": false
+        },
+        {
+          "w": "page,",
+          "em": false
+        },
+        {
+          "w": "sorted",
+          "em": true
+        },
+        {
+          "w": "by",
+          "em": true
+        },
+        {
+          "w": "what",
+          "em": true
+        },
+        {
+          "w": "it",
+          "em": true
+        },
+        {
+          "w": "is.",
+          "em": true
+        }
+      ],
+      "sub": "Deeds, patta, FMB sketch, EC, court papers. Each to its own tray."
+    },
+    {
+      "tag": "Read",
+      "words": [
+        {
+          "w": "Every",
+          "em": false
+        },
+        {
+          "w": "line,",
+          "em": false
+        },
+        {
+          "w": "read.",
+          "em": true
+        }
+      ],
+      "sub": "Each page scanned and read, field by field."
+    },
+    {
+      "tag": "Verify",
+      "words": [
+        {
+          "w": "Every",
+          "em": false
+        },
+        {
+          "w": "link",
+          "em": false
+        },
+        {
+          "w": "in",
+          "em": false
+        },
+        {
+          "w": "the",
+          "em": false
+        },
+        {
+          "w": "chain,",
+          "em": false
+        },
+        {
+          "w": "tested.",
+          "em": true
+        }
+      ],
+      "sub": "It finds the years where the record goes quiet."
+    },
+    {
+      "tag": "Satellite + GIS",
+      "words": [
+        {
+          "w": "Then",
+          "em": false
+        },
+        {
+          "w": "it",
+          "em": false
+        },
+        {
+          "w": "checks",
+          "em": false
+        },
+        {
+          "w": "the",
+          "em": true
+        },
+        {
+          "w": "ground",
+          "em": true
+        },
+        {
+          "w": "itself.",
+          "em": true
+        }
+      ],
+      "sub": "Satellite imagery, the survey map and the master plan, laid over the same parcel."
+    },
+    {
+      "tag": "Report",
+      "words": [
+        {
+          "w": "And",
+          "em": false
+        },
+        {
+          "w": "tells",
+          "em": false
+        },
+        {
+          "w": "you",
+          "em": false
+        },
+        {
+          "w": "what",
+          "em": true
+        },
+        {
+          "w": "matters.",
+          "em": true
+        }
+      ],
+      "sub": "In plain words, on your phone, before you pay an advance."
+    }
+  ],
+  "reads": [
+    "Patta",
+    "A-Register",
+    "FMB",
+    "EC",
+    "Sale deeds",
+    "Court cases",
+    "Satellite",
+    "GIS layers",
+    "Master plan",
+    "Guideline value"
+  ],
+  "for": [
+    "Buyers",
+    "Owners",
+    "Banks",
+    "Advocates",
+    "Developers"
+  ]
+}

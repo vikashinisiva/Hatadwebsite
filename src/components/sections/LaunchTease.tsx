@@ -22,9 +22,12 @@ import { ConvergenceDiagram } from '@/components/sections/ConvergenceDiagram'
 import { CoverageCount } from '@/components/sections/CoverageCount'
 import { DistrictMap } from '@/components/sections/DistrictMap'
 import { DepartmentDescent } from '@/components/sections/DepartmentDescent'
+import { RecordRoom } from '@/components/sections/RecordRoom'
+import { Products } from '@/components/sections/Products'
 import type { Coverage } from '@/lib/coverage'
 import { classifyContact, type ContactReject } from '@/lib/waitlist-contact'
 import { track } from '@/lib/track'
+import { trackEvent } from '@/lib/analytics'
 import {
   SOURCE_CLAIM,
   SCAN_STEPS_BASE,
@@ -34,8 +37,9 @@ import {
 
 /*
  * The companion. Client-only and lazily fetched — he mounts nothing below
- * 900px and shows nothing until the hero is behind you, so there is no version
- * of this page where loading him early would have paid for itself.
+ * 340px (phones get him too since he moved out of the hero; see MIN_WIDTH in
+ * LaunchCompanion) and shows nothing until the hero is behind you, so there is
+ * no version of this page where loading him early would have paid for itself.
  */
 const LaunchCompanion = dynamic(
   () => import('@/components/companion/LaunchCompanion').then((m) => m.LaunchCompanion),
@@ -237,6 +241,7 @@ const COPY = {
     quoteBy: 'Team HataD, at IIT Madras Shaastra',
     vrTag: 'Illustrative example',
     vrParcel: 'Survey No. 114/2B · Salem',
+    howIndex: 'How it works',
     sourcesIndex: 'Sources',
     sourcesOf: 'of',
     /*
@@ -271,7 +276,8 @@ const COPY = {
     coverageBrowse: 'Every district, office by office:',
     coverageBrowseAll: 'all 38 districts',
     coverageCost: 'What registration costs, and what it does not settle',
-    coverageTitle: `All ${LAUNCH_DISTRICTS.length} districts of Tamil Nadu from day one.`,
+    // a no-break space: the state's name was breaking across the two lines of the title
+    coverageTitle: `All ${LAUNCH_DISTRICTS.length} districts of Tamil Nadu from day one.`,
     questionsIndex: 'Questions',
     questionsTitle: 'The questions worth asking.',
     faq: [
@@ -378,6 +384,7 @@ const COPY = {
     quoteBy: 'டீம் HataD, IIT Madras Shaastra-வில்',
     vrTag: 'எடுத்துக்காட்டு மட்டும்',
     vrParcel: 'புல எண் 114/2B · சேலம்',
+    howIndex: 'எப்படி வேலை செய்கிறது',
     sourcesIndex: 'ஆதாரங்கள்',
     sourcesOf: '/',
     sourcesClose: `ஒன்றைத் தவறவிட்டால், மீதி ${SOURCE_COUNT - 1}-ம் வீண்.`,
@@ -699,6 +706,83 @@ function clockParts(msRemaining: number) {
   }
 }
 
+/*
+ * The countdown, and the only thing on the page that ticks.
+ *
+ * It owns its clock so that a tick re-renders these few digits and nothing else.
+ * The clock used to live in LaunchTease itself, which re-rendered the whole page
+ * once a second, every second, for as long as the page was open: measured on a
+ * scroll through the record room, 110–340 ms of React work in every second of
+ * it. That kept going after launch, too, with the countdown already gone.
+ *
+ * LaunchTease decides whether this renders at all; once the launch moment
+ * passes it unmounts and the interval goes with it.
+ */
+function LaunchCountdown({
+  launchMs,
+  label,
+  units,
+}: {
+  launchMs: number
+  label: string
+  units: { days: string; hours: string; mins: string; secs: string }
+}) {
+  // Null until mounted: the value differs by the time the client hydrates,
+  // which React reports as a mismatch. Until then every wheel sits at 0.
+  const [now, setNow] = useState<number | null>(null)
+  useEffect(() => {
+    setNow(Date.now())
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const parts = clockParts(now === null ? 0 : launchMs - now)
+  const segments = [
+    { value: parts.days, label: units.days },
+    { value: parts.hours, label: units.hours },
+    { value: parts.mins, label: units.mins },
+    { value: parts.secs, label: units.secs },
+  ]
+
+  return (
+    <div className="lt-cd">
+      <span className="lt-foot-label">{label}</span>
+      {/*
+        The digits are aria-hidden with one static summary beside them.
+        Marking every segment aria-live (as the reference markup does) makes
+        a screen reader announce four numbers every second, which is unusable.
+      */}
+      <div className="lt-cd-row" aria-hidden>
+        {segments.map((seg) => (
+          <div className="lt-cd-seg" key={seg.label}>
+            <span className="lt-cd-num">
+              {/*
+                One wheel per digit rather than one per number: only the units
+                wheel turns on most ticks, and the tens wheel moves just on
+                rollover — which is what an odometer actually does. Splitting
+                the padded string also means days can pass 99 without clipping.
+              */}
+              {pad(seg.value)
+                .split('')
+                .map((d, i) => (
+                  <span
+                    key={i}
+                    className="lt-cd-digit"
+                    style={{ '--d': now === null ? 0 : Number(d) } as React.CSSProperties}
+                  />
+                ))}
+            </span>
+            <span className="lt-cd-lab">{seg.label}</span>
+          </div>
+        ))}
+      </div>
+      <span className="sr-only">
+        {label} {parts.days} {units.days}
+      </span>
+    </div>
+  )
+}
+
 
 /**
  * The site's internal link graph, in both languages.
@@ -779,9 +863,14 @@ export function LaunchTease({
   const startedRef = useRef(false)
   const [dial, setDial] = useState(DEFAULT_DIAL)
 
-  // The countdown must not render on the server — the value differs by the time
-  // the client hydrates, which React reports as a mismatch.
-  const [now, setNow] = useState<number | null>(null)
+  /*
+   * Whether the launch moment has passed. False on the server and the first
+   * paint, so the countdown renders and only disappears if the clock says it
+   * should; deciding it on the server would hydrate one state and then swap to
+   * another. It flips at most once, from one timer, so it costs the page no
+   * re-renders: the ticking lives in LaunchCountdown.
+   */
+  const [launched, setLaunched] = useState(false)
 
   const scanOverlayRef = useRef<HTMLDivElement>(null)
   const parcelCentreRef = useRef<[number, number] | null>(null)
@@ -790,11 +879,19 @@ export function LaunchTease({
 
   const t = COPY[lang]
 
-  // ── Countdown ──
+  // ── Launch moment ──
   useEffect(() => {
-    setNow(Date.now())
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
+    const launchMs = new Date(LAUNCH_DATE).getTime()
+    let id: ReturnType<typeof setTimeout> | undefined
+    const check = () => {
+      const left = launchMs - Date.now()
+      if (left <= 0) return setLaunched(true)
+      // setTimeout overflows past ~24.8 days and fires at once, so a launch
+      // further out than that is waited for in steps.
+      id = setTimeout(check, Math.min(left, 2 ** 31 - 1))
+    }
+    check()
+    return () => clearTimeout(id)
   }, [])
 
   /*
@@ -859,9 +956,15 @@ export function LaunchTease({
   /*
    * ── Funnel ──
    *
-   * Four events, all through track(), which is fire-and-forget into
-   * analytics_events and whose route always answers 200 — nothing here can
-   * break a signup.
+   * Two destinations now. launch_view and launch_signup_started go through
+   * track() — fire-and-forget into analytics_events, whose route always
+   * answers 200, so nothing here can break a signup. The four waitlist_*
+   * events go through trackEvent() in src/lib/analytics.ts, which writes the
+   * same row to analytics_events AND sends a typed event to Mixpanel.
+   *
+   * These two stayed behind because the signed-off tracking plan does not
+   * include them. They are worth promoting: without launch_signup_started in
+   * Mixpanel, the form's abandonment rate cannot be computed there.
    *
    * Vercel Analytics and GA4 already give pageviews. What they cannot give is
    * the shape of this page's funnel: how many of the people who arrive start
@@ -1487,12 +1590,15 @@ export function LaunchTease({
 
         const io = new IntersectionObserver(
           (entries) => {
-            onScreen = entries.some((e) => e.isIntersecting)
+            onScreen = entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.3)
             sync()
           },
-          /* Any sliver counts. The panel is full-height, so by the time it is
-             less than 1% visible it is genuinely gone. */
-          { threshold: 0 },
+          /* Paused once less than 30% of the panel shows. It used to run until the
+             last sliver left, and the map's frames cost 50–230 ms at retina
+             density (measured): that was every slow frame a reader hit while
+             scrolling down into the record room, with the map already mostly gone.
+             Resuming re-flies the leg, so the pause is never seen mid-arc. */
+          { threshold: [0, 0.3] },
         )
         io.observe(map.getContainer())
         document.addEventListener('visibilitychange', sync)
@@ -1529,6 +1635,12 @@ export function LaunchTease({
     const result = classifyContact(entry, dial)
     if (!result.ok) {
       setError(t.rejects[result.reason])
+      /*
+       * A rejected signup used to be invisible: the person saw an error and we
+       * recorded nothing, so "nobody is signing up" and "everybody is being
+       * rejected by the contact parser" looked identical from here.
+       */
+      trackEvent('waitlist_signup_failed', { slot, reject_reason: result.reason, lang }, 'launch-tease')
       return
     }
 
@@ -1548,7 +1660,7 @@ export function LaunchTease({
        * difference between "nobody signed up" and "everybody signed up and we
        * threw it away".
        */
-      track('launch_signup_blocked', 'launch-tease', { slot, lang })
+      trackEvent('waitlist_signup_blocked', { slot, block_reason: 'honeypot', lang }, 'launch-tease')
       setSubmitted(true)
       return
     }
@@ -1572,50 +1684,46 @@ export function LaunchTease({
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || t.invalid)
+        trackEvent('waitlist_signup_failed', { slot, reject_reason: 'server_error', lang }, 'launch-tease')
         return
       }
       setCode(typeof data.code === 'string' ? data.code : null)
       setPosition(typeof data.position === 'number' ? data.position : null)
       setAlreadyJoined(data.alreadyJoined === true)
       setSubmitted(true)
-      /* `kind` only — never the address or number itself. `position` is useful
-         for seeing how fast the list is actually moving. */
-      track('launch_signup_completed', 'launch-tease', {
-        slot,
-        lang,
-        kind: result.kind,
-        alreadyJoined: data.alreadyJoined === true,
-        position: typeof data.position === 'number' ? data.position : null,
-      })
+      /* `contact_kind` only — never the address or number itself.
+         `queue_position` shows how fast the list is actually moving, and is
+         omitted rather than sent as null when the API returns none: Mixpanel
+         keeps the first type it sees for a property, so one null would make it
+         permanently unsummable. */
+      trackEvent(
+        'waitlist_joined',
+        {
+          slot,
+          lang,
+          contact_kind: result.kind,
+          already_joined: data.alreadyJoined === true,
+          queue_position: typeof data.position === 'number' ? data.position : undefined,
+          referral_source: referrerRef.current ?? undefined,
+        },
+        'launch-tease',
+      )
     } catch {
       setError(t.network)
+      trackEvent('waitlist_signup_failed', { slot, reject_reason: 'network_error', lang }, 'launch-tease')
     } finally {
       setSending(false)
     }
   }
 
   const city = LAUNCH_MAP_CITIES[cityIndex]
-  const launchMs = new Date(LAUNCH_DATE).getTime()
   /*
-   * Whether the launch moment has passed.
-   *
-   * `now` is null until the first client tick, so this is false during SSR and
-   * the first paint — which is what we want: the countdown renders, and only
-   * disappears if the clock says it should. Deciding it on the server would
-   * hydrate one state and then swap to another.
-   *
-   * clockParts already clamps at zero, so before this existed the countdown sat
-   * at 0/0/0/0 under the words "Public launch in" while the offer above it
-   * still promised a date in the past.
+   * `launched` (state, above) gates the countdown and the offer's wording.
+   * clockParts clamps at zero, so before that gate existed the countdown sat at
+   * 0/0/0/0 under the words "Public launch in" while the offer above it still
+   * promised a date in the past.
    */
-  const launched = now !== null && now >= launchMs
-  const parts = clockParts(now === null ? 0 : launchMs - now)
-  const segments = [
-    { value: parts.days, label: t.cdDays },
-    { value: parts.hours, label: t.cdHours },
-    { value: parts.mins, label: t.cdMins },
-    { value: parts.secs, label: t.cdSecs },
-  ]
+  const launchMs = new Date(LAUNCH_DATE).getTime()
 
   /*
    * What the field currently looks like it holds. Decided on the first
@@ -1657,7 +1765,7 @@ export function LaunchTease({
        * `referred: true` on launch_view, which is a real arrival on someone's
        * link. Read the two together.
        */
-      track('launch_referral_shared', 'launch-tease', { lang })
+      trackEvent('waitlist_referral_shared', { share_channel: 'clipboard', lang }, 'launch-tease')
     } catch {
       // Clipboard blocked (insecure origin, denied permission). The link is on
       // screen either way, so there is nothing to recover from.
@@ -1680,7 +1788,7 @@ export function LaunchTease({
     const noteId = `lt-note-${slot}`
     return (
         submitted ? (
-          <div className="lt-done" role={slot === 'hero' ? 'status' : undefined}>
+          <div className="lt-done" id={slot === 'hero' ? 'join' : undefined} role={slot === 'hero' ? 'status' : undefined}>
             <p style={{ margin: 0 }}>{alreadyJoined ? t.alreadyJoined : t.thanks}</p>
 
             {position !== null && (
@@ -1705,7 +1813,9 @@ export function LaunchTease({
             )}
           </div>
         ) : (
-          <div className="lt-form">
+          /* #join is the hero's: the target of "Join the waitlist" in Products, which works
+             without JavaScript too (that link was href="#", a jump to the top of the page) */
+          <div className="lt-form" id={slot === 'hero' ? 'join' : undefined}>
             {/*
               The reason to join *now*, not at launch. Everything else here
               argues for the product; without this the strongest available
@@ -1751,6 +1861,8 @@ export function LaunchTease({
               <span className="lt-dial" aria-hidden={entryMode !== 'phone'}>
                 <select
                   aria-label="Country dialling code"
+                  name="dial"
+                  autoComplete="tel-country-code"
                   value={dial}
                   tabIndex={entryMode === 'phone' ? 0 : -1}
                   onChange={(e) => {
@@ -1880,8 +1992,13 @@ export function LaunchTease({
    * output for /ta. The effect above keeps document.documentElement in step
    * once the reader toggles.
    */
+  /*
+   * The root is the page's <main>: the document had no main landmark at all, so a
+   * screen reader had nothing to jump to. The header and footer sit inside it
+   * because the header lives in the hero's fitted 100svh column.
+   */
   return (
-    <div className="lt-root" data-lang={lang} lang={lang}>
+    <main className="lt-root" data-lang={lang} lang={lang}>
       <div className="lt-hero" ref={heroRef}>
       <header className="lt-head">
         <span className="lt-mark">HATAD</span>
@@ -2052,53 +2169,31 @@ export function LaunchTease({
           margin-left:auto, so it does not slide left when left alone here).
         */}
         {!launched && (
-        <div className="lt-cd">
-          <span className="lt-foot-label">{t.goLive}</span>
-          {/*
-            The digits are aria-hidden with one static summary beside them.
-            Marking every segment aria-live (as the reference markup does) makes
-            a screen reader announce four numbers every second, which is unusable.
-          */}
-          <div className="lt-cd-row" aria-hidden>
-            {segments.map((seg) => (
-              <div className="lt-cd-seg" key={seg.label}>
-                <span className="lt-cd-num">
-                  {/*
-                    One wheel per digit rather than one per number: only the units
-                    wheel turns on most ticks, and the tens wheel moves just on
-                    rollover — which is what an odometer actually does. Splitting
-                    the padded string also means days can pass 99 without clipping.
-                  */}
-                  {pad(seg.value)
-                    .split('')
-                    .map((d, i) => (
-                      <span
-                        key={i}
-                        className="lt-cd-digit"
-                        style={{ '--d': now === null ? 0 : Number(d) } as React.CSSProperties}
-                      />
-                    ))}
-                </span>
-                <span className="lt-cd-lab">{seg.label}</span>
-              </div>
-            ))}
-          </div>
-          <span className="sr-only">
-            {t.goLive} {parts.days} {t.cdDays}
-          </span>
-        </div>
+          <LaunchCountdown
+            launchMs={launchMs}
+            label={t.goLive}
+            units={{ days: t.cdDays, hours: t.cdHours, mins: t.cdMins, secs: t.cdSecs }}
+          />
         )}
+        {/* Points at what actually comes next: the record room, chapter 02 */}
         <span className="lt-cue">
           <span className="lt-cue-num">02</span>
-          <span>{t.sourcesIndex}</span>
+          <span>{t.howIndex}</span>
           <span aria-hidden>↓</span>
         </span>
       </div>
       </div>
 
+      {/* How HataD works: the record room, played by the scroll. English only for now. */}
+      <RecordRoom />
+
+      {/* What we're building: the app, the API and the enterprise system. English only for now. */}
+      <Products />
+
       <DepartmentDescent
         labels={{
-          index: '02',
+          // 04: after the hero (01), how HataD works (02) and what we're building (03)
+          index: '04',
           lead: t.sourcesIndex,
           of: t.sourcesOf,
           close: t.sourcesClose,
@@ -2134,7 +2229,7 @@ export function LaunchTease({
               chapter and its content are one thing.
             */}
             <p className="lt-block-index">
-              <span className="lt-block-index-num">03</span>
+              <span className="lt-block-index-num">05</span>
               <span className="lt-block-rule" aria-hidden />
               <span>{t.coverageIndex}</span>
             </p>
@@ -2284,7 +2379,7 @@ export function LaunchTease({
 
       <section className="lt-block">
         <p className="lt-block-index">
-          <span className="lt-block-index-num">04</span>
+          <span className="lt-block-index-num">06</span>
           <span className="lt-block-rule" aria-hidden />
           <span>{t.questionsIndex}</span>
         </p>
@@ -2404,6 +2499,6 @@ export function LaunchTease({
           is not visible until the hero has scrolled away regardless, so there
           is nothing to gain by having him earlier. */}
       <LaunchCompanion joined={submitted} errored={!!error} />
-    </div>
+    </main>
   )
 }

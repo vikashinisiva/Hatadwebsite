@@ -37,3 +37,6 @@ next-env.d.ts
 # misc
 .DS_Store
 Thumbs.db
+
+# brainstorming mockups and figure prototypes
+.superpowers/
