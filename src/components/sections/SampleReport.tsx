@@ -5,7 +5,7 @@ import { motion, useInView } from 'framer-motion'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import { FileText, CheckCircle, AlertTriangle, Shield, MapPin, Scale } from 'lucide-react'
-import { track } from '@/lib/track'
+import { trackEvent } from '@/lib/analytics'
 
 const REPORT_SECTIONS = [
   { icon: MapPin, label: 'Property Identification', desc: 'Survey number, ULPIN, location, land classification' },
@@ -134,7 +134,10 @@ export function SampleReport() {
                     href="https://wa.me/918122642341?text=Hi%2C%20I%E2%80%99d%20like%20to%20see%20a%20sample%20HataD%20clearance%20report."
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => track('sample_report', 'request')}
+                    /* Was `sample_report` too — the same name for looking at a
+                       sample and for asking us for one, which are not the
+                       same action and could not be told apart afterwards. */
+                    onClick={() => trackEvent('sample_report_requested', { source: 'request' }, 'request')}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-sm text-sm font-semibold bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238] transition-colors cursor-pointer"
                   >
                     Request a Sample Report

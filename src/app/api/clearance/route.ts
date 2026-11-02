@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendNotification } from '@/lib/sendNotification'
-import { CLEARANCE_PRICE_PAISE } from '@/lib/constants'
+import { CLEARANCE_PRICE_PAISE, REPORT_TURNAROUND_HOURS } from '@/lib/constants'
+import { mpServerTrack } from '@/lib/mixpanel-server'
 
 interface ClearanceRequestBody {
   id: string
@@ -12,6 +13,8 @@ interface ClearanceRequestBody {
   documentUrls: string[]
   deadline: string
   paymentId: string
+  /** Termly's analytics consent, forwarded from the browser. */
+  analyticsConsent?: boolean
 }
 
 export async function POST(request: Request) {
@@ -79,6 +82,58 @@ export async function POST(request: Request) {
         { status: 500 },
       )
     }
+
+    /*
+     * ── The money path, measured ──
+     *
+     * Both events fire here rather than in /api/razorpay/verify, because that
+     * route authenticates nothing by design — it verifies an HMAC and refuses
+     * to trust the client — so it has no user id to attribute a purchase to,
+     * and handing it one from the browser would undo the thing that makes it
+     * safe. Here the bearer token has already been checked and body.userId
+     * confirmed against it.
+     *
+     * Known gap, accepted: a payment that is verified but whose submit never
+     * lands produces neither event. Those orphans are not invisible — the
+     * /api/cron/cleanup job reconciles them and emails ops — they are just not
+     * in Mixpanel. Closing it properly needs an authenticated verify route.
+     *
+     * $insert_id is keyed on the payment id, so the sessionStorage replay that
+     * re-fires a submit after a crash cannot double-count a purchase.
+     *
+     * Not awaited: a slow Mixpanel must not delay the confirmation, and the
+     * row is already committed by this point.
+     */
+    const consent = body.analyticsConsent === true
+    const district = body.propertyDetails?.district
+    const taluk = body.propertyDetails?.taluk
+    const documentCount = body.documentUrls?.length || 0
+
+    void mpServerTrack({
+      event: 'payment_completed',
+      distinctId: user.id,
+      consent,
+      insertId: `payment_completed:${body.paymentId}`,
+      props: {
+        /* Rupees, unquoted, read from the single price source — never retyped. */
+        amount_inr: CLEARANCE_PRICE_PAISE / 100,
+        currency: 'INR',
+      },
+    })
+
+    void mpServerTrack({
+      event: 'clearance_request_created',
+      distinctId: user.id,
+      consent,
+      insertId: `clearance_created:${body.id}`,
+      props: {
+        district,
+        taluk,
+        document_count: documentCount,
+        /* Reads the constant; the 48 is a floor, not a ceiling. */
+        turnaround_hours: REPORT_TURNAROUND_HOURS,
+      },
+    })
 
     // Send notification email server-side
     try {

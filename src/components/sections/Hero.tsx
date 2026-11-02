@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
 // <link> in the map effect below.
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { track } from '@/lib/track'
+import { trackEvent } from '@/lib/analytics'
+import { getDistinctId, hasAnalyticsConsent } from '@/lib/mixpanel'
 
 /* ── Config ─────────────────────────────────────────────── */
 const MAP_READY_TIMEOUT = 18000
@@ -412,7 +414,12 @@ function SurveyVerifyForm({ cityIdx }: { cityIdx: number }) {
           const resp = await fetch('/api/tngis/lookup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+            body: JSON.stringify({
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude,
+              analyticsConsent: hasAnalyticsConsent(),
+              distinctId: getDistinctId(),
+            }),
             signal: AbortSignal.timeout(15000),
           })
           if (!resp.ok) { setMode('error'); return }
@@ -616,7 +623,7 @@ function SurveyVerifyForm({ cityIdx }: { cityIdx: number }) {
           href="https://wa.me/918122642341?text=Hi%2C%20I%E2%80%99d%20like%20to%20see%20a%20sample%20HataD%20clearance%20report."
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => track('sample_report', 'hero')}
+          onClick={() => trackEvent('sample_report_viewed', { source: 'hero' }, 'hero')}
           className="font-medium text-[#0C1525] underline underline-offset-[3px] decoration-[#0C1525]/30 hover:decoration-[#0C1525] decoration-[1.5px] transition-all"
         >
           see a sample report

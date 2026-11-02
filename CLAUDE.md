@@ -106,6 +106,18 @@ Report downloads never expose storage paths: `/api/clearance/download` verifies 
 - **Landing page**: `src/app/page.tsx` renders `Hero` eagerly and lazy-loads twelve below-fold sections via `next/dynamic`. Keep new sections lazy.
 - **SRO lookup**: `src/lib/sro.ts` maps ~24.7k villages to Sub-Registrar Offices from `src/data/sro_cache.json` (tracked), with Tamil transliteration normalization for fuzzy matches. The identically-named file at the repo root is gitignored scratch — edit the one under `src/data/`.
 - **Analytics**: `track()` in `src/lib/track.ts` is fire-and-forget into `analytics_events`; `/api/track` always returns 200 so tracking can never break a user flow. Vercel Analytics, Speed Insights, GA4, and Termly CMP are all wired in `layout.tsx`.
+
+### Mixpanel
+
+**The tracking plan is `src/lib/analytics.ts` and nowhere else.** Event names and property shapes are types there, so a typo is a compile error. Mixpanel is case-sensitive and keeps the first type it ever sees for a property, so a single quoted number or `null` permanently poisons that property — there is no un-teaching it. Add to `ClientEvents`/`ServerEvents` first, then call; never pass a bare string.
+
+- `trackEvent(name, props, source?, supabaseOnly?)` is the only way to send a client event. It writes the Supabase row *and* the Mixpanel event from one call so the two cannot drift. `supabaseOnly` is the one sanctioned way they may differ — survey numbers, coordinates and applicant details go in there, never to Mixpanel.
+- Two transports: `src/lib/mixpanel.ts` (browser, lazily imported so its 400 KB stays out of the initial bundle) and `src/lib/mixpanel-server.ts` (HTTP API). The money path and the TNGIS preview are tracked **server-side** on purpose — client-side loses 15–30% to ad blockers, and the lost events are disproportionately the failures.
+- **Consent gates everything.** The SDK inits with `opt_out_tracking_by_default` and only `grantConsent()` in `TermlyCMP.tsx` opens it. Termly's `autoBlock` cannot see a bundled import, so that handler is the whole gate. Server routes cannot read the cookie, so the browser passes `analyticsConsent` (and, when anonymous, `distinctId`) in the request body; `mpServerTrack` sends nothing unless told `true`.
+- `record_sessions_percent: 0` and `autocapture: false` are deliberate. Session replay would record the onboarding form's applicant name, phone and survey number.
+- Identity lives in one place: `AnalyticsIdentity.tsx` in `layout.tsx`, on `onAuthStateChange`. Identify on login *and* on every re-open; `reset()` on logout or the next user of that browser inherits the last one's identity.
+- Two tokens, never one: `NEXT_PUBLIC_MIXPANEL_TOKEN_DEV` / `_PROD`, switched on `VERCEL_ENV`. **An unset token is not an error** — it means "do not send", and both transports become no-ops while `track()` carries on into Supabase.
+- Known gap: a payment verified but never submitted produces no `payment_completed`, because `/api/razorpay/verify` authenticates nothing by design. `/api/cron/cleanup` already reconciles those orphans.
 - **i18n**: `src/lib/i18n/context.tsx` with `en.json`/`ta.json` and a `useT()` hook, locale in `localStorage`. Partially adopted — most copy is still inline.
 
 ## Conventions

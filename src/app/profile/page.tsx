@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { hasAnalyticsConsent } from '@/lib/mixpanel'
 import { LogOut, Mail, Clock, ExternalLink, Download } from 'lucide-react'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { User } from '@supabase/supabase-js'
@@ -69,7 +70,7 @@ export default function ProfilePage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ requestId: req.id }),
+        body: JSON.stringify({ requestId: req.id, analyticsConsent: hasAnalyticsConsent() }),
       })
       const json = await res.json()
       if (json.url) window.open(json.url, '_blank')

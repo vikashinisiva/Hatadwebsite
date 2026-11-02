@@ -12,6 +12,7 @@ import { SCAN_STEPS_BASE, LOCAL_SCAN_STEPS, SOURCE_CLAIM } from '@/lib/departmen
 import { DistrictShape } from '@/components/sections/DistrictShape'
 import { SiteFooter } from '@/components/layout/PolicyPage'
 import { ClearanceCTA, NavCTA } from '@/components/layout/ClearanceCTA'
+import { TrackDistrictView } from '@/components/TrackDistrictView'
 
 export function generateStaticParams() {
   return coveredDistricts().map((d) => ({ district: districtSlug(d) }))
@@ -68,6 +69,7 @@ export default async function DistrictPage({
 
   return (
     <div className="min-h-screen bg-background">
+      <TrackDistrictView district={name} />
       <div className="border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-mono text-sm tracking-[0.14em] text-text-primary">

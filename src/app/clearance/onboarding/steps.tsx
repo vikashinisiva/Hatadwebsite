@@ -5,6 +5,8 @@ import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { STORAGE_KEYS, TN_DISTRICTS, EMAIL_REGEX, PHONE_REGEX, CLEARANCE_PRICE_PAISE } from '@/lib/constants'
 import { SOURCE_CLAIM } from '@/lib/departments'
+import { trackEvent } from '@/lib/analytics'
+import { getDistinctId, hasAnalyticsConsent } from '@/lib/mixpanel'
 
 /*
  * No amount is displayed anywhere in this flow. The price has not been set,
@@ -342,7 +344,12 @@ export function StepProperty({
           const resp = await fetch('/api/tngis/lookup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+            body: JSON.stringify({
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude,
+              analyticsConsent: hasAnalyticsConsent(),
+              distinctId: getDistinctId(),
+            }),
             signal: AbortSignal.timeout(15000),
           })
           if (!resp.ok) { setGeoPhase('error'); setGeoLoading(false); return }
@@ -473,7 +480,16 @@ export function StepProperty({
 
         <div className="ob-footer-row">
           <button className="ob-btn ob-btn-ghost" onClick={onBack}><OBIcon name="back" size={16}/> Back</button>
-          <button className="ob-btn ob-btn-primary" style={{ flex: 1 }} disabled={!canContinue} onClick={() => onNext(data, geoPreview || undefined)}>
+          <button className="ob-btn ob-btn-primary" style={{ flex: 1 }} disabled={!canContinue} onClick={() => {
+            /* District and taluk only. applicantName, phone and surveyNo stay
+               out of Mixpanel — they identify a person and a parcel. */
+            trackEvent('clearance_property_submitted', {
+              district: data.district,
+              taluk: data.taluk || undefined,
+              document_count: 0,
+            }, 'onboarding')
+            onNext(data, geoPreview || undefined)
+          }}>
             Scan this parcel <OBIcon name="arrow" size={16} stroke={2}/>
           </button>
         </div>
@@ -740,6 +756,9 @@ export function StepPay({
       if (!orderRes.ok) throw new Error('Payment setup failed')
       const { orderId } = await orderRes.json()
 
+      /* Declared before the options object, which closes over it in ondismiss. */
+      const checkoutOpenedAt = Date.now()
+
       const rzp = new window.Razorpay({
         key: rzpKey,
         amount: CLEARANCE_PRICE_PAISE,
@@ -768,8 +787,29 @@ export function StepPay({
             setProcessing(false)
           }
         },
-        modal: { ondismiss: () => setProcessing(false) },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false)
+            /*
+             * Closing the Razorpay modal without paying. This is the event
+             * that answers which objection stops a purchase — seconds_on_step
+             * separates "saw the price and left" from "sat with it and could
+             * not decide".
+             */
+            trackEvent('checkout_abandoned', {
+              amount_inr: CLEARANCE_PRICE_PAISE / 100,
+              seconds_on_step: Math.round((Date.now() - checkoutOpenedAt) / 1000),
+            }, 'onboarding')
+          },
+        },
       })
+
+      /* Fired as checkout opens, so checkout_started -> payment_completed is a
+         real conversion rate rather than a count of button presses. */
+      trackEvent('checkout_started', {
+        amount_inr: CLEARANCE_PRICE_PAISE / 100,
+        currency: 'INR',
+      }, 'onboarding')
       rzp.open()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')

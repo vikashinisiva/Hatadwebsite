@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { hasAnalyticsConsent } from '@/lib/mixpanel'
 import { ExternalLink, Download, ArrowRight } from 'lucide-react'
 import { ClearanceNav } from '@/components/layout/ClearanceNav'
 import type { Session } from '@supabase/supabase-js'
@@ -78,7 +79,9 @@ function ClearancePageInner() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${s.access_token}`,
         },
-        body: JSON.stringify({ requestId: req.id }),
+        /* The server cannot read Termly's cookie, so consent travels with the
+           request — see the CONSENT note in src/lib/mixpanel-server.ts. */
+        body: JSON.stringify({ requestId: req.id, analyticsConsent: hasAnalyticsConsent() }),
       })
       const json = await res.json()
       if (json.url) window.open(json.url, '_blank')

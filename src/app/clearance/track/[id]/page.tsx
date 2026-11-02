@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { hasAnalyticsConsent } from '@/lib/mixpanel'
 import {
   Download, CheckCircle2, Circle, CircleDotDashed,
   Shield, FileText, AlertTriangle, FileCheck, Clock, Lock, Plus, ArrowLeft,
@@ -318,7 +319,7 @@ export default function TrackPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${s.access_token}`,
         },
-        body: JSON.stringify({ requestId: request.id }),
+        body: JSON.stringify({ requestId: request.id, analyticsConsent: hasAnalyticsConsent() }),
       })
       const json = await res.json()
       if (json.url) {

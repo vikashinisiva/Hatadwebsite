@@ -1,5 +1,6 @@
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { hasAnalyticsConsent } from '@/lib/mixpanel'
 
 export interface ClearanceFormData {
   files: File[]
@@ -60,6 +61,9 @@ export async function submitRequest(
       documentUrls,
       deadline,
       paymentId,
+      /* Consent travels with the request: the route emits payment_completed
+         and clearance_request_created, and the server cannot see Termly. */
+      analyticsConsent: hasAnalyticsConsent(),
     }),
   })
 

@@ -6,6 +6,7 @@ import './globals.css'
 import { I18nProvider } from '@/lib/i18n/context'
 import TermlyCMP from '@/components/TermlyCMP'
 import { AuthCallback } from '@/components/AuthCallback'
+import { AnalyticsIdentity } from '@/components/AnalyticsIdentity'
 import {
   COMING_SOON,
   COMPANY,
@@ -224,6 +225,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <TermlyCMP websiteUUID={TERMLY_WEBSITE_UUID} autoBlock />
         <AuthCallback />
+        {/* Keeps Mixpanel's identity in step with the Supabase session —
+            identify on login and on every re-open, reset on logout. */}
+        <AnalyticsIdentity />
         <I18nProvider>
           {children}
         </I18nProvider>

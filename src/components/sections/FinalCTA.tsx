@@ -3,7 +3,7 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
-import { track } from '@/lib/track'
+import { trackEvent } from '@/lib/analytics'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import { Phone, MessageCircle, Mail } from 'lucide-react'
 import { useT } from '@/lib/i18n/context'
@@ -37,7 +37,7 @@ export function FinalCTA() {
           </div>
 
           <motion.div variants={fadeInUp} className="flex flex-col items-center gap-3 mb-2">
-            <a href="/clearance/onboarding" onClick={() => track('cta_click', 'final_cta')}>
+            <a href="/clearance/onboarding" onClick={() => trackEvent('cta_click', { cta_location: 'final_cta' }, 'final_cta')}>
               <Button variant="primary" size="lg">
                 {t('cta.button')}
               </Button>

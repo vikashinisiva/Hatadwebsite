@@ -9,7 +9,8 @@ import {
   Search, Lock, ShieldAlert, FileSearch, Scale, MapPin, AlertTriangle,
   CheckCircle, Navigation, Landmark, FileCheck, Mountain, Layers, Map as MapIcon, TreePine,
 } from 'lucide-react'
-import { track } from '@/lib/track'
+import { trackEvent } from '@/lib/analytics'
+import { getDistinctId, hasAnalyticsConsent } from '@/lib/mixpanel'
 import { SOURCE_CLAIM } from '@/lib/departments'
 import type { ClientLookupResult } from '@/lib/tngis-client'
 
@@ -48,7 +49,9 @@ export function RiskCheck() {
       const resp = await fetch('/api/tngis/lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lon }),
+        /* The route emits risk_preview_returned; it needs this browser's id to
+           put the event on the same timeline, and its consent to send at all. */
+        body: JSON.stringify({ lat, lon, analyticsConsent: hasAnalyticsConsent(), distinctId: getDistinctId() }),
         signal: AbortSignal.timeout(50000),
       })
       if (resp.ok) {
@@ -108,7 +111,11 @@ export function RiskCheck() {
           return
         }
 
-        track('risk_check_started', 'landing_geo', { lat: latitude, lon: longitude })
+        /* Coordinates stay in Supabase only — they locate a specific parcel. */
+        trackEvent('risk_check_started', { entry_method: 'geolocate' }, 'landing_geo', {
+          lat: latitude,
+          lon: longitude,
+        })
         setPhase('loading')
         setGeoLoading(false)
 
@@ -144,7 +151,11 @@ export function RiskCheck() {
     if (!/\d/.test(trimmed)) { setError('Please enter your survey or patta number \u2014 for example, 89/3 or 142'); return }
     if (trimmed.length > 20) { setError('That doesn\u2019t look right. Try a shorter survey number.'); return }
     setError('')
-    track('risk_check_started', 'landing', { surveyNo: trimmed, district })
+    /* Same event as the geolocate path, distinguished by entry_method rather
+       than by the `source` string — it was two names for one action before. */
+    trackEvent('risk_check_started', { entry_method: 'manual_survey', district }, 'landing', {
+      surveyNo: trimmed,
+    })
     setPhase('loading')
     // Manual entry: no lat/lon to look up, use fake animation only
     setTimeout(() => setPhase('result'), 5500)
@@ -603,7 +614,12 @@ export function RiskCheck() {
                           ...(landData?.village_name && { village: landData.village_name }),
                         }).toString()}`}
                         className="block"
-                        onClick={() => track('cta_click', 'risk_check', { surveyNo, district, hasRealData })}
+                        onClick={() => trackEvent(
+                          'cta_click',
+                          { cta_location: 'risk_check', has_real_data: hasRealData },
+                          'risk_check',
+                          { surveyNo, district },
+                        )}
                       >
                         <button className="w-full py-4 rounded-sm text-sm font-semibold bg-[#0D1B2A] text-[#C9A84C] hover:bg-[#152238] transition-colors cursor-pointer">
                           Unlock Your Full Report

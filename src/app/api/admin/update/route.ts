@@ -1,11 +1,56 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendNotification } from '@/lib/sendNotification'
+import { REPORT_TURNAROUND_HOURS } from '@/lib/constants'
+import { mpServerTrack } from '@/lib/mixpanel-server'
 
 function verifyAdmin(request: Request): boolean {
   const authHeader = request.headers.get('authorization')
   if (!authHeader?.startsWith('Bearer ')) return false
   return authHeader.slice(7) === process.env.ADMIN_PASSWORD
+}
+
+/**
+ * Records that a report went out, and how long it actually took.
+ *
+ * Deliberately NOT attributed to the customer. This route is triggered by ops
+ * in /hq-panel, not by the buyer's browser, so there is no Termly consent
+ * state to honour — and inventing one would be the wrong answer. distinct_id
+ * is therefore the request id: this measures our own turnaround against the
+ * 48-hour floor, which is an operational fact about an order, rather than
+ * behaviour attributed to a person.
+ *
+ * Worth a second opinion from counsel before launch; it is the one event here
+ * that is emitted without a consent signal, and the reasoning above is an
+ * engineer's, not a lawyer's.
+ *
+ * Fire-and-forget: a report delivery must never fail because Mixpanel is slow.
+ */
+function trackReportDelivered(
+  requestId: string,
+  req: { property_details?: Record<string, unknown> | null; created_at?: string | null } | null,
+): void {
+  const createdMs = req?.created_at ? new Date(req.created_at).getTime() : 0
+  if (!createdMs) return
+
+  const actualHours = Math.round((Date.now() - createdMs) / 3_600_000)
+  const district = typeof req?.property_details?.district === 'string'
+    ? req.property_details.district
+    : undefined
+
+  void mpServerTrack({
+    event: 'clearance_report_delivered',
+    distinctId: requestId,
+    consent: true,
+    /* One delivery per request, even if a report is re-uploaded. */
+    insertId: `report_delivered:${requestId}`,
+    props: {
+      district,
+      actual_turnaround_hours: actualHours,
+      /* The constant is a minimum, so "late" means past it, not at it. */
+      was_delayed: actualHours > REPORT_TURNAROUND_HOURS,
+    },
+  })
 }
 
 interface UpdateBody {
@@ -73,6 +118,8 @@ export async function POST(request: Request) {
         .eq('id', id)
         .single()
 
+      trackReportDelivered(id, req)
+
       if (req?.notify_email) {
         const { data: signedData } = await supabaseAdmin.storage
           .from('clearance-reports')
@@ -130,6 +177,8 @@ export async function POST(request: Request) {
         .select('notify_email, property_details, created_at, document_urls')
         .eq('id', body.id)
         .single()
+
+      trackReportDelivered(body.id, req)
 
       if (req?.notify_email) {
         const { data: signedData } = await supabaseAdmin.storage

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { track } from '@/lib/track'
+import { trackEvent } from '@/lib/analytics'
 
 const PHONE = '918122642341'
 const MESSAGE = encodeURIComponent('Hi, I want to verify a land property before buying.')
@@ -43,7 +43,7 @@ export function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => {
-        track('whatsapp_click', 'floating')
+        trackEvent('whatsapp_click', { source: 'floating' }, 'floating')
         setCollapsedManually(true)
       }}
       onMouseEnter={() => setHovered(true)}

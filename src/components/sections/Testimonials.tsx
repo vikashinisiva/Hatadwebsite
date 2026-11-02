@@ -5,7 +5,7 @@ import { motion, useInView } from 'framer-motion'
 import { SectionLabel } from '@/components/ui/SectionLabel'
 import { staggerContainer, fadeInUp } from '@/lib/animations'
 import { Shield, AlertTriangle, FileSearch } from 'lucide-react'
-import { track } from '@/lib/track'
+import { trackEvent } from '@/lib/analytics'
 import { useT } from '@/lib/i18n/context'
 
 export function Testimonials() {
@@ -143,7 +143,7 @@ export function Testimonials() {
             </p>
             <a
               href="/clearance/onboarding"
-              onClick={() => track('cta_click', 'post_testimonials')}
+              onClick={() => trackEvent('cta_click', { cta_location: 'post_testimonials' }, 'post_testimonials')}
               className="inline-block bg-[#0C1525] text-white text-sm font-semibold px-5 sm:px-8 py-3.5 rounded-sm hover:bg-[#152238] transition-colors"
             >
               {t('testimonials.ctaButton')}
